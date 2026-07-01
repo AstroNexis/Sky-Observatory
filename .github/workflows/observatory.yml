@@ -3,6 +3,7 @@ name: Observatory Build
 on:
   push:
     branches:
+      - main
       - master
       - 'release/**'
     paths:
@@ -15,6 +16,7 @@ on:
       - 'build.gradle.kts'
   pull_request:
     branches:
+      - main
       - master
       - 'release/**'
     paths:
@@ -25,10 +27,11 @@ on:
       - 'gradle/**'
       - 'settings.gradle.kts'
       - 'build.gradle.kts'
+  workflow_dispatch:
 
 concurrency:
   group: observatory-build-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
@@ -36,27 +39,32 @@ env:
 
 jobs:
   build:
-    name: Build observatory
+    name: Build APK
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-java@v4
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: temurin
           cache: gradle
 
-      - run: |
+      - name: Install Android NDK
+        run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
             "ndk;27.2.12479018"
 
-      - run: chmod +x gradlew
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
-      - run: |
+      - name: Generate Gradle wrapper if missing
+        run: |
           JAR=gradle/wrapper/gradle-wrapper.jar
           if [ ! -f "$JAR" ]; then
             curl -fsSL -o /tmp/gradle-bin.zip \
@@ -67,38 +75,42 @@ jobs:
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
-      - name: Decode Keystore
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+      - name: Decode keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > ${{ runner.temp }}/keystore.jks
+          else
+            echo "::warning::KEYSTORE_BASE64 secret is not set. Release APK will be unsigned."
+          fi
 
       - name: Build debug APK
-        run: ./gradlew :sky-observatory:assembleDebug --stacktrace
+        run: ./gradlew :sky-observatory:assembleDebug --stacktrace --no-daemon
 
       - name: Build release APK
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
-        run: ./gradlew :sky-observatory:assembleRelease --stacktrace
         env:
-          KEYSTORE_PATH: keystore.jks
+          KEYSTORE_PATH: ${{ runner.temp }}/keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :sky-observatory:assembleRelease --stacktrace --no-daemon
 
-      - name: Run tests
-        run: ./gradlew :api:test :engine:test :native:test --stacktrace
+      - name: Run unit tests
+        run: ./gradlew :api:test :engine:test :native:test --stacktrace --no-daemon
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: observatory-apk-debug
-          path: |
-            sky-observatory/build/outputs/apk/debug/*.apk
+          name: apk-debug
+          path: sky-observatory/build/outputs/apk/debug/*.apk
+          retention-days: 7
 
-      - uses: actions/upload-artifact@v4
-        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: observatory-apk-release
-          path: |
-            sky-observatory/build/outputs/apk/release/*.apk
+          name: apk-release
+          path: sky-observatory/build/outputs/apk/release/*.apk
+          retention-days: 30
