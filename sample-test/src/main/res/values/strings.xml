@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Astronomy SDK Validator</string>
+
+    <!-- Observer -->
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+
+    <!-- Time -->
+    <string name="label_observation_time">Observation time</string>
+    <string name="label_julian_date">Julian date (TT)</string>
+
+    <!-- Horizontal position (SuperNOVAS: novas_app_to_hor) -->
+    <string name="label_azimuth">Azimuth</string>
+    <string name="label_altitude">Altitude</string>
+    <string name="label_above_horizon">Above horizon</string>
+    <string name="label_below_horizon">Below horizon</string>
+
+    <!-- Equatorial position (SuperNOVAS: sky_pos.ra / sky_pos.dec) -->
+    <string name="label_right_ascension">Right ascension</string>
+    <string name="label_declination">Declination</string>
+
+    <!-- Orbital / ephemeris -->
+    <string name="label_distance">Distance to Earth</string>
+    <string name="label_rise_time">Rise time</string>
+    <string name="label_set_time">Set time</string>
+
+    <!-- Photometric (derived from SuperNOVAS distance) -->
+    <string name="label_visual_magnitude">Visual magnitude</string>
+    <string name="label_apparent_diameter">Apparent diameter</string>
+
+    <!-- Status / errors -->
+    <string name="error_calculation_failed">Calculation failed: %1$s</string>
+    <string name="error_permission_denied">Location permission denied. Grant permission in Settings to use real coordinates.</string>
+    <string name="status_obtaining_location">Obtaining location\u2026</string>
+</resources>

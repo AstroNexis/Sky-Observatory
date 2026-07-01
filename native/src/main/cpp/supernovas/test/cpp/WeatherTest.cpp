@@ -1,0 +1,54 @@
+/**
+ * @file
+ *
+ * @date Created  on Oct 13, 2025
+ * @author Attila Kovacs
+ */
+
+#include <iostream>
+
+#include "TestUtil.hpp"
+
+
+
+int main() {
+  TestUtil test = TestUtil("Weather");
+
+  int n = 0;
+
+  if(!test.check("is_valid(T=NAN)", !Weather(NAN, 1e5, 50.0 * Unit::percent).is_valid())) n++;
+  if(!test.check("is_valid(p=NAN)", !Weather(0.0, NAN, 50.0 * Unit::percent).is_valid())) n++;
+  if(!test.check("is_valid(h=NAN)", !Weather(0.0, 1e5, NAN).is_valid())) n++;
+
+  Weather a = Weather(45.0, 1.0 * Unit::atm, 30.0 * Unit::percent);
+  if(!test.check("is_valid()", a.is_valid())) n++;
+  if(!test.equals("temperature()", a.temperature().celsius(), 45.0, 1e-15)) n++;
+  if(!test.equals("pressure()", a.pressure().atm(), 1.0, 1e-15)) n++;
+  if(!test.equals("humidity()", a.humidity(), 0.3, 1e-15)) n++;
+  if(!test.equals("to_string()", a.to_string(), "Weather (T = " + a.temperature().to_string() +
+          ", p = " + a.pressure().to_string() + ", h = 30.0 %)")) n++;
+
+  Weather b = Weather(Temperature::celsius(45.0), Pressure::atm(1.0), 30.0 * Unit::percent);
+  if(!test.equals("temperature() ==", b.temperature().celsius(), a.temperature().celsius(), 1e-15)) n++;
+  if(!test.equals("pressure() ==", b.pressure().atm(), a.pressure().atm(), 1e-15)) n++;
+  if(!test.equals("humidity() ==", b.humidity(), a.humidity(), 1e-15)) n++;
+
+  Site site = Site(45.0 * Unit::deg, 30.0 * Unit::deg, 1500.0 * Unit::m);
+  Weather c = site.average_weather();
+
+  const Weather& d = Weather::standard();
+  if(!test.equals("standard temperature() ==", d.temperature().celsius(), 10.0, 1e-15)) n++;
+  if(!test.equals("standard pressure() ==", d.pressure().atm(), 1.0, 1e-15)) n++;
+  if(!test.equals("standard humidity() ==", d.humidity(), 0.5, 1e-15)) n++;
+
+  on_surface s = {};
+  make_itrf_site(30.0, 45.0, 1500.0, &s);
+  novas_set_default_weather(&s);
+
+  if(!test.equals("temperature(site)", c.temperature().celsius(), s.temperature, 1e-13)) n++;
+  if(!test.equals("pressure(site)", c.pressure().mbar(), s.pressure, 1e-15 * Unit::atm)) n++;
+  if(!test.equals("humidity(site)", c.humidity(), s.humidity, 1e-15)) n++;
+
+  std::cout << "Weather.cpp: " << (n > 0 ? "FAILED" : "OK") << "\n";
+  return n;
+}

@@ -1,0 +1,9 @@
+# Only JNI-named symbols (Java_...) are exported from astro_bridge.so.
+# All SuperNOVAS internal symbols remain private, preventing symbol leakage
+# into higher layers or conflicts with other loaded libraries.
+{
+  global:
+    Java_*;
+  local:
+    *;
+};

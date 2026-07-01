@@ -1,0 +1,87 @@
+name: Sample Test Build
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+    paths:
+      - 'sample-test/**'
+      - 'api/**'
+      - 'engine/**'
+      - 'native/**'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+  pull_request:
+    branches:
+      - master
+      - 'release/**'
+    paths:
+      - 'sample-test/**'
+      - 'api/**'
+      - 'engine/**'
+      - 'native/**'
+      - 'gradle/**'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+
+concurrency:
+  group: sample-test-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
+  JAVA_VERSION: "17"
+
+jobs:
+  build:
+    name: Build sample-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      - run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;27.2.12479018"
+
+      - run: chmod +x gradlew
+
+      - run: |
+          JAR=gradle/wrapper/gradle-wrapper.jar
+          if [ ! -f "$JAR" ]; then
+            curl -fsSL -o /tmp/gradle-bin.zip \
+              "https://services.gradle.org/distributions/gradle-8.9-bin.zip"
+            unzip -q /tmp/gradle-bin.zip -d /tmp/gradle-install
+            /tmp/gradle-install/gradle-8.9/bin/gradle \
+              -p "$(pwd)" wrapper --gradle-version 8.9
+            rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
+          fi
+
+      - name: Build SDK artifacts
+        run: ./gradlew :api:assembleDebug :engine:assembleDebug :native:assembleDebug --stacktrace
+
+      - name: Build sample-test APK
+        run: ./gradlew :sample-test:assembleDebug --stacktrace
+
+      - name: Verify APK exists
+        run: |
+          ls -lh sample-test/build/outputs/apk/debug/*.apk 2>/dev/null || \
+            (echo "::error::APK not found at expected path" && exit 1)
+          echo "APK size: $(stat --printf='%s' sample-test/build/outputs/apk/debug/*.apk) bytes"
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: sample-test-apk
+          path: sample-test/build/outputs/apk/debug/*.apk
+          retention-days: 7

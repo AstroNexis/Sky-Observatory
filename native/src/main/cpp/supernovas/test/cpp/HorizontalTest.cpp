@@ -1,0 +1,121 @@
+/**
+ * @file
+ *
+ * @date Created  on Oct 13, 2025
+ * @author Attila Kovacs
+ */
+
+#include <iostream>
+
+#include "TestUtil.hpp"
+
+
+
+int main() {
+  TestUtil test = TestUtil("Horizontal");
+
+  int n = 0;
+
+  if(!test.check("invalid lon", !Horizontal(NAN, 30.0 * Unit::deg).is_valid())) n++;
+  if(!test.check("invalid lat", !Horizontal(45.0 * Unit::deg, NAN).is_valid())) n++;
+  if(!test.check("invalid lat > 90", !Horizontal(45.0 * Unit::deg, 91.0 * Unit::deg).is_valid())) n++;
+
+  Horizontal x = Horizontal::undefined();
+  if(!test.check("is_valid() invalid", !x.is_valid())) n++;
+  if(!test.check("longitude() invalid", isnan(x.longitude().rad()))) n++;
+  if(!test.check("latitude() invalid", isnan(x.latitude().rad()))) n++;
+  if(!test.check("zenith_angle() invalid", !x.zenith_angle().is_valid())) n++;
+  if(!test.check("to_refracted() invalid", !x.to_refracted(novas_standard_refraction).is_valid())) n++;
+  if(!test.check("to_unrefracted() invalid", !x.to_unrefracted(novas_standard_refraction).is_valid())) n++;
+
+  Horizontal a(-20.0 * Unit::deg, -30.0 * Unit::deg);
+  if(!test.check("is_valid()", a.is_valid())) n++;
+  if(!test.equals("azimuth()", a.azimuth().deg(), -20.0, 1e-14)) n++;
+  if(!test.equals("elevation()", a.elevation().deg(), -30.0, 1e-14)) n++;
+  if(!test.equals("zenith_angle()", a.zenith_angle().deg(), 120.0, 1e-13)) n++;
+  if(!test.check("distance_to(invalid)", !a.distance_to(x).is_valid())) n++;
+  if(!test.check("invalid.distance_to()", !x.distance_to(a).is_valid())) n++;
+  if(!test.equals("to_string()", a.to_string(), "HOR  -20d 00m 00.000s  -30d 00m 00.000s")) n++;
+
+  Horizontal ao = a.offset(Angle(30.0 * Unit::deg), Angle(1.5 * Unit::deg));
+  if(!test.check("offset()", ao.is_valid())) n++;
+  double olon = 0.0, olat = 0.0;
+  novas_offset_by(a.longitude().deg(), a.latitude().deg(), 30.0, 1.5, &olon, &olat);
+  if(!test.equals("offset().longitude()", ao.longitude().deg(), olon, 1e-14)) n++;
+  if(!test.equals("offset().latitude()", ao.latitude().deg(), olat, 1e-14)) n++;
+  if(!test.equals("offset().distance_to()", ao.distance_to(a).deg(), 1.5, 1e-14)) n++;
+
+  if(!test.check("offset(pole)", !Horizontal(150.0 * Unit::deg, 90.0 * Unit::deg).offset(10.0, 2.0).is_valid())) n++;
+
+  Site site(15.0 * Unit::deg, -42.0 * Unit::deg, 1.5 * Unit::km);
+  Horizontal a1 = a.to_refracted(novas_standard_refraction, site.average_weather());
+  on_surface s = *site._on_surface();
+  novas_set_default_weather(&s);
+
+  double r = novas_standard_refraction(NAN, &s, NOVAS_REFRACT_ASTROMETRIC, a.elevation().deg());
+  if(!test.equals("to_refracted() az", a1.azimuth().deg(), a.azimuth().deg(), 1e-6)) n++;
+  if(!test.equals("to_refracted() el", a1.elevation().deg(), a.elevation().deg() + r, 1e-6)) n++;
+
+  Horizontal a2 = a1.to_unrefracted(novas_standard_refraction, site.average_weather());
+  r = novas_standard_refraction(NAN, &s, NOVAS_REFRACT_OBSERVED, a1.elevation().deg());
+  if(!test.equals("to_refracted() az", a2.azimuth().deg(), a.azimuth().deg(), 1e-6)) n++;
+  if(!test.equals("to_refracted() el", a2.elevation().deg(), a.elevation().deg(), 1e-6)) n++;
+
+  if(!test.check("to_refracted(NULL)", a.to_refracted(NULL) == a)) n++;
+  if(!test.check("to_unrefracted(NULL)", a.to_unrefracted(NULL) == a)) n++;
+
+  Apparent opt = a.to_apparent(Observer::at_geocenter().reduced_accuracy_frame_at(Time::j2000()),
+          ScalarVelocity(Unit::km_per_s), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(geocentric)", !opt.is_valid())) n++;
+
+  opt = a.to_apparent(Frame::undefined(), ScalarVelocity(Unit::km_per_s), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(Frame invalid).is_valid()", !opt.is_valid())) n++;
+
+  EOP eop(32, 0.1, 0.2 * Unit::arcsec, 0.3 * Unit::arcsec);
+  Frame frame = Observer::on_earth(site, eop).reduced_accuracy_frame_at(Time::j2000());
+
+  opt = a.to_apparent(frame, ScalarVelocity(Unit::km_per_s), Coordinate(Unit::pc));
+  if(!test.check("to_apparent().is_valid()", opt.is_valid())) n++;
+
+  sky_pos p = {};
+  Apparent tod = opt;
+  novas_hor_to_app(frame._novas_frame(), a.azimuth().deg(), a.elevation().deg(), NULL, NOVAS_TOD, &p.ra, &p.dec);
+  if(!test.equals("to_apparent() R.A.", tod.equatorial().ra().hours(), p.ra, 1e-10)) n++;
+  if(!test.equals("to_apparent() Dec", tod.equatorial().dec().deg(), p.dec, 1e-9)) n++;
+
+  Frame gf = Observer::on_earth(site, eop).reduced_accuracy_frame_at(Time::j2000());
+  tod = a.to_apparent(gf, ScalarVelocity(Unit::km_per_s), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(geodetic)", tod.is_valid())) n++;
+  if(!test.equals("to_apparent(geodetic) R.A.", tod.equatorial().ra().hours(), p.ra, 1e-10)) n++;
+  if(!test.equals("to_apparent(geodetic) Dec", tod.equatorial().dec().deg(), p.dec, 1e-9)) n++;
+
+  tod = a.to_apparent(gf, ScalarVelocity(NAN), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(geodetic speed NAN)", !tod.is_valid())) n++;
+
+  tod = a.to_apparent(gf, ScalarVelocity(NAN), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(geodetic speed NAN)", !tod.is_valid())) n++;
+
+  novas_frame *nf = (novas_frame *) gf._novas_frame();
+  nf->observer.where = NOVAS_OBSERVER_AT_GEOCENTER;
+  tod = a.to_apparent(gf, ScalarVelocity(Unit::km_per_s), Coordinate(Unit::pc));
+  if(!test.check("to_apparent(geodetic frame invalid)", !tod.is_valid())) n++;
+
+  Horizontal b(a);
+  if(!test.check("operator==()", b == a)) n++;
+  if(!test.check("operator!=() !", !(b != a))) n++;
+
+  Horizontal c(Angle(10.0 * Unit::deg), Angle(-20.0 * Unit::deg));
+  if(!test.equals("azimuth(Angle)", c.azimuth().deg(), 10.0, 1e-14)) n++;
+  if(!test.equals("elevation(Angle)", c.elevation().deg(), -20.0, 1e-14)) n++;
+  if(!test.check("operator==() !", !(c == a))) n++;
+  if(!test.check("operator!=()", c != a)) n++;
+
+  if(!test.equals("zenith_angle()", c.distance_to(a).deg(), novas_sep(c.azimuth().deg(), c.elevation().deg(), a.azimuth().deg(), a.elevation().deg()), 1e-13)) n++;
+
+  Horizontal d("-20h 00m 00.000s", "-30 00 00");
+  if(!test.check("operator==(string)", d == a)) n++;
+  if(!test.check("equals()", d.equals(a, Angle(Unit::uas)))) n++;
+
+  std::cout << "Horizontal.cpp: " << (n > 0 ? "FAILED" : "OK") << "\n";
+  return n;
+}

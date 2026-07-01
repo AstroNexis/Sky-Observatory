@@ -1,0 +1,11 @@
+bad-cio-data/**
+*.dat
+**/*.gcov
+**/*.gcda
+**/*.gcno
+**/gmon.out
+test*
+!test*.c
+cov*
+*.info
+

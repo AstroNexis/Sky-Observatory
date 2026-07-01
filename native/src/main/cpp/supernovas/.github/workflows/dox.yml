@@ -1,0 +1,159 @@
+name: Documentation
+permissions:
+  contents: write
+
+on:
+  release:
+    types: [published]
+
+  push:
+    branches:
+      - main
+    paths:
+      - 'doc/**'
+      - 'resources/**'
+      - 'src/**'
+      - 'include/**'
+      - 'Makefile'
+      - '*.md'
+      - '.github/workflows/dox.yml'
+
+  pull_request:
+    paths:
+      - 'doc/**'
+      - 'resources/**'
+      - 'src/**'
+      - 'include/**'
+      - 'Makefile'
+      - '*.md'
+      - '.github/workflows/dox.yml'
+
+jobs:
+
+  apidocs:
+    name: Generate API documentation
+
+    runs-on: ubuntu-latest
+    env:
+      CC: gcc
+      ENABLE_CPP: 1
+    steps:
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -q -y
+        sudo apt-get install -y libcurl4-openssl-dev
+
+    - name: install doxygen
+      run: sudo apt-get install doxygen
+
+    - uses: actions/checkout@v7
+
+    - name: Generate docs
+      run: make dox
+
+  site-update:
+    name: Update github pages
+    needs: apidocs
+    if: github.repository_owner == 'Sigmyne' && (github.event_name == 'release' || github.event.pull_request.merged || contains(github.event.head_commit.message, 'site update'))
+
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -q -y
+        sudo apt-get install -y libcurl4-openssl-dev
+
+    - name: Checkout source
+      uses: actions/checkout@v7
+
+    - name: Generate headless README
+      run: make -C doc README.md
+
+    - uses: mattnotmitt/doxygen-action@edge
+      with:
+        working-directory: 'doc/c99'
+        additional-packages: font-roboto
+
+    - uses: mattnotmitt/doxygen-action@edge
+      with:
+        working-directory: 'doc/cpp'
+        additional-packages: font-roboto
+
+    - name: Insert Google analytics tracker
+      run: for file in doc/c*/html/*.html ; do sudo sed -i "/<\/head>/e cat resources/analytics.html" $file ; done
+
+    - name: Checkout gh-pages
+      uses: actions/checkout@v7
+      with:
+        ref: 'gh-pages'
+        path: site
+
+    - name: Assert site/doc/
+      run: mkdir -p site/doc
+
+    - name: Copy doc/ markdowns
+      run: |
+        rm doc/README.md
+        mv doc/README-undecorated.md doc/README.md
+        cp doc/*.md site/doc/
+        cp doc/cpp/*.md site/doc/
+        cp doc/c99/*.md site/doc/
+
+    - name: Copy CHANGELOG
+      run: cp -a CHANGELOG.md site/doc/
+
+    - name: Copy Usage Guides
+      run: cp -a USAGE-*.md site/doc/
+
+    - name: Copy API documentation
+      run: |
+        rm -rf site/doc/html
+        cp -a doc/c99/html site/doc/
+        mkdir site/doc/html/cpp
+        cp -a doc/cpp/html/* site/doc/html/cpp/
+        
+    - name: Assert site/resources/
+      run: mkdir -p site/resources
+
+    - name: Copy Figures
+      run: cp -a resources/*.png resources/*.svg site/resources/
+
+    - name: Push to pages
+      run: |
+        cd site
+        git config --global user.email "$GITHUB_JOB+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions"
+        git add -A
+        git commit -m "[automated site update]" && git push || true
+
+  changelog-update:
+    name: Update CHANGELOG on github pages
+    if: github.repository_owner == 'Sigmyne' && (github.event.pull_request.merged || contains(github.event.head_commit.message, 'changelog update'))
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v7
+
+    - name: Checkout gh-pages
+      uses: actions/checkout@v7
+      with:
+        ref: 'gh-pages'
+        path: site
+
+    - name: Assert site/doc/
+      run: mkdir -p site/doc
+
+    - name: Copy CHANGELOG
+      run: cp CHANGELOG.md site/doc/
+
+    - name: Push to pages
+      run: |
+        cd site
+        git config --global user.email "$GITHUB_JOB+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions"
+        git add -A
+        git commit -m "[automated site update]" && git push || true

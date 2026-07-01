@@ -1,0 +1,43 @@
+name: Static Analysis
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'Makefile'
+      - '*.mk'
+      - '.github/workflows/analyze.yml'
+
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'Makefile'
+      - '*.mk'
+      - '.github/workflows/analyze.yml'
+
+jobs:
+
+  cppcheck:
+    name: Check source code
+
+    runs-on: ubuntu-latest
+    env:
+      CC: gcc
+    steps:
+    
+    - uses: actions/checkout@v7
+    
+    - name: install dependencies
+      run: sudo apt-get install -y cppcheck
+
+    - name: Run cppcheck on the C sources
+      run: make -C src/c99 analyze
+
+    - name: Run cppcheck on the C++ sources
+      run: make -C src/cpp analyze

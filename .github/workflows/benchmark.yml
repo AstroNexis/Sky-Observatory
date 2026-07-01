@@ -1,0 +1,59 @@
+name: Benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - 'release/**'
+  pull_request:
+    branches:
+      - master
+      - 'release/**'
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
+  JAVA_VERSION: "17"
+
+jobs:
+  benchmark:
+    name: Build benchmark
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
+          cache: gradle
+
+      - run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;27.2.12479018"
+
+      - run: chmod +x gradlew
+
+      - run: |
+          JAR=gradle/wrapper/gradle-wrapper.jar
+          if [ ! -f "$JAR" ]; then
+            curl -fsSL -o /tmp/gradle-bin.zip \
+              "https://services.gradle.org/distributions/gradle-8.9-bin.zip"
+            unzip -q /tmp/gradle-bin.zip -d /tmp/gradle-install
+            /tmp/gradle-install/gradle-8.9/bin/gradle \
+              -p "$(pwd)" wrapper --gradle-version 8.9
+            rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
+          fi
+
+      - name: Build benchmark
+        run: ./gradlew :benchmark:assembleDebug --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: benchmark-aar
+          path: '**/build/outputs/aar/'
+          retention-days: 14
