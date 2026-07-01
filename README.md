@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="ic_launcher.png" alt="Sky Vault" width="200" />
+  <img src="/sky-observatory/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Sky Vault" width="200" />
 </p>
 
 <div align="center">
