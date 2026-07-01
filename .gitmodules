@@ -1,0 +1,3 @@
+[submodule "native/src/main/cpp/supernovas"]
+	path = native/src/main/cpp/supernovas
+	url = https://github.com/Sigmyne/SuperNOVAS.git

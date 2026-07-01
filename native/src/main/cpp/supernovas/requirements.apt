@@ -1,3 +1,0 @@
-# sudo apt install $(grep -v ^# requirements.apt)
-libcurl4-openssl-dev
-
