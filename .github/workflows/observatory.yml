@@ -35,7 +35,7 @@ env:
   JAVA_VERSION: "17"
 
 jobs:
-  renderer-build:
+  build:
     name: Build observatory
     runs-on: ubuntu-latest
 
@@ -67,24 +67,38 @@ jobs:
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
-      - name: Build SDK artifacts
-        run: ./gradlew :api:assembleDebug :engine:assembleDebug :native:assembleDebug --stacktrace
+      - name: Decode Keystore
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
 
-      - name: Build observatory APK
+      - name: Build debug APK
         run: ./gradlew :sky-observatory:assembleDebug --stacktrace
 
-      - name: Verify APK exists
-        run: |
-          ls -lh sky-observatory/build/outputs/apk/debug/*.apk 2>/dev/null || \
-            (echo "::error::APK not found at expected path" && exit 1)
-          echo "APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/debug/*.apk) bytes"
+      - name: Build release APK
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+        run: ./gradlew :sky-observatory:assembleRelease --stacktrace
+        env:
+          KEYSTORE_PATH: keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Run SDK tests
+      - name: Run tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: observatory-apk
+          name: observatory-apk-debug
           path: |
             sky-observatory/build/outputs/apk/debug/*.apk
+
+      - uses: actions/upload-artifact@v4
+        if: github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')
+        with:
+          name: observatory-apk-release
+          path: |
+            sky-observatory/build/outputs/apk/release/*.apk
