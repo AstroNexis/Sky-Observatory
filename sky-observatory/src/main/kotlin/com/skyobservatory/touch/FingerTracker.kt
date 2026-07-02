@@ -151,6 +151,16 @@ class FingerTracker {
         return Pair((x1 + x2) / 2f, (y1 + y2) / 2f)
     }
 
+    fun getTwoFingerAngle(): Float? {
+        val positions = getTwoFingerPositions() ?: return null
+        val (x1, y1) = positions.first
+        val (x2, y2) = positions.second
+
+        val dx = x2 - x1
+        val dy = y2 - y1
+        return kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+    }
+
     fun getPrimaryFingerDelta(previousX: Float, previousY: Float): Pair<Float, Float>? {
         val current = getPrimaryFingerPosition() ?: return null
         return Pair(current.first - previousX, current.second - previousY)

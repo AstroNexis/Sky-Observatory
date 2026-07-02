@@ -37,7 +37,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
     }
 
     private var previousSpan: Float = 0f
-    private var previousAngle: Float = 0f
+    private var previousAngle: Float? = null
     private var previousPrimaryX: Float = 0f
     private var previousPrimaryY: Float = 0f
 
@@ -59,7 +59,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                     previousPrimaryY = primaryPos.second
                 }
                 previousSpan = 0f
-                previousAngle = 0f
+                previousAngle = null
             }
 
             MotionEvent.ACTION_POINTER_DOWN -> {
@@ -124,7 +124,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                         previousSpan = span
 
                         // Rotation detection - only if we have a previous angle
-                        if (angle != null && previousAngle != 0f) {
+                        if (angle != null && previousAngle != null) {
                             // Calculate delta angle, handling angle wrapping
                             var deltaAngle = angle - previousAngle
                             if (deltaAngle > Math.PI.toFloat()) {
@@ -144,7 +144,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 // Reset gesture state
                 previousSpan = 0f
-                previousAngle = 0f
+                previousAngle = null
                 previousPrimaryX = 0f
                 previousPrimaryY = 0f
                 gestureData.isPanning = false
@@ -155,7 +155,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
             MotionEvent.ACTION_POINTER_UP -> {
                 // Reset multi-finger gesture state
                 previousSpan = 0f
-                previousAngle = 0f
+                previousAngle = null
             }
         }
 
@@ -179,7 +179,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
      */
     fun reset() {
         previousSpan = 0f
-        previousAngle = 0f
+        previousAngle = null
         previousPrimaryX = 0f
         previousPrimaryY = 0f
     }
