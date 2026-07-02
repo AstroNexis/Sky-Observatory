@@ -72,9 +72,8 @@ class TouchController {
      * @param event The MotionEvent to process
      */
     fun onTouchEvent(event: MotionEvent) {
-        // Update finger tracking
-        fingerTracker.update(event)
-
+        // Note: fingerTracker.update() is called inside gestureRecognizer.processEvent()
+        // below — do NOT call it here again or finger state will be advanced twice per event.
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 touching = true

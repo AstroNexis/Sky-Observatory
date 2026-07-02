@@ -16,6 +16,7 @@
 package com.skyobservatory.touch
 
 import android.view.MotionEvent
+import kotlin.math.abs
 
 /**
  * Manages touch state, smoothing, and inertia for camera interactions.
@@ -116,8 +117,8 @@ class TouchStateManager {
         velocityY *= INERTIA_DECAY
 
         // If velocities are too small, stop inertia
-        if (Math.abs(velocityX) < INERTIA_MIN_VELOCITY && 
-            Math.abs(velocityY) < INERTIA_MIN_VELOCITY) {
+        if (abs(velocityX) < INERTIA_MIN_VELOCITY &&
+            abs(velocityY) < INERTIA_MIN_VELOCITY) {
             velocityX = 0f
             velocityY = 0f
             return Pair(0f, 0f)

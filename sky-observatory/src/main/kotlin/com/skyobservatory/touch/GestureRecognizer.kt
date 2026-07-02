@@ -16,6 +16,9 @@
 package com.skyobservatory.touch
 
 import android.view.MotionEvent
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.min
 
 /**
  * Recognizes touch gestures and provides gesture data for camera interaction.
@@ -119,7 +122,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                         if (previousSpan > 0) {
                             val rawDelta = (span - previousSpan) * PINCH_SENSITIVITY
                             gestureData.pinchDelta = rawDelta
-                            gestureData.isPinching = Math.abs(rawDelta) > 0.001f
+                            gestureData.isPinching = abs(rawDelta) > 0.001f
                         }
                         previousSpan = span
 
@@ -128,14 +131,15 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                             // Calculate delta angle, handling angle wrapping
                             val prevAngle = previousAngle!!  // Safe cast since we checked null
                             var deltaAngle = angle - prevAngle
-                            if (deltaAngle > Math.PI.toFloat()) {
-                                deltaAngle -= 2f * Math.PI.toFloat()
-                            } else if (deltaAngle < -Math.PI.toFloat()) {
-                                deltaAngle += 2f * Math.PI.toFloat()
+                            val pi = PI.toFloat()
+                            if (deltaAngle > pi) {
+                                deltaAngle -= 2f * pi
+                            } else if (deltaAngle < -pi) {
+                                deltaAngle += 2f * pi
                             }
-                            
+
                             gestureData.rotationDelta = deltaAngle * ROTATION_SENSITIVITY
-                            gestureData.isRotating = Math.abs(deltaAngle) > 0.01f
+                            gestureData.isRotating = abs(deltaAngle) > 0.01f
                         }
                         previousAngle = angle ?: previousAngle
                     }
@@ -169,10 +173,10 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
      * ramps up linearly with ACCEL_GAIN, capped at ACCEL_MAX_MULTIPLIER.
      */
     private fun horizontalAccel(rawDx: Float): Float {
-        val speed = Math.abs(rawDx)
+        val speed = abs(rawDx)
         if (speed <= ACCEL_START_PX) return 1f
         val extra = (speed - ACCEL_START_PX) * ACCEL_GAIN
-        return Math.min(1f + extra, ACCEL_MAX_MULTIPLIER)
+        return min(1f + extra, ACCEL_MAX_MULTIPLIER)
     }
 
     /**

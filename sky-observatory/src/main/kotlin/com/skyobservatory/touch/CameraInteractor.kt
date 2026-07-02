@@ -16,6 +16,7 @@
 package com.skyobservatory.touch
 
 import com.skyobservatory.camera.SkyCamera
+import kotlin.math.PI
 
 /**
  * Handles camera-specific interaction logic for touch gestures.
@@ -96,7 +97,7 @@ class CameraInteractor {
     fun applyRotation(angleDelta: Float) {
         // Convert rotation angle to yaw change
         // Positive angle = counter-clockwise rotation
-        camera?.applyYawDelta(angleDelta * 180f / Math.PI.toFloat())
+        camera?.applyYawDelta(angleDelta * 180f / PI.toFloat())
     }
 
     /**
