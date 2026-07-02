@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    id("jacoco")
 }
 
 android {
@@ -12,6 +13,12 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
+    buildTypes {
+        debug {
+            enableUnitTestCoverage = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -19,7 +26,6 @@ android {
 }
 
 dependencies {
-    // Engine implements the api contract and orchestrates the native layer.
     api(project(":api"))
     implementation(project(":native"))
 

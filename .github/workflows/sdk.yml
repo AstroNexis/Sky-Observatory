@@ -12,6 +12,7 @@ on:
       - 'gradle/**'
       - 'settings.gradle.kts'
       - 'build.gradle.kts'
+
   pull_request:
     branches:
       - master
@@ -26,7 +27,7 @@ on:
 
 concurrency:
   group: sdk-build-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
@@ -48,13 +49,16 @@ jobs:
           distribution: temurin
           cache: gradle
 
-      - run: |
+      - name: Install Android NDK
+        run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
             "ndk;27.2.12479018"
 
-      - run: chmod +x gradlew
+      - name: Make Gradle executable
+        run: chmod +x gradlew
 
-      - run: |
+      - name: Restore Gradle wrapper if missing
+        run: |
           JAR=gradle/wrapper/gradle-wrapper.jar
           if [ ! -f "$JAR" ]; then
             curl -fsSL -o /tmp/gradle-bin.zip \
@@ -66,14 +70,45 @@ jobs:
           fi
 
       - name: Build SDK modules
-        run: ./gradlew :api:assembleDebug :engine:assembleDebug :native:assembleDebug --stacktrace
+        run: |
+          ./gradlew \
+            :api:assembleDebug \
+            :engine:assembleDebug \
+            :native:assembleDebug \
+            --stacktrace
 
       - name: Run SDK tests
-        run: ./gradlew :api:test :engine:test :native:test --stacktrace
+        run: |
+          ./gradlew \
+            :api:testDebugUnitTest \
+            :engine:testDebugUnitTest \
+            :native:testDebugUnitTest \
+            --stacktrace
 
-      - uses: actions/upload-artifact@v4
+      - name: Generate JaCoCo reports
+        run: |
+          ./gradlew \
+            :api:jacocoTestReport \
+            :engine:jacocoTestReport \
+            :native:jacocoTestReport \
+            --stacktrace
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: |
+            api/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+            native/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          fail_ci_if_error: true
+
+      - name: Upload SDK artifacts
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: sdk-aars
-          path: '**/build/outputs/aar/'
+          path: |
+            api/build/outputs/aar/*.aar
+            engine/build/outputs/aar/*.aar
+            native/build/outputs/aar/*.aar
           retention-days: 14

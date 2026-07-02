@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    id("jacoco")
 }
 
 android {
@@ -13,8 +14,6 @@ android {
 
         externalNativeBuild {
             cmake {
-                // Only build the core supernovas C library for the Android target.
-                // Testing, examples, benchmarks, and optional plugins are excluded.
                 arguments(
                     "-DBUILD_TESTING=OFF",
                     "-DBUILD_EXAMPLES=OFF",
@@ -31,6 +30,12 @@ android {
 
         ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+    }
+
+    buildTypes {
+        debug {
+            enableUnitTestCoverage = true
         }
     }
 
