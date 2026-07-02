@@ -15,94 +15,64 @@
 
 package com.skyobservatory.renderer;
 
+import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.resources.SkyResources;
 import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.scene.SphereMesh;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Builds GPU-ready {@link ObservableObjectEntry} instances from
  * {@link ObservableObject} descriptors.
  *
- * All object-type-specific logic (sphere radius, texture selection) lives
- * here and nowhere else. {@link SkyRenderer} only iterates the resulting
- * list -- it has no knowledge of Sun, Moon, or any other specific body.
+ * All object-type-specific data (sphere radius, texture) comes from
+ * {@link CelestialObject}'s catalog fields. No switch statements on
+ * NAIF IDs or categories live here.
  *
- * Prepared for GPU instancing: all bodies of the same category share the
- * same {@link SphereMesh} prototype (created once, reused by reference).
+ * Sphere meshes are shared per radius bucket to avoid duplicate GPU uploads.
  */
 final class CelestialObjectFactory {
-
-    private static final float RADIUS_SUN     = 0.75f;
-    private static final float RADIUS_MOON    = 0.5f;
-    private static final float RADIUS_PLANET  = 0.2f;
-    private static final float RADIUS_DEFAULT = 0.15f;
 
     private static final int STACKS = 16;
     private static final int SLICES = 24;
 
-    // Shared sphere prototypes -- one per size bucket.
-    private final SphereMesh largeSphere  = new SphereMesh(RADIUS_SUN,     STACKS, SLICES);
-    private final SphereMesh mediumSphere = new SphereMesh(RADIUS_MOON,    STACKS, SLICES);
-    private final SphereMesh smallSphere  = new SphereMesh(RADIUS_PLANET,  STACKS, SLICES);
-    private final SphereMesh starSphere   = new SphereMesh(RADIUS_DEFAULT, STACKS, SLICES);
-
     private final SkyResources resources;
+    /** Reuse mesh objects that share the same radius to avoid duplicate uploads. */
+    private final Map<Float, SphereMesh> sphereCache = new HashMap<>();
 
     CelestialObjectFactory(SkyResources resources) {
         this.resources = resources;
     }
 
-    /**
-     * Produces an {@link ObservableObjectEntry} for {@code obj}.
-     *
-     * The body mesh is positioned off-screen until the first position
-     * update arrives via {@link SkyRenderer#updateSnapshot}.
-     */
     ObservableObjectEntry build(ObservableObject obj) {
-        SphereMesh proto = protoFor(obj.getCategory());
-        int texId        = textureFor(obj);
-        String name      = obj.getTarget().getName();
-        int labelTexId   = resources.getOrCreateLabelTexture(name);
-        float aspect     = resources.getLabelAspect(name);
+        CelestialObject def  = obj.getTarget();
+        SphereMesh proto     = sphereFor(def.getRenderRadius());
+        int texId            = resources.getOrCreateObjectTexture(def);
+        String name          = def.getName();
+        int labelTexId       = resources.getOrCreateLabelTexture(name);
+        float aspect         = resources.getLabelAspect(name);
 
         MeshRenderer body = new MeshRenderer();
         body.upload(proto);
-        body.modelMatrix.set(13, -500f); // hidden until first update
+        body.modelMatrix.set(13, -500f);
 
         MeshRenderer label = buildLabelQuad();
 
         return new ObservableObjectEntry(obj, body, label, texId, labelTexId, aspect, name);
     }
 
-    private SphereMesh protoFor(ObservableObject.ObjectCategory cat) {
-        switch (cat) {
-            case SOLAR_SYSTEM_BODY: return largeSphere;
-            case MOON:              return mediumSphere;
-            case PLANET:            return smallSphere;
-            default:                return starSphere;
-        }
+    private SphereMesh sphereFor(float radius) {
+        SphereMesh cached = sphereCache.get(radius);
+        if (cached != null) return cached;
+        SphereMesh mesh = new SphereMesh(radius, STACKS, SLICES);
+        sphereCache.put(radius, mesh);
+        return mesh;
     }
 
-    private int textureFor(ObservableObject obj) {
-        switch (obj.getTarget().getNaifId()) {
-            case com.skyobservatory.api.CelestialObject.NAIF_SUN:  return resources.sunTextureId;
-            case com.skyobservatory.api.CelestialObject.NAIF_MOON: return resources.moonTextureId;
-            default: return resources.defaultStarTextureId;
-        }
-    }
-
-    /**
-     * Creates a unit quad for the 2D screen-space label pass.
-     *
-     * Local coordinates are in [-1, +1] so the vertex shader can scale them
-     * to NDC half-extents (uNdcHalfW / uNdcHalfH) without a separate
-     * model matrix.  Attribute location 0 is used as a vec2; the Z component
-     * is unused by the label shader but set to 0 for buffer layout
-     * compatibility with {@link MeshRenderer#uploadBillboard}.
-     */
     private MeshRenderer buildLabelQuad() {
-        // Six vertices (two triangles), local xy in [-1,+1], z = 0.
         float[] verts = {
             -1f, -1f, 0f,   1f, -1f, 0f,   1f, 1f, 0f,
             -1f, -1f, 0f,   1f,  1f, 0f,  -1f, 1f, 0f,

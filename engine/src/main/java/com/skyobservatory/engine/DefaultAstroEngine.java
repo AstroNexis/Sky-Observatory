@@ -51,10 +51,10 @@ final class DefaultAstroEngine implements AstroEngine {
     private final EphemerisCalculator ephemerisCalculator;
 
     DefaultAstroEngine(PositionCalculator positionCalculator, EphemerisCalculator ephemerisCalculator) {
-        this.positionCalculator   = positionCalculator;
-        this.ephemerisCalculator  = ephemerisCalculator;
-        this.projector            = new CoordinateProjector();
-        this.visibilityResolver   = new VisibilityResolver();
+        this.positionCalculator  = positionCalculator;
+        this.ephemerisCalculator = ephemerisCalculator;
+        this.projector           = new CoordinateProjector();
+        this.visibilityResolver  = new VisibilityResolver();
     }
 
     @Override
@@ -88,8 +88,7 @@ final class DefaultAstroEngine implements AstroEngine {
 
         for (CelestialObject target : targets) {
             PositionResult result = positionCalculator.calculate(target, observer, time);
-            boolean isAbove = result.isAboveHorizon();
-            VisibilityState visibility = isAbove
+            VisibilityState visibility = result.isAboveHorizon()
                     ? VisibilityState.VISIBLE : VisibilityState.BELOW_HORIZON;
 
             HorizontalCoordinate horizontal = new HorizontalCoordinate(
@@ -97,9 +96,7 @@ final class DefaultAstroEngine implements AstroEngine {
             CartesianCoordinate cartesian = projector.toCartesian(horizontal);
             SkyCoordinate position = new SkyCoordinate(horizontal, cartesian);
 
-            ObservableObject.ObjectCategory category = resolveCategory(target);
-
-            objects.add(new ObservableObject(target, position, visibility, category));
+            objects.add(new ObservableObject(target, position, visibility, target.getCategory()));
         }
 
         return new SkySnapshot.Builder(time, observer, objects).build();
@@ -108,21 +105,5 @@ final class DefaultAstroEngine implements AstroEngine {
     @Override
     public VisibleSkyRegion calculateVisibleRegion(SkySnapshot snapshot, Viewport viewport) {
         return visibilityResolver.resolve(snapshot, viewport);
-    }
-
-    private static ObservableObject.ObjectCategory resolveCategory(CelestialObject target) {
-        int id = target.getNaifId();
-        if (id == CelestialObject.NAIF_SUN) return ObservableObject.ObjectCategory.STAR;
-        if (id == CelestialObject.NAIF_MOON) return ObservableObject.ObjectCategory.MOON;
-        if (id == CelestialObject.NAIF_MERCURY
-                || id == CelestialObject.NAIF_VENUS
-                || id == CelestialObject.NAIF_MARS
-                || id == CelestialObject.NAIF_JUPITER
-                || id == CelestialObject.NAIF_SATURN
-                || id == CelestialObject.NAIF_URANUS
-                || id == CelestialObject.NAIF_NEPTUNE) {
-            return ObservableObject.ObjectCategory.PLANET;
-        }
-        return ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY;
     }
 }

@@ -51,32 +51,13 @@ import java.util.List;
 /**
  * Host activity for the sky renderer.
  *
- * Refactored to build a full {@link SkySnapshot} on each tick and hand it
- * to {@link SkyRenderer#updateSnapshot}.  The renderer never receives
- * Sun- or Moon-specific arguments; it consumes only the generic snapshot.
- *
- * Adding a new celestial body (e.g. Mars, Venus, ISS) requires only:
- *   1. Adding it to the {@link #TRACKED_OBJECTS} list below.
- *   2. Optionally adding its texture asset and a case in
- *      {@link CelestialObjectFactory#textureFor}.
- * No renderer changes are needed.
+ * The list of tracked bodies comes from {@link CelestialObject#defaultTargets()}.
+ * To track a new object, add it to {@link CelestialObject#CATALOG} with
+ * {@code enabledByDefault = true}. No changes are needed here.
  */
 public class RendererActivity extends AppCompatActivity {
 
     private static final String TAG = "RendererActivity";
-
-    /**
-     * Celestial objects tracked in Phase 1.
-     * Extend this list to track any additional solar system body; the
-     * rendering pipeline scales automatically.
-     */
-    private static final List<CelestialObject> TRACKED_OBJECTS = new ArrayList<>();
-    static {
-        TRACKED_OBJECTS.add(CelestialObject.sun());
-        TRACKED_OBJECTS.add(CelestialObject.moon());
-        // Future: TRACKED_OBJECTS.add(CelestialObject.mars());
-        // Future: TRACKED_OBJECTS.add(new CelestialObject(CelestialObject.NAIF_VENUS, "Venus"));
-    }
 
     private GLSurfaceView glSurfaceView;
     private SkyRenderer skyRenderer;
@@ -183,10 +164,10 @@ public class RendererActivity extends AppCompatActivity {
                     if (obs == null) { Thread.sleep(100); continue; }
 
                     AstroTime time = AstroTime.now();
-                    List<ObservableObject> observedObjects = buildObservableList(obs, time);
+                    List<ObservableObject> observed = buildObservableList(obs, time);
 
-                    if (!observedObjects.isEmpty()) {
-                        SkySnapshot snapshot = new SkySnapshot.Builder(time, obs, observedObjects).build();
+                    if (!observed.isEmpty()) {
+                        SkySnapshot snapshot = new SkySnapshot.Builder(time, obs, observed).build();
                         glSurfaceView.queueEvent(() -> skyRenderer.updateSnapshot(snapshot));
                     }
 
@@ -200,14 +181,9 @@ public class RendererActivity extends AppCompatActivity {
         sdkThread.start();
     }
 
-    /**
-     * Computes positions for all tracked objects and assembles them into an
-     * {@link ObservableObject} list.  Failures per-object are logged and
-     * skipped; the remaining objects are still rendered.
-     */
     private List<ObservableObject> buildObservableList(Observer obs, AstroTime time) {
         List<ObservableObject> result = new ArrayList<>();
-        for (CelestialObject target : TRACKED_OBJECTS) {
+        for (CelestialObject target : CelestialObject.defaultTargets()) {
             try {
                 PositionResult pos = engine.calculatePosition(target, obs, time);
                 SkyCoordinate coord = new SkyCoordinate(
@@ -216,21 +192,12 @@ public class RendererActivity extends AppCompatActivity {
                 VisibilityState vis = pos.getAltitudeDegrees() >= 0
                         ? VisibilityState.VISIBLE
                         : VisibilityState.BELOW_HORIZON;
-                ObservableObject.ObjectCategory cat = categoryFor(target);
-                result.add(new ObservableObject(target, coord, vis, cat));
+                result.add(new ObservableObject(target, coord, vis, target.getCategory()));
             } catch (Exception e) {
                 Log.e(TAG, "Position calc failed for " + target.getName(), e);
             }
         }
         return result;
-    }
-
-    private static ObservableObject.ObjectCategory categoryFor(CelestialObject obj) {
-        switch (obj.getNaifId()) {
-            case CelestialObject.NAIF_SUN:  return ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY;
-            case CelestialObject.NAIF_MOON: return ObservableObject.ObjectCategory.MOON;
-            default:                        return ObservableObject.ObjectCategory.PLANET;
-        }
     }
 
     @Override
