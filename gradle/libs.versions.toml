@@ -1,5 +1,6 @@
 [versions]
 agp = "8.7.3"
+kotlin = "2.0.21"
 junit = "4.13.2"
 junit-ext = "1.2.1"
 espresso = "3.6.1"
@@ -20,3 +21,4 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

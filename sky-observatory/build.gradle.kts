@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -30,8 +31,6 @@ android {
 dependencies {
     implementation(project(":api"))
     implementation(project(":engine"))
-    implementation(libs.appcompat) {
-        exclude(group = "org.jetbrains.kotlin")
-    }
+    implementation(libs.appcompat)
     implementation(libs.play.services.location)
 }
