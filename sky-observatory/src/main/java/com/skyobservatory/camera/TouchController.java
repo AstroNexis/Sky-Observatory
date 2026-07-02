@@ -19,9 +19,9 @@ import android.view.MotionEvent;
 
 public class TouchController {
 
-    private static final float PAN_SENSITIVITY   = 0.10f;
+    private static final float PAN_SENSITIVITY   = 0.18f;
     private static final float PINCH_SENSITIVITY = 0.40f;
-    private static final float SMOOTH_FACTOR     = 0.25f;
+    private static final float SMOOTH_FACTOR     = 0.55f;
 
     private float previousX, previousY;
     private float distanceX, distanceY;
@@ -47,8 +47,8 @@ public class TouchController {
                     float dy = (event.getY() - previousY) * PAN_SENSITIVITY;
                     smoothedDx += (dx - smoothedDx) * SMOOTH_FACTOR;
                     smoothedDy += (dy - smoothedDy) * SMOOTH_FACTOR;
-                    distanceX  = smoothedDx;
-                    distanceY  = smoothedDy;
+                    distanceX += smoothedDx;
+                    distanceY += smoothedDy;
                     previousX  = event.getX();
                     previousY  = event.getY();
                 } else if (event.getPointerCount() >= 2) {
@@ -58,7 +58,7 @@ public class TouchController {
                     if (previousSpan > 0) {
                         float raw  = (span - previousSpan) * PINCH_SENSITIVITY;
                         smoothedPinch += (raw - smoothedPinch) * SMOOTH_FACTOR;
-                        pinchDelta     = smoothedPinch;
+                        pinchDelta    += smoothedPinch;
                     }
                     previousSpan = span;
                 }
