@@ -17,12 +17,10 @@ concurrency:
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
   JAVA_VERSION: "17"
-  ANDROID_SDK_ROOT: ${{ github.workspace }}/android-sdk
-  ANDROID_HOME: ${{ github.workspace }}/android-sdk
 
 jobs:
   instrumented-tests:
-    name: Instrumented Tests (API 34)
+    name: Instrumented Tests (API 29)
     runs-on: ubuntu-latest
 
     steps:
@@ -48,32 +46,9 @@ jobs:
           distribution: temurin
           cache: gradle
 
-      - name: Setup Android SDK (in workspace)
-        run: |
-          mkdir -p $ANDROID_SDK_ROOT
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-          
-          cd $ANDROID_SDK_ROOT/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-          rm commandlinetools-linux-11076708_latest.zip
-          cd -
-          
-          chmod +x $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          
-          echo "Android SDK path: $ANDROID_SDK_ROOT"
-          ls -la $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/
-
-      - name: Install SDK components
-        run: |
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
-            "platforms;android-34" \
-            "system-images;android-34;google_apis;x86_64" \
-            "build-tools;34.0.0" \
-            "emulator" \
-            "platform-tools"
+      - run: |
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+            "ndk;27.2.12479018"
 
       - run: chmod +x gradlew
 
@@ -97,69 +72,16 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Create AVD with optimized settings
-        run: |
-          # Xóa AVD cũ
-          rm -rf ~/.android/avd/test.avd || true
-          rm -rf ~/.config/.android/avd/test.avd || true
-          
-          # Liệt kê system images đã cài
-          echo "=== Available system images ==="
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --list | grep "system-images;android-34"
-          
-          # Tạo AVD với verbose output
-          echo "=== Creating AVD ==="
-          echo "no" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager create avd \
-            -n test \
-            -k "system-images;android-34;google_apis;x86_64" \
-            -d "pixel_4" \
-            -f
-          
-          # Kiểm tra AVD được tạo
-          echo "=== Checking AVD creation ==="
-          if [ ! -d ~/.config/.android/avd/test.avd ]; then
-            echo "ERROR: AVD creation failed!"
-            echo "Listing all AVDs:"
-            $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager list avd
-            exit 1
-          fi
-          
-          # Cấu hình AVD
-          echo "=== Configuring AVD ==="
-          echo "hw.ramSize=1024" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.gpu.enabled=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.gpu.mode=off" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "disk.dataPartition.size=2G" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.cpu.ncore=2" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.keyboard=yes" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.battery=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.camera.back=none" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.camera.front=none" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.gps=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.sdCard=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.audioInput=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "hw.audioOutput=no" >> ~/.config/.android/avd/test.avd/config.ini
-          echo "vm.heapSize=256" >> ~/.config/.android/avd/test.avd/config.ini
-          
-          # Hiển thị config
-          echo "=== AVD Config ==="
-          cat ~/.config/.android/avd/test.avd/config.ini
-          
-          # Liệt kê AVD
-          echo "=== AVD List ==="
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager list avd
-
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
-          target: google_apis
+          api-level: 29
+          target: default
           arch: x86_64
-          profile: pixel_4
-          emulator-options: -no-window -no-audio -no-boot-anim -memory 1024 -no-snapshot -no-snapshot-load -no-accel -verbose
+          profile: Nexus 6
+          emulator-options: -no-window -no-audio -no-boot-anim -memory 2048 -no-snapshot-load
           script: ./gradlew connectedDebugAndroidTest --stacktrace
           disable-animations: true
           force-avd-creation: true
-          timeout: 1800
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -167,5 +89,4 @@ jobs:
           name: instrumented-test-results
           path: |
             **/build/reports/androidTests/
-            ~/.config/.android/avd/test.avd/config.ini
           retention-days: 14
