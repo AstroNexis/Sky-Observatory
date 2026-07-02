@@ -161,6 +161,18 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                 // Reset multi-finger gesture state
                 previousSpan = 0f
                 previousAngle = null
+
+                // If this leaves a single finger down, re-anchor the primary
+                // finger reference to its current position (fingerTracker has
+                // already dropped the lifted pointer above). Otherwise a
+                // resumed single-finger drag would compute its first delta
+                // against the stale pre-pinch position instead of where the
+                // remaining finger actually is now.
+                val primaryPos = fingerTracker.getPrimaryFingerPosition()
+                if (primaryPos != null) {
+                    previousPrimaryX = primaryPos.first
+                    previousPrimaryY = primaryPos.second
+                }
             }
         }
 

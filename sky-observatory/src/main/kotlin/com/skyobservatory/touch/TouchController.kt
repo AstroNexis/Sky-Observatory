@@ -126,10 +126,45 @@ class TouchController {
                 smoothedPinch = 0f
             }
 
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                // A second (or later) finger just landed, switching the
+                // gesture from a single-finger drag into a pinch. Clear any
+                // in-flight drag state so a leftover single-finger delta
+                // can't leak into the camera once the pinch starts, and
+                // force the pinch span to be recomputed fresh on the next
+                // move instead of reusing a stale value from an earlier
+                // gesture.
+                distanceX = 0f
+                distanceY = 0f
+                smoothedDx = 0f
+                smoothedDy = 0f
+                previousSpan = 0f
+                pinchDelta = 0f
+                smoothedPinch = 0f
+            }
+
             MotionEvent.ACTION_POINTER_UP -> {
                 previousSpan = 0f
                 pinchDelta = 0f
                 smoothedPinch = 0f
+
+                // A finger just lifted. If exactly one finger remains, the
+                // gesture is switching back from pinch to a single-finger
+                // drag -- re-anchor previousX/previousY to that finger's
+                // *current* position. Without this, the next ACTION_MOVE
+                // computes its delta against the stale pre-pinch position,
+                // which is what caused the camera to jump/drift right as a
+                // pinch-zoom gesture ended.
+                val liftedIndex = event.actionIndex
+                for (i in 0 until event.pointerCount) {
+                    if (i != liftedIndex) {
+                        previousX = event.getX(i)
+                        previousY = event.getY(i)
+                        break
+                    }
+                }
+                smoothedDx = 0f
+                smoothedDy = 0f
             }
         }
 
