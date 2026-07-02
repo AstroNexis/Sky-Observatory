@@ -39,12 +39,21 @@ public final class CrashHandler {
     public static void init(final Context app) {
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             try {
+                // Avoid re-entering if CrashReportActivity itself crashes.
+                if (isCrashFromReportActivity(throwable)) {
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                    System.exit(1);
+                    return;
+                }
+
                 String report = buildReport(app, throwable);
                 Log.e(TAG, report);
 
                 writeReportToCache(app, report);
                 launchReportActivity(app);
-                Thread.sleep(3000);
+                // Give the Activity time to start before the process is killed.
+                // 4 s is conservative but safe for slow/busy devices.
+                Thread.sleep(4000);
             } catch (Throwable secondary) {
                 Log.e(TAG, "CrashHandler failed", secondary);
             } finally {

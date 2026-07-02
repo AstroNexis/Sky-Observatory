@@ -34,7 +34,6 @@
         <activity
             android:name=".util.CrashReportActivity"
             android:exported="false"
-            android:process=":crash_report"
             android:taskAffinity=""
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 
