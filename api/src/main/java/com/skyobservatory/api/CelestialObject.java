@@ -119,6 +119,10 @@ public final class CelestialObject {
         this.enabledByDefault = enabledByDefault;
     }
 
+    public CelestialObject(int naifId, String name) {
+        this(naifId, name, null, ObservableObject.ObjectCategory.UNKNOWN, 0.15f, false);
+    }
+
     public int getNaifId()                               { return naifId; }
     public String getName()                              { return name; }
     /** Asset file name inside {@code assets/}, or {@code null} if none. */
