@@ -24,7 +24,7 @@ import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.SkySnapshot;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.camera.SkyCamera;
-import com.skyobservatory.camera.TouchController;
+import com.skyobservatory.touch.TouchController;
 import com.skyobservatory.math.Matrix4;
 import com.skyobservatory.resources.SkyResources;
 import com.skyobservatory.scene.MeshRenderer;
