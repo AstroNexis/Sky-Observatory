@@ -16,6 +16,8 @@
 package com.skyobservatory.touch
 
 import android.view.MotionEvent
+import kotlin.math.atan2
+import kotlin.math.sqrt
 
 /**
  * Tracks finger positions and touch points for multi-touch input.
@@ -140,7 +142,7 @@ class FingerTracker {
 
         val dx = x2 - x1
         val dy = y2 - y1
-        return Math.sqrt(dx * dx + dy * dy).toFloat()
+        return sqrt(dx * dx + dy * dy)
     }
 
     fun getTwoFingerCenter(): Pair<Float, Float>? {
@@ -158,7 +160,7 @@ class FingerTracker {
 
         val dx = x2 - x1
         val dy = y2 - y1
-        return Math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+        return atan2(dy, dx)
     }
 
     fun getPrimaryFingerDelta(previousX: Float, previousY: Float): Pair<Float, Float>? {

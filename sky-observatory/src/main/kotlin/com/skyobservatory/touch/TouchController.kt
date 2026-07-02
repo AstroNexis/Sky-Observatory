@@ -16,6 +16,9 @@
 package com.skyobservatory.touch
 
 import android.view.MotionEvent
+import kotlin.math.abs
+import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * Modular touch controller for handling multi-touch gestures.
@@ -102,7 +105,7 @@ class TouchController {
                     // Multi-finger pinch zoom
                     val sx = event.getX(0) - event.getX(1)
                     val sy = event.getY(0) - event.getY(1)
-                    val span = Math.sqrt(sx * sx + sy * sy).toFloat()
+                    val span = sqrt(sx * sx + sy * sy)
 
                     if (previousSpan > 0) {
                         val raw = (span - previousSpan) * PINCH_SENSITIVITY
@@ -173,10 +176,10 @@ class TouchController {
      * ramps up linearly with [ACCEL_GAIN], capped at [ACCEL_MAX_MULTIPLIER].
      */
     private fun horizontalAccel(rawDx: Float): Float {
-        val speed = Math.abs(rawDx)
+        val speed = abs(rawDx)
         if (speed <= ACCEL_START_PX) return 1f
         val extra = (speed - ACCEL_START_PX) * ACCEL_GAIN
-        return Math.min(1f + extra, ACCEL_MAX_MULTIPLIER)
+        return min(1f + extra, ACCEL_MAX_MULTIPLIER)
     }
 
     // Modular component access for advanced usage
