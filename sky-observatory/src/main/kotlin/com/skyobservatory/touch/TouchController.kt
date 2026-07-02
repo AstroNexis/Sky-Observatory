@@ -23,6 +23,13 @@ class TouchController {
         private const val PAN_SENSITIVITY   = 0.18f
         private const val PINCH_SENSITIVITY = 0.40f
         private const val SMOOTH_FACTOR     = 0.55f
+
+        // Horizontal pan acceleration: fast swipes sweep across the sky
+        // faster than a flat sensitivity multiplier would allow, while slow
+        // drags stay at the base 1x rate for fine aiming.
+        private const val ACCEL_START_PX     = 8f    // px/event before acceleration kicks in
+        private const val ACCEL_GAIN         = 0.06f // extra multiplier gained per px/event over the start
+        private const val ACCEL_MAX_MULTIPLIER = 2.5f // cap so a flick can't overshoot wildly
     }
 
     private var previousX = 0f
@@ -48,7 +55,8 @@ class TouchController {
 
             MotionEvent.ACTION_MOVE -> {
                 if (event.pointerCount == 1 && touching) {
-                    val dx = (event.x - previousX) * PAN_SENSITIVITY
+                    val rawDx = event.x - previousX
+                    val dx = rawDx * PAN_SENSITIVITY * horizontalAccel(rawDx)
                     val dy = (event.y - previousY) * PAN_SENSITIVITY
                     smoothedDx += (dx - smoothedDx) * SMOOTH_FACTOR
                     smoothedDy += (dy - smoothedDy) * SMOOTH_FACTOR
@@ -104,5 +112,18 @@ class TouchController {
         val v = pinchDelta
         pinchDelta = 0f
         return v
+    }
+
+    /**
+     * Extra speed multiplier for a horizontal drag, based on how far the
+     * finger moved in this single event (a cheap stand-in for velocity).
+     * Below [ACCEL_START_PX] returns 1x (no change); above it, multiplier
+     * ramps up linearly with [ACCEL_GAIN], capped at [ACCEL_MAX_MULTIPLIER].
+     */
+    private fun horizontalAccel(rawDx: Float): Float {
+        val speed = kotlin.math.abs(rawDx)
+        if (speed <= ACCEL_START_PX) return 1f
+        val extra = (speed - ACCEL_START_PX) * ACCEL_GAIN
+        return (1f + extra).coerceAtMost(ACCEL_MAX_MULTIPLIER)
     }
 }
