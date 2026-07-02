@@ -126,7 +126,8 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                         // Rotation detection - only if we have a previous angle
                         if (angle != null && previousAngle != null) {
                             // Calculate delta angle, handling angle wrapping
-                            var deltaAngle = angle - previousAngle
+                            val prevAngle = previousAngle  // Local variable for smart cast
+                            var deltaAngle = angle - prevAngle
                             if (deltaAngle > Math.PI.toFloat()) {
                                 deltaAngle -= 2f * Math.PI.toFloat()
                             } else if (deltaAngle < -Math.PI.toFloat()) {
