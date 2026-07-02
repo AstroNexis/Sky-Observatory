@@ -102,7 +102,7 @@ class TouchController {
                     // Multi-finger pinch zoom
                     val sx = event.getX(0) - event.getX(1)
                     val sy = event.getY(0) - event.getY(1)
-                    val span = kotlin.math.sqrt(sx * sx + sy * sy)
+                    val span = Math.sqrt(sx * sx + sy * sy).toFloat()
 
                     if (previousSpan > 0) {
                         val raw = (span - previousSpan) * PINCH_SENSITIVITY
@@ -173,10 +173,10 @@ class TouchController {
      * ramps up linearly with [ACCEL_GAIN], capped at [ACCEL_MAX_MULTIPLIER].
      */
     private fun horizontalAccel(rawDx: Float): Float {
-        val speed = kotlin.math.abs(rawDx)
+        val speed = Math.abs(rawDx)
         if (speed <= ACCEL_START_PX) return 1f
         val extra = (speed - ACCEL_START_PX) * ACCEL_GAIN
-        return (1f + extra).coerceAtMost(ACCEL_MAX_MULTIPLIER)
+        return Math.min(1f + extra, ACCEL_MAX_MULTIPLIER)
     }
 
     // Modular component access for advanced usage

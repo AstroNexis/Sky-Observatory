@@ -116,8 +116,8 @@ class TouchStateManager {
         velocityY *= INERTIA_DECAY
 
         // If velocities are too small, stop inertia
-        if (kotlin.math.abs(velocityX) < INERTIA_MIN_VELOCITY && 
-            kotlin.math.abs(velocityY) < INERTIA_MIN_VELOCITY) {
+        if (Math.abs(velocityX) < INERTIA_MIN_VELOCITY && 
+            Math.abs(velocityY) < INERTIA_MIN_VELOCITY) {
             velocityX = 0f
             velocityY = 0f
             return Pair(0f, 0f)

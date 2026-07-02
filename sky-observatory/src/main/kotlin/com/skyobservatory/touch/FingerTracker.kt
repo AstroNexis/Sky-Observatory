@@ -140,7 +140,7 @@ class FingerTracker {
 
         val dx = x2 - x1
         val dy = y2 - y1
-        return kotlin.math.sqrt(dx * dx + dy * dy)
+        return Math.sqrt(dx * dx + dy * dy).toFloat()
     }
 
     fun getTwoFingerCenter(): Pair<Float, Float>? {
@@ -158,7 +158,7 @@ class FingerTracker {
 
         val dx = x2 - x1
         val dy = y2 - y1
-        return kotlin.math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
+        return Math.atan2(dy.toDouble(), dx.toDouble()).toFloat()
     }
 
     fun getPrimaryFingerDelta(previousX: Float, previousY: Float): Pair<Float, Float>? {
