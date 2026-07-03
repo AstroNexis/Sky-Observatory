@@ -147,6 +147,12 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             CelestialGrid grid = new CelestialGrid();
             gridLines = grid.build();
 
+            // Supply the camera's live FOV to TouchController so that drag
+            // sensitivity is proportionally reduced when zoomed in -- a
+            // narrower field of view means the same pixel movement covers
+            // a smaller angular sweep, matching the Sky Map / Star Walk feel.
+            touchController.setFovDegSupplier(() -> camera.getFovDeg());
+
             // Restore last known snapshot after context loss / resume.
             SkySnapshot snap = pendingSnapshot;
             if (snap != null) {
