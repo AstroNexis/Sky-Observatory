@@ -1,6 +1,7 @@
 name: SDK Artifacts Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
