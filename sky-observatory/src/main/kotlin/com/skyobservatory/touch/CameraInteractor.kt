@@ -76,8 +76,12 @@ class CameraInteractor {
      * @param deltaY The vertical movement delta
      */
     fun applyPan(deltaX: Float, deltaY: Float) {
-        camera?.applyYawDelta(deltaX)
-        camera?.applyPitchDelta(-deltaY)
+        // Invert deltas so camera moves opposite to finger drag.
+        // This implements "grab the sky" navigation: stars follow finger movement.
+        // Finger right (positive deltaX) -> negative yaw (camera left).
+        // Finger down (positive deltaY) -> positive pitch adjustment (camera up).
+        camera?.applyYawDelta(-deltaX)
+        camera?.applyPitchDelta(deltaY)
     }
 
     /**
