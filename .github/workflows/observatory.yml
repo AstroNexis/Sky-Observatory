@@ -1,6 +1,7 @@
 name: Observatory Build
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -30,7 +31,7 @@ on:
 
 concurrency:
   group: observatory-build-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main' }}
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
@@ -72,21 +73,26 @@ jobs:
       - name: Build SDK artifacts
         run: ./gradlew :api:assembleDebug :engine:assembleDebug :native:assembleDebug --stacktrace
 
-      - name: Build observatory APK
-        run: ./gradlew :sky-observatory:assembleDebug --stacktrace
+      - name: Build observatory APKs
+        run: ./gradlew :sky-observatory:assembleDebug :sky-observatory:assembleRelease --stacktrace
 
-      - name: Verify APK exists
+      - name: Verify APK outputs
         run: |
           ls -lh sky-observatory/build/outputs/apk/debug/*.apk 2>/dev/null || \
-            (echo "::error::APK not found at expected path" && exit 1)
-          echo "APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/debug/*.apk) bytes"
+            (echo "::error::Debug APK not found at expected path" && exit 1)
+          echo "Debug APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/debug/*.apk) bytes"
+          ls -lh sky-observatory/build/outputs/apk/release/*.apk 2>/dev/null || \
+            (echo "::error::Release APK not found at expected path" && exit 1)
+          echo "Release APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/release/*.apk) bytes"
 
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: success()
         with:
           name: observatory-apk
           path: |
             sky-observatory/build/outputs/apk/debug/*.apk
+            sky-observatory/build/outputs/apk/release/*.apk
+          retention-days: 14
