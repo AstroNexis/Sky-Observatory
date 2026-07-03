@@ -35,10 +35,16 @@ import kotlin.math.sqrt
 class TouchController {
 
     companion object {
-        // Sensitivity constants
+        // Sensitivity constants.
+        // The base value is tuned for a 60° FOV; it is scaled down proportionally
+        // when the user zooms in (narrower FOV = smaller angular step per pixel),
+        // which gives the "turning a real head" feel that Sky Map / Star Walk use.
         private const val PAN_SENSITIVITY = 0.18f
         private const val PINCH_SENSITIVITY = 0.40f
         private const val SMOOTH_FACTOR = 0.55f
+
+        // Reference FOV used when computing the FOV-scale factor below.
+        private const val REFERENCE_FOV_DEG = 60f
 
         // Horizontal pan acceleration: fast swipes sweep across the sky
         // faster than a flat sensitivity multiplier would allow, while slow
@@ -67,6 +73,16 @@ class TouchController {
     private var smoothedPinch = 0f
 
     /**
+     * Optional supplier for the camera's current FOV (degrees).
+     *
+     * When set, drag sensitivity is scaled by (currentFov / REFERENCE_FOV_DEG) so
+     * that a given pixel distance always maps to the same angular movement regardless
+     * of zoom level — identical to the behaviour of Sky Map and Star Walk.
+     * If null (default), sensitivity is constant.
+     */
+    var fovDegSupplier: (() -> Float)? = null
+
+    /**
      * Handles a touch event and updates all components.
      * 
      * @param event The MotionEvent to process
@@ -85,10 +101,23 @@ class TouchController {
 
             MotionEvent.ACTION_MOVE -> {
                 if (event.pointerCount == 1 && touching) {
-                    // Single finger pan with acceleration
+                    // Sky Map / Star Walk style: horizontal drag = azimuth, vertical = altitude.
+                    // Both axes use identical sensitivity so a diagonal drag updates both
+                    // components equally, giving the "turning a real head" feel.
+                    // Sensitivity is additionally scaled by the current FOV so that zoomed-in
+                    // drags feel appropriately slower (narrower window = finer control).
+                    val fovScale = (fovDegSupplier?.invoke() ?: REFERENCE_FOV_DEG) / REFERENCE_FOV_DEG
+                    val effectiveSensitivity = PAN_SENSITIVITY * fovScale
+
                     val rawDx = event.x - previousX
-                    val dx = rawDx * PAN_SENSITIVITY * horizontalAccel(rawDx)
-                    val dy = (event.y - previousY) * PAN_SENSITIVITY
+                    val rawDy = event.y - previousY
+
+                    // Apply the same effective sensitivity to both axes so that
+                    // horizontal (azimuth) and vertical (altitude) feel symmetric.
+                    // The horizontal acceleration is kept to allow fast sky sweeps
+                    // while preserving fine-grained vertical aiming.
+                    val dx = rawDx * effectiveSensitivity * horizontalAccel(rawDx)
+                    val dy = rawDy * effectiveSensitivity
 
                     // Apply exponential smoothing
                     smoothedDx += (dx - smoothedDx) * SMOOTH_FACTOR
@@ -101,7 +130,9 @@ class TouchController {
                     previousX = event.x
                     previousY = event.y
                 } else if (event.pointerCount >= 2) {
-                    // Multi-finger pinch zoom
+                    // Multi-finger pinch: changes FOV only, never translates the camera.
+                    // The span delta is converted to a pure FOV adjustment inside
+                    // SkyCamera.zoomBy(); no yaw/pitch/roll is touched here.
                     val sx = event.getX(0) - event.getX(1)
                     val sy = event.getY(0) - event.getY(1)
                     val span = sqrt(sx * sx + sy * sy)
