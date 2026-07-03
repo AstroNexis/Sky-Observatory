@@ -184,9 +184,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
         drawSkyBackground(vp);
         drawGrid(vp);
-        drawHorizon(vp);
         drawCardinals(vp);
         drawCelestialObjects(vp);
+        drawHorizon(vp);
     }
 
     // Snapshot application -- O(n)
@@ -286,15 +286,23 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     }
 
     // Deep-ocean blue horizon ring with a slight glow effect achieved by
-// drawing two concentric rings at different Y offsets and blending.
-// Depth writing and testing are disabled for the horizon pass because
-// the ring lives at Y = 0 in world space and the sky-dome geometry
-// (which uses the same far-plane trick) would otherwise z-fight with it.
-// The ring is drawn after the sky background so it always appears on top
-// of the gradient but below celestial bodies.
+    // drawing two concentric rings at different Y offsets and blending.
+    //
+    // The horizon shader pins every vertex to the far clip plane
+    // (gl_Position = p.xyww), the same trick used for the sky dome. That
+    // means depth testing -- not draw order -- is what should decide
+    // whether the ring paints over a pixel: real geometry (bodies,
+    // cardinal markers, anything with a genuine depth < 1.0) always wins
+    // the GL_LESS test, so the ring only shows through where nothing
+    // closer has been drawn yet. Depth *writes* stay off so the ring
+    // itself never blocks anything drawn after it.
+    //
+    // This pass runs last, after all real 3D geometry, so the depth
+    // buffer already holds every object's true depth by the time the
+    // ring is tested against it -- celestial bodies correctly overlap
+    // the horizon line rather than the other way around.
     private void drawHorizon(Matrix4 vp) {
         GLES30.glDepthMask(false);
-        GLES30.glDisable(GLES30.GL_DEPTH_TEST);
         GLES30.glUseProgram(shaders.horizonProgram);
         GLES30.glUniformMatrix4fv(shaders.horizonMvp, 1, false, vp.floatArray(), 0);
         // Primary ring -- solid deep-ocean blue
@@ -303,7 +311,6 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         // Glow layer -- wider, translucent, slightly above
         GLES30.glUniform4f(shaders.horizonColor, 0.08f, 0.35f, 0.75f, 0.35f);
         horizonRing.draw();
-        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         GLES30.glDepthMask(true);
     }
 
