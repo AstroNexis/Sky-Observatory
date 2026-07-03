@@ -425,8 +425,16 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
                     sensorController.getForwardX(), sensorController.getForwardY(), sensorController.getForwardZ(),
                     sensorController.getUpX(),      sensorController.getUpY(),      sensorController.getUpZ());
         } else {
-            camera.applyYawDelta(touchController.consumeDeltaX());
-            camera.applyPitchDelta(-touchController.consumeDeltaY());
+            // Negate both axes so the gesture feels like grabbing and moving the sky,
+            // not rotating the camera in the drag direction (trackball / orbit model).
+            // Drag up    -> sky moves up    -> camera looks down -> pitch decreases (negative delta).
+            // Drag down  -> sky moves down  -> camera looks up   -> pitch increases (positive delta).
+            // Drag left  -> sky moves left  -> camera turns right -> yaw increases (positive delta).
+            // Drag right -> sky moves right -> camera turns left  -> yaw decreases (negative delta).
+            // consumeDeltaX/Y already carry the raw screen-space sign from MotionEvent,
+            // so a single negation on each axis here is the only change needed.
+            camera.applyYawDelta(-touchController.consumeDeltaX());
+            camera.applyPitchDelta(touchController.consumeDeltaY());
         }
     }
 
