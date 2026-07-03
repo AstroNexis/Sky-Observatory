@@ -147,11 +147,10 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             CelestialGrid grid = new CelestialGrid();
             gridLines = grid.build();
 
-            // Supply the camera's live FOV to TouchController so that drag
-            // sensitivity is proportionally reduced when zoomed in -- a
-            // narrower field of view means the same pixel movement covers
-            // a smaller angular sweep, matching the Sky Map / Star Walk feel.
-            touchController.setFovDegSupplier(() -> camera.getFovDeg());
+            // Wire the camera's live FOV so TouchController can scale drag sensitivity
+            // proportionally (narrower FOV = zoomed in = smaller angular step per pixel).
+            // This matches MapMover.onDrag: pixelsToRadians = fieldOfView / (height * r2d).
+            touchController.setFovDegSupplier(camera::getFovDeg);
 
             // Restore last known snapshot after context loss / resume.
             SkySnapshot snap = pendingSnapshot;
@@ -307,16 +306,26 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     // buffer already holds every object's true depth by the time the
     // ring is tested against it -- celestial bodies correctly overlap
     // the horizon line rather than the other way around.
+    // The horizon shader forces vertices to the far clip plane (gl_Position = p.xyww,
+    // depth = 1.0).  The sky dome uses the same trick but draws with depth *writes* off,
+    // leaving the depth buffer at its cleared value of 1.0 everywhere the sky shows.
+    // GL_LESS (1.0 < 1.0) therefore always fails for horizon pixels that lie over open
+    // sky, making the ring invisible.  Disabling the depth test for this pass lets the
+    // ring always composite over the sky background.  Depth writes stay off so the ring
+    // never occludes 3D objects (celestial bodies, cardinal markers) that have already
+    // written a depth < 1.0 into the buffer earlier in the frame.
     private void drawHorizon(Matrix4 vp) {
         GLES30.glDepthMask(false);
+        GLES30.glDisable(GLES30.GL_DEPTH_TEST);   // sky dome + horizon both live at depth 1.0
         GLES30.glUseProgram(shaders.horizonProgram);
         GLES30.glUniformMatrix4fv(shaders.horizonMvp, 1, false, vp.floatArray(), 0);
         // Primary ring -- solid deep-ocean blue
         GLES30.glUniform4f(shaders.horizonColor, 0.05f, 0.28f, 0.60f, 1.0f);
         horizonRing.draw();
-        // Glow layer -- wider, translucent, slightly above
+        // Glow layer -- wider, translucent
         GLES30.glUniform4f(shaders.horizonColor, 0.08f, 0.35f, 0.75f, 0.35f);
         horizonRing.draw();
+        GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         GLES30.glDepthMask(true);
     }
 
