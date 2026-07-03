@@ -433,8 +433,10 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             // Drag right -> sky moves right -> camera turns left  -> yaw decreases (negative delta).
             // consumeDeltaX/Y already carry the raw screen-space sign from MotionEvent,
             // so a single negation on each axis here is the only change needed.
-            camera.applyYawDelta(-touchController.consumeDeltaX());
-            camera.applyPitchDelta(touchController.consumeDeltaY());
+            // Inverted signs for grab-the-sky navigation (opposite to finger).
+            // Drag up -> camera down; drag right -> camera left.
+            camera.applyYawDelta(touchController.consumeDeltaX());
+            camera.applyPitchDelta(-touchController.consumeDeltaY());
         }
     }
 
