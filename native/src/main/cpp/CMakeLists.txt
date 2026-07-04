@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(astro_bridge VERSION 0.1.0 LANGUAGES C CXX)
+project(astro_bridge VERSION 0.1.1 LANGUAGES C CXX)
 
 # ---------------------------------------------------------------------------
 # SuperNOVAS as a subdirectory dependency.

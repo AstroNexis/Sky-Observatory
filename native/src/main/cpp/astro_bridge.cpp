@@ -35,7 +35,7 @@ Java_com_skyobservatory_native_1bridge_NativeGateway_nativeGetVersion(
         JNIEnv* env,
         jclass /* clazz */) {
     char version[64];
-    snprintf(version, sizeof(version), "astro_bridge/0.1.0 supernovas/%d.%d.%d%s",
+    snprintf(version, sizeof(version), "astro_bridge/0.1.1 supernovas/%d.%d.%d%s",
              SUPERNOVAS_MAJOR_VERSION,
              SUPERNOVAS_MINOR_VERSION,
              SUPERNOVAS_PATCHLEVEL,
