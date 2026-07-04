@@ -66,6 +66,15 @@ jobs:
 
       - run: ./gradlew assembleDebug assembleDebugAndroidTest --stacktrace
 
+      - name: Resolve apksigner path
+        run: |
+          APK_SIGNER=$(ls -d $ANDROID_HOME/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+          if [ -z "$APK_SIGNER" ]; then
+            echo "::error::apksigner not found in build-tools"
+            exit 1
+          fi
+          echo "APK_SIGNER=$APK_SIGNER" >> $GITHUB_ENV
+
       - name: Decode keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/keystore.jks
@@ -74,7 +83,7 @@ jobs:
         run: |
           find . -path '*/build/outputs/apk/*/debug/*.apk' | while IFS= read -r apk; do
             [ -f "$apk" ] || continue
-            $ANDROID_HOME/build-tools/*/apksigner sign \
+            $APK_SIGNER sign \
               --v1-signing-enabled false \
               --ks /tmp/keystore.jks \
               --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
@@ -87,7 +96,7 @@ jobs:
         run: |
           find . -path '*/build/outputs/apk/*/debug/*.apk' | while IFS= read -r apk; do
             [ -f "$apk" ] || continue
-            $ANDROID_HOME/build-tools/*/apksigner verify --verbose "$apk" 2>&1 | \
+            $APK_SIGNER verify --verbose "$apk" 2>&1 | \
               grep -E "Verified using v2|Verified using v3"
           done
 
