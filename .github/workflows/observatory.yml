@@ -85,6 +85,45 @@ jobs:
             (echo "::error::Release APK not found at expected path" && exit 1)
           echo "Release APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/release/*.apk) bytes"
 
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/keystore.jks
+
+      - name: Sign debug APKs (v2+v3)
+        run: |
+          for apk in sky-observatory/build/outputs/apk/debug/*.apk; do
+            [ -f "$apk" ] || continue
+            $ANDROID_HOME/build-tools/*/apksigner sign \
+              --v1-signing-enabled false \
+              --ks /tmp/keystore.jks \
+              --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
+              --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+              --key-pass "pass:${{ secrets.KEY_PASSWORD }}" \
+              "$apk"
+          done
+
+      - name: Sign release APKs (v2+v3)
+        run: |
+          for apk in sky-observatory/build/outputs/apk/release/*.apk; do
+            [ -f "$apk" ] || continue
+            $ANDROID_HOME/build-tools/*/apksigner sign \
+              --v1-signing-enabled false \
+              --ks /tmp/keystore.jks \
+              --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
+              --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
+              --key-pass "pass:${{ secrets.KEY_PASSWORD }}" \
+              "$apk"
+          done
+
+      - name: Verify APK signatures
+        run: |
+          for apk in sky-observatory/build/outputs/apk/debug/*.apk \
+                     sky-observatory/build/outputs/apk/release/*.apk; do
+            [ -f "$apk" ] || continue
+            $ANDROID_HOME/build-tools/*/apksigner verify --verbose "$apk" 2>&1 | \
+              grep -E "Verified using v2|Verified using v3"
+          done
+
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
 
