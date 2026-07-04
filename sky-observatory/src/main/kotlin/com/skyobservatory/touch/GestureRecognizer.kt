@@ -16,7 +16,6 @@
 package com.skyobservatory.touch
 
 import android.view.MotionEvent
-import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -126,22 +125,16 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                         }
                         previousSpan = span
 
-                        // Rotation detection - only if we have a previous angle
-                        if (angle != null && previousAngle != null) {
-                            // Calculate delta angle, handling angle wrapping
-                            val prevAngle = previousAngle!!  // Safe cast since we checked null
-                            var deltaAngle = angle - prevAngle
-                            val pi = PI.toFloat()
-                            if (deltaAngle > pi) {
-                                deltaAngle -= 2f * pi
-                            } else if (deltaAngle < -pi) {
-                                deltaAngle += 2f * pi
-                            }
-
-                            gestureData.rotationDelta = deltaAngle * ROTATION_SENSITIVITY
-                            gestureData.isRotating = abs(deltaAngle) > 0.01f
+                        // Two-finger rotation is intentionally NOT detected here.
+                        // Sky Map / Star Walk style navigation enforces roll = 0° at
+                        // all times: the horizon stays level and only azimuth/altitude
+                        // can change. Applying a rotation gesture during a pinch would
+                        // inject a spurious yaw delta that tilts or drifts the camera.
+                        // The previousAngle field is tracked below solely to keep state
+                        // consistent if rotation support is re-enabled in the future.
+                        if (angle != null) {
+                            previousAngle = angle
                         }
-                        previousAngle = angle ?: previousAngle
                     }
                 }
             }

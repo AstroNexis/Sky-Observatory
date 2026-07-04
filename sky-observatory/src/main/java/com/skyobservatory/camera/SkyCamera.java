@@ -109,4 +109,7 @@ public class SkyCamera {
 
     public void setAspect(float aspect) { this.aspect = aspect; }
     public float getAspect() { return aspect; }
+
+    /** Returns the current vertical field of view in degrees. */
+    public float getFovDeg() { return fovDeg; }
 }
