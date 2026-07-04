@@ -24,6 +24,7 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 import com.skyobservatory.api.CelestialObject;
+import com.skyobservatory.api.PlanetData;
 import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.scene.SphereMesh;
 
@@ -53,6 +54,7 @@ public final class SkyResources {
     private final Map<Integer, Integer>  objectTextureCache = new HashMap<>();
     private final Map<String,  Integer>  labelTextureCache  = new HashMap<>();
     private final Map<String,  Float>    labelAspectCache   = new HashMap<>();
+    private Integer saturnRingTextureId;
 
     private static final float LABEL_TEXT_SIZE = 52f;
     private static final int   LABEL_PAD_X     = 12;
@@ -112,6 +114,17 @@ public final class SkyResources {
     public float getLabelAspect(String displayName) {
         Float v = labelAspectCache.get(displayName);
         return v != null ? v : 1f;
+    }
+
+    /**
+     * Returns the GL texture ID for Saturn's ring, loading on first access.
+     * Returns 0 if the asset is missing or cannot be loaded.
+     */
+    public int getOrCreateSaturnRingTexture() {
+        if (saturnRingTextureId != null) return saturnRingTextureId;
+        int id = loadTextureFromAssets(PlanetData.SATURN_RING_TEXTURE);
+        saturnRingTextureId = id;
+        return id;
     }
 
     // Private helpers
