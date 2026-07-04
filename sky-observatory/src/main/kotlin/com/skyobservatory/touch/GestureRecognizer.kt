@@ -126,7 +126,7 @@ class GestureRecognizer(private val fingerTracker: FingerTracker) {
                         previousSpan = span
 
                         // Two-finger rotation is intentionally NOT detected here.
-                        // Sky Map / Star Walk style navigation enforces roll = 0° at
+                        // Sky Map / Star Walk style navigation enforces roll = 0 deg at
                         // all times: the horizon stays level and only azimuth/altitude
                         // can change. Applying a rotation gesture during a pinch would
                         // inject a spurious yaw delta that tilts or drifts the camera.

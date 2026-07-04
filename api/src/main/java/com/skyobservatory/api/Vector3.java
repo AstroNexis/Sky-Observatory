@@ -66,7 +66,7 @@ public final class Vector3 {
     /**
      * Returns the Euclidean magnitude (length) of this vector.
      *
-     * @return {@code sqrt(x² + y² + z²)}
+     * @return {@code sqrt(x^2 + y^2 + z^2)}
      */
     public double magnitude() {
         return Math.sqrt(x * x + y * y + z * z);

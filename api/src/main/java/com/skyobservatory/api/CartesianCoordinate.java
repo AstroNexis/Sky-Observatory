@@ -105,7 +105,7 @@ public final class CartesianCoordinate {
     /**
      * Returns the Euclidean magnitude (length) of this coordinate.
      *
-     * @return {@code sqrt(x² + y² + z²)}
+     * @return {@code sqrt(x^2 + y^2 + z^2)}
      */
     public double magnitude() { return vector.magnitude(); }
 

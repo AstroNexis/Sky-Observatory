@@ -76,7 +76,7 @@ public class SkyCamera {
         float fl = (float) Math.sqrt(fx*fx + fy*fy + fz*fz);
         if (fl > 1e-10f) { fx /= fl; fy /= fl; fz /= fl; }
 
-        // right = forward × up
+        // right = forward x up
         float rx = fy*uz - fz*uy;
         float ry = fz*ux - fx*uz;
         float rz = fx*uy - fy*ux;
@@ -84,7 +84,7 @@ public class SkyCamera {
         if (rl > 1e-10f) { rx /= rl; ry /= rl; rz /= rl; }
         else { rx = 1; ry = 0; rz = 0; }
 
-        // Reorthogonalise up = right × forward
+        // Reorthogonalise up = right x forward
         float uxn = ry*fz - rz*fy;
         float uyn = rz*fx - rx*fz;
         float uzn = rx*fy - ry*fx;

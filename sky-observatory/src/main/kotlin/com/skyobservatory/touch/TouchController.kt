@@ -32,13 +32,13 @@ import kotlin.math.sqrt
  *
  * Interaction model (matches Touch.zip / Sky Map / Star Walk reference):
  *   Single-finger drag:
- *     horizontal (X) → azimuth   (consumeDeltaX, fed to camera.applyYawDelta)
- *     vertical   (Y) → altitude  (consumeDeltaY, fed to camera.applyPitchDelta)
+ *     horizontal (X) -> azimuth   (consumeDeltaX, fed to camera.applyYawDelta)
+ *     vertical   (Y) -> altitude  (consumeDeltaY, fed to camera.applyPitchDelta)
  *     Both axes use the same FOV-proportional scale so a diagonal drag feels
- *     exactly like turning a real head — no asymmetric acceleration, no
- *     trackball rotation, roll stays 0°.
+ *     exactly like turning a real head -- no asymmetric acceleration, no
+ *     trackball rotation, roll stays 0 deg.
  *   Two-finger pinch:
- *     Changes FOV only (consumePinch → camera.zoomBy).  No yaw, pitch or roll
+ *     Changes FOV only (consumePinch -> camera.zoomBy).  No yaw, pitch or roll
  *     is touched; two-finger rotation is intentionally ignored to prevent drift.
  */
 class TouchController {
@@ -48,12 +48,12 @@ class TouchController {
         // pixelsToRadians reference from MapMover (Touch.zip):
         //   pixelsToRadians = fieldOfView / (screenHeight * RADIANS_TO_DEGREES)
         // We model this as a dimensionless scale factor applied per pixel.
-        // DRAG_SCALE is tuned so that at FOV = 60° the feel matches the reference.
-        // It is multiplied by the live (fovDeg / 60°) ratio at runtime so that
+        // DRAG_SCALE is tuned so that at FOV = 60 deg the feel matches the reference.
+        // It is multiplied by the live (fovDeg / 60 deg) ratio at runtime so that
         // zooming in slows the drag proportionally (narrower window = finer control).
-        private const val DRAG_SCALE = 0.15f          // degrees per pixel at FOV 60°
+        private const val DRAG_SCALE = 0.15f          // degrees per pixel at FOV 60 deg
         private const val REFERENCE_FOV_DEG = 60f     // FOV at which DRAG_SCALE was tuned
-        private const val PINCH_SENSITIVITY = 0.40f   // span-pixels → FOV-change scale
+        private const val PINCH_SENSITIVITY = 0.40f   // span-pixels -> FOV-change scale
     }
 
     // Component instances
@@ -83,7 +83,7 @@ class TouchController {
      * Supplier for the camera's current field-of-view in degrees.
      * When set, drag sensitivity scales with FOV so zoomed-in drags feel slower.
      * Matches the reference: pixelsToRadians = fieldOfView / (height * rad_to_deg).
-     * If null (default) the reference FOV (60°) is used — sensitivity is constant.
+     * If null (default) the reference FOV (60 deg) is used -- sensitivity is constant.
      */
     var fovDegSupplier: (() -> Float)? = null
 
@@ -91,23 +91,23 @@ class TouchController {
      * Handles a touch event and updates all components.
      *
      * State machine transitions mirror DragRotateZoomGestureDetector (Touch.zip):
-     *   ACTION_DOWN        → READY → DRAGGING
-     *   ACTION_MOVE (1f)   → single-finger pan (azimuth + altitude)
-     *   ACTION_POINTER_DOWN→ DRAGGING → DRAGGING2
-     *   ACTION_MOVE (2f)   → pinch zoom (FOV only, no rotate/drift)
-     *   ACTION_POINTER_UP  → DRAGGING2 → READY  (drop back to READY, not DRAGGING,
+     *   ACTION_DOWN        -> READY -> DRAGGING
+     *   ACTION_MOVE (1f)   -> single-finger pan (azimuth + altitude)
+     *   ACTION_POINTER_DOWN-> DRAGGING -> DRAGGING2
+     *   ACTION_MOVE (2f)   -> pinch zoom (FOV only, no rotate/drift)
+     *   ACTION_POINTER_UP  -> DRAGGING2 -> READY  (drop back to READY, not DRAGGING,
      *                        to avoid a position jump when re-anchoring to one finger)
-     *   ACTION_UP/CANCEL   → READY
+     *   ACTION_UP/CANCEL   -> READY
      *
      * @param event The MotionEvent to process
      */
     fun onTouchEvent(event: MotionEvent) {
         // Note: fingerTracker.update() is called inside gestureRecognizer.processEvent()
-        // below — do NOT call it here again or finger state will be advanced twice per event.
+        // below -- do NOT call it here again or finger state will be advanced twice per event.
         val action = event.action and MotionEvent.ACTION_MASK
 
         when {
-            // ── Finger down ────────────────────────────────────────────────
+            // -- Finger down ------------------------------------------------
             action == MotionEvent.ACTION_DOWN ||
             (action == MotionEvent.ACTION_DOWN && state == State.READY) -> {
                 state = State.DRAGGING
@@ -115,19 +115,19 @@ class TouchController {
                 last1Y = event.y
             }
 
-            // ── Single-finger move ─────────────────────────────────────────
+            // -- Single-finger move -----------------------------------------
             action == MotionEvent.ACTION_MOVE && state == State.DRAGGING -> {
                 val current1X = event.x
                 val current1Y = event.y
 
                 // FOV-proportional sensitivity: same formula as Touch.zip MapMover.
                 //   pixelsToRadians = fov / (screenHeight * RADIANS_TO_DEGREES)
-                // We express it as degrees-per-pixel (skip the /deg→rad conversion
+                // We express it as degrees-per-pixel (skip the /deg->rad conversion
                 // because SkyCamera.applyYawDelta/applyPitchDelta accept degrees).
                 val fov = fovDegSupplier?.invoke() ?: REFERENCE_FOV_DEG
                 val scale = DRAG_SCALE * (fov / REFERENCE_FOV_DEG)
 
-                // Both axes use the same scale — identical to the reference —
+                // Both axes use the same scale -- identical to the reference --
                 // so diagonal drags feel like turning a real head, not orbiting a globe.
                 distanceX += (current1X - last1X) * scale
                 distanceY += (current1Y - last1Y) * scale
@@ -136,7 +136,7 @@ class TouchController {
                 last1Y = current1Y
             }
 
-            // ── Two-finger move: pinch zoom only ───────────────────────────
+            // -- Two-finger move: pinch zoom only ---------------------------
             action == MotionEvent.ACTION_MOVE && state == State.DRAGGING2 -> {
                 if (event.pointerCount == 2) {
                     val current1X = event.getX(0)
@@ -144,10 +144,10 @@ class TouchController {
                     val current2X = event.getX(1)
                     val current2Y = event.getY(1)
 
-                    // Span delta → FOV change only.  No yaw, pitch or roll is
+                    // Span delta -> FOV change only.  No yaw, pitch or roll is
                     // touched here.  Two-finger rotation (angleDelta in the reference)
                     // is deliberately ignored: applying it to yaw would cause drift,
-                    // and SkyCamera enforces up=(0,1,0) so roll is always 0°.
+                    // and SkyCamera enforces up=(0,1,0) so roll is always 0 deg.
                     val prevSpan = sqrt(
                         (last1X - last2X) * (last1X - last2X) +
                         (last1Y - last2Y) * (last1Y - last2Y)
@@ -165,7 +165,7 @@ class TouchController {
                 }
             }
 
-            // ── Second finger down: switch to pinch mode ───────────────────
+            // -- Second finger down: switch to pinch mode -------------------
             action == MotionEvent.ACTION_POINTER_DOWN && state == State.DRAGGING -> {
                 if (event.pointerCount == 2) {
                     state = State.DRAGGING2
@@ -178,7 +178,7 @@ class TouchController {
                 }
             }
 
-            // ── Finger lifted (pinch end): drop back to READY ─────────────
+            // -- Finger lifted (pinch end): drop back to READY -------------
             // We go to READY rather than back to DRAGGING (unlike some implementations)
             // to avoid computing a position jump against the stale single-finger anchor.
             action == MotionEvent.ACTION_POINTER_UP && state == State.DRAGGING2 -> {
@@ -186,7 +186,7 @@ class TouchController {
                 pinchDelta = 0f
             }
 
-            // ── All fingers up / cancelled ─────────────────────────────────
+            // -- All fingers up / cancelled ---------------------------------
             action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL -> {
                 state = State.READY
                 distanceX = 0f

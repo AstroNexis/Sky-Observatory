@@ -19,7 +19,7 @@ package com.skyobservatory.api;
  * Equatorial sky coordinates: right ascension and declination.
  *
  * Right ascension is measured eastward along the celestial equator from the
- * vernal equinox. Declination is measured north (+) or south (−) of the
+ * vernal equinox. Declination is measured north (+) or south (-) of the
  * celestial equator.
  *
  * The epoch of the coordinate frame (e.g. J2000.0, ICRS, apparent) is

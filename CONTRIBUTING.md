@@ -5,7 +5,7 @@ astronomy project, and community contributions help keep it alive. However...
 
 > We are not accepting *most* PRs at the moment.
 
-**Why?** The project is still in early development — only the Sun and Moon are currently
+**Why?** The project is still in early development -- only the Sun and Moon are currently
 observable, and the architecture is actively evolving. Adding more features now will just move
 the goalposts! When the core is stable we'll gladly accept more help.
 
@@ -22,7 +22,7 @@ prior discussion.
 ## A Note on Response Times
 
 It is likely we'll be slow to respond to issues and PR requests. Depending on what else is going
-on it might be days, it might be months. I do apologize for that — life is busy.
+on it might be days, it might be months. I do apologize for that -- life is busy.
 
 Thanks for your contributions! They're definitely appreciated even if our slowness to respond
 might make it seem otherwise.
@@ -31,10 +31,10 @@ might make it seem otherwise.
 
 Despite the temporary moratorium on new features, we're always grateful for:
 
-- **Bug fixes** — Simple, focused, few-line fixes are very easy for us to approve.
-- **Dependency upgrades** — Keeping things up to date is always welcome.
-- **Documentation** — Improvements to docs, README, comments, etc.
-- **Feature additions** — Please open an issue first (see above).
+- **Bug fixes** -- Simple, focused, few-line fixes are very easy for us to approve.
+- **Dependency upgrades** -- Keeping things up to date is always welcome.
+- **Documentation** -- Improvements to docs, README, comments, etc.
+- **Feature additions** -- Please open an issue first (see above).
 
 **Pro-tip:** Small, focused PRs are easier for us to approve!
 If your PR does too much it might get stalled because even if 90% of it is welcome there might
@@ -46,7 +46,7 @@ them faster.
 ### Prerequisites
 
 - Android Studio (latest stable recommended)
-- Android SDK (API level 26–35)
+- Android SDK (API level 26-35)
 - NDK `27.2.12479018`
 - Java 17 toolchain
 
@@ -56,12 +56,12 @@ Android Studio can set up most of this for you.
 
 The project is divided into 6 modules:
 
-- **api/** — API interface definitions
-- **benchmark/** — Performance testing and benchmarking
-- **engine/** — Core processing logic and astronomical calculations
-- **native/** — C++ components (SuperNOVAS integration)
-- **sample-test/** — Sample code and integration tests
-- **sky-observatory/** — Main Android app module (UI and application logic)
+- **api/** -- API interface definitions
+- **benchmark/** -- Performance testing and benchmarking
+- **engine/** -- Core processing logic and astronomical calculations
+- **native/** -- C++ components (SuperNOVAS integration)
+- **sample-test/** -- Sample code and integration tests
+- **sky-observatory/** -- Main Android app module (UI and application logic)
 
 See the [root README](README.md) for a more detailed overview.
 

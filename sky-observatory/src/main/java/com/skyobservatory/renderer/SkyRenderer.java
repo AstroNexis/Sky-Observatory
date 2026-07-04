@@ -38,7 +38,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 // Data-driven OpenGL renderer for the celestial sky.
 // Architecture contract
-// ─────────────────────
+// ---------------------
 // Input:  {@link SkySnapshot}  (from engine, via {@link #updateSnapshot})
 // {@link com.skyobservatory.api.CameraOrientation} (from sensors)
 // Output: GPU draw calls -- nothing else.
@@ -47,14 +47,14 @@ import javax.microedition.khronos.opengles.GL10;
 // * compute or override astronomy data
 // * access SuperNOVAS or the engine directly
 // Object pipeline
-// ───────────────
+// ---------------
 // updateSnapshot(SkySnapshot)
 // -> rebuild entry list via CelestialObjectFactory   O(n)
 // onDrawFrame()
 // -> iterate entries, place each body, draw           O(n)
 // All per-type branching lives in {@link CelestialObjectFactory}.
 // Batching strategy (GPU instancing -- future)
-// ───────────────────────────────────────────
+// ------------------------------------------
 // Each ObjectCategory maps to a single SphereMesh prototype in the factory.
 // When upgrading to GL_DRAW_ARRAYS_INSTANCED, replace the per-object loop
 // with a single instanced draw call per category, uploading a per-instance

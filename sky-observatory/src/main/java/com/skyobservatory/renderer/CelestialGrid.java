@@ -24,7 +24,7 @@ import java.util.List;
  * International Celestial Reference System (ICRS) / NASA-style full-sphere grid.
  *
  * Produces:
- *   - Declination circles  (−90deg to +90deg, every 15deg)
+ *   - Declination circles  (-90deg to +90deg, every 15deg)
  *   - Right-ascension half-circles (0h to 23h, every 1h = every 15deg)
  *   - Altitude / azimuth reference at 0deg altitude (horizon equatorial overlay)
  *
@@ -60,7 +60,7 @@ public final class CelestialGrid {
     private static final float R          = 9.5f;
     private static final int   SEGMENTS   = 64;
 
-    // Declination step: every 15deg -> 13 circles (−90 … +90 including poles)
+    // Declination step: every 15deg -> 13 circles (-90 ... +90 including poles)
     private static final int DEC_STEP     = 15;
     // RA step: every 15deg = 1 h -> 24 half-meridians
     private static final int RA_STEP      = 15;
@@ -68,7 +68,7 @@ public final class CelestialGrid {
     public List<GridLine> build() {
         List<GridLine> lines = new ArrayList<>();
 
-        // --- Declination circles -90deg … +90deg every 15deg ---
+        // --- Declination circles -90deg ... +90deg every 15deg ---
         for (int decDeg = -90; decDeg <= 90; decDeg += DEC_STEP) {
             double decRad   = Math.toRadians(decDeg);
             double cosD     = Math.cos(decRad);
@@ -98,10 +98,10 @@ public final class CelestialGrid {
             lines.add(makeGridLine(verts, type));
         }
 
-        // --- Right-ascension half-meridians 0deg…345deg every 15deg ---
+        // --- Right-ascension half-meridians 0deg...345deg every 15deg ---
         for (int raDeg = 0; raDeg < 360; raDeg += RA_STEP) {
             double raRad = Math.toRadians(raDeg);
-            // Full meridian: dec −90deg to +90deg
+            // Full meridian: dec -90deg to +90deg
             float[] verts = new float[SEGMENTS * 2 * 3];
             int idx = 0;
             for (int i = 0; i < SEGMENTS; i++) {

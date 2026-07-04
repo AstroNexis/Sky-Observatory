@@ -135,7 +135,7 @@ public final class ShaderSources {
     // uNdcHalfH).  No depth testing -- labels always paint over the sky.
     //
     // aPosition.xy carries the [-1,+1] local quad coordinates:
-    //   (-1,-1) bottom-left … (+1,+1) top-right.
+    //   (-1,-1) bottom-left ... (+1,+1) top-right.
 
     public static final String LABEL_VERTEX = ""
         + "#version 300 es\n"
