@@ -98,12 +98,11 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/keystore.jks
 
-      - name: Sign release APKs (v2+v3)
+      - name: Sign release APKs (v1+v2+v3)
         run: |
           for apk in sky-observatory/build/outputs/apk/release/*.apk; do
             [ -f "$apk" ] || continue
             $APK_SIGNER sign \
-              --v1-signing-enabled false \
               --ks /tmp/keystore.jks \
               --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
               --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
@@ -116,7 +115,7 @@ jobs:
           for apk in sky-observatory/build/outputs/apk/release/*.apk; do
             [ -f "$apk" ] || continue
             $APK_SIGNER verify --verbose "$apk" 2>&1 | \
-              grep -E "Verified using v2|Verified using v3"
+              grep -E "Verified using v1 scheme|Verified using v2 scheme|Verified using v3 scheme"
           done
 
       - name: Run SDK tests
