@@ -4,8 +4,8 @@
 
 <div align="center">
 
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/AstroNexis/sky-observatory/blob/main/LICENSE)
 [![Codecov](https://codecov.io/gh/AstroNexis/sky-observatory/branch/master/graph/badge.svg)](https://codecov.io/gh/AstroNexis/sky-observatory)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/AstroNexis/sky-observatory/blob/main/LICENSE)
 [![Build](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml)
 [![Tests](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml)
 [![Benchmark](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml)
