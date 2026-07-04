@@ -59,11 +59,11 @@ public final class CelestialObject {
         //                naifId         name        assetName    category                          radius  defaultOn
         m.put(NAIF_SUN,     new CelestialObject(NAIF_SUN,     "Sun",     "sun.jpg",     ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY, 0.75f, true));
         m.put(NAIF_MOON,    new CelestialObject(NAIF_MOON,    "Moon",    "moon.jpg",    ObservableObject.ObjectCategory.MOON,              0.50f, true));
-        m.put(NAIF_MERCURY, new CelestialObject(NAIF_MERCURY, "Mercury", null,          ObservableObject.ObjectCategory.PLANET,            0.10f, false));
-        m.put(NAIF_VENUS,   new CelestialObject(NAIF_VENUS,   "Venus",   null,          ObservableObject.ObjectCategory.PLANET,            0.15f, false));
-        m.put(NAIF_MARS,    new CelestialObject(NAIF_MARS,    "Mars",    null,          ObservableObject.ObjectCategory.PLANET,            0.12f, false));
-        m.put(NAIF_JUPITER, new CelestialObject(NAIF_JUPITER, "Jupiter", null,          ObservableObject.ObjectCategory.PLANET,            0.20f, false));
-        m.put(NAIF_SATURN,  new CelestialObject(NAIF_SATURN,  "Saturn",  null,          ObservableObject.ObjectCategory.PLANET,            0.18f, false));
+        m.put(NAIF_MERCURY, new CelestialObject(NAIF_MERCURY, "Mercury", "mercury.jpg", ObservableObject.ObjectCategory.PLANET,            0.10f, false));
+        m.put(NAIF_VENUS,   new CelestialObject(NAIF_VENUS,   "Venus",   "venus.jpg",   ObservableObject.ObjectCategory.PLANET,            0.15f, false));
+        m.put(NAIF_MARS,    new CelestialObject(NAIF_MARS,    "Mars",    "mars.jpg",    ObservableObject.ObjectCategory.PLANET,            0.12f, false));
+        m.put(NAIF_JUPITER, new CelestialObject(NAIF_JUPITER, "Jupiter", "jupiter.jpg", ObservableObject.ObjectCategory.PLANET,            0.20f, false));
+        m.put(NAIF_SATURN,  new CelestialObject(NAIF_SATURN,  "Saturn",  "saturn.jpg",  ObservableObject.ObjectCategory.PLANET,            0.18f, false));
         m.put(NAIF_URANUS,  new CelestialObject(NAIF_URANUS,  "Uranus",  null,          ObservableObject.ObjectCategory.PLANET,            0.12f, false));
         m.put(NAIF_NEPTUNE, new CelestialObject(NAIF_NEPTUNE, "Neptune", null,          ObservableObject.ObjectCategory.PLANET,            0.12f, false));
         CATALOG = Collections.unmodifiableMap(m);
