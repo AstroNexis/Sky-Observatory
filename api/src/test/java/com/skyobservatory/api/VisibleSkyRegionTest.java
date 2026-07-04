@@ -16,11 +16,14 @@ public class VisibleSkyRegionTest {
     private static final CameraOrientation ORIENTATION =
             new CameraOrientation(0.0, 0.0, 0.0);
     private static final Viewport VIEWPORT = new Viewport(90.0, 60.0, ORIENTATION);
+    private static final SkyCoordinate POSITION = new SkyCoordinate(
+            new HorizontalCoordinate(180.0, 45.0),
+            new CartesianCoordinate(0.0, 0.7071, -0.7071));
 
-    private static final CelestialObject SUN =
-            new CelestialObject("Sun", CelestialObject.NAIF_SUN, CelestialObject.Category.STAR);
+    private static final CelestialObject SUN = CelestialObject.sun();
     private static final ObservableObject VISIBLE =
-            new ObservableObject(SUN, null, VisibilityState.VISIBLE, CelestialObject.Category.STAR);
+            new ObservableObject(SUN, POSITION, VisibilityState.VISIBLE,
+                    ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY);
 
     @Test(expected = IllegalArgumentException.class)
     public void nullSnapshotThrows() {

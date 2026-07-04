@@ -66,7 +66,7 @@ public class EphemerisCalculatorTest {
 
     @Test
     public void calculateReturnsEmptyForUnknownBody() throws AstroException {
-        CelestialObject asteroid = new CelestialObject("Asteroid", 9999999, CelestialObject.Category.ASTEROID);
+        CelestialObject asteroid = new CelestialObject(9999999, "Asteroid");
         PositionProvider stub = (target, obs, t) ->
                 new PositionResult.Builder(0.0, 0.0, target, obs, t)
                         .distanceAu(2.5)

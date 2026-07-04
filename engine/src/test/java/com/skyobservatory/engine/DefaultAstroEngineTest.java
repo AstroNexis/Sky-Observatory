@@ -88,7 +88,7 @@ public class DefaultAstroEngineTest {
         SkySnapshot snapshot = engine.createSnapshot(targets, observer, time);
 
         for (ObservableObject obj : snapshot.getObjects()) {
-            assertEquals(VisibilityState.VISIBLE, obj.getVisibilityState());
+            assertEquals(VisibilityState.VISIBLE, obj.getVisibility());
         }
     }
 
@@ -100,7 +100,7 @@ public class DefaultAstroEngineTest {
         Viewport viewport = new Viewport(90.0, 60.0, orientation);
 
         VisibleSkyRegion region = engine.calculateVisibleRegion(snapshot, viewport);
-        assertEquals(1, region.getVisibleObjectCount() + region.getHiddenObjectCount());
+        assertEquals(1, region.getVisibleObjectCount() + region.getHiddenObjects().size());
     }
 
     @Test(expected = AstroException.class)
