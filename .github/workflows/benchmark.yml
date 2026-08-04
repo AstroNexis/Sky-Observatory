@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -45,10 +45,10 @@ jobs:
           JAR=gradle/wrapper/gradle-wrapper.jar
           if [ ! -f "$JAR" ]; then
             curl -fsSL -o /tmp/gradle-bin.zip \
-              "https://services.gradle.org/distributions/gradle-8.9-bin.zip"
+              "https://services.gradle.org/distributions/gradle-9.6.1-bin.zip"
             unzip -q /tmp/gradle-bin.zip -d /tmp/gradle-install
-            /tmp/gradle-install/gradle-8.9/bin/gradle \
-              -p "$(pwd)" wrapper --gradle-version 8.9
+            /tmp/gradle-install/gradle-9.6.1/bin/gradle \
+              -p "$(pwd)" wrapper --gradle-version 9.6.1
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
@@ -77,6 +77,7 @@ jobs:
               --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
               --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
               --key-pass "pass:${{ secrets.KEY_PASSWORD }}" \
+              --ks-type JKS \
               "$apk"
           done
 
