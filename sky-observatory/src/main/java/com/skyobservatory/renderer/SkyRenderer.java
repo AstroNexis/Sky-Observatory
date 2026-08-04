@@ -65,7 +65,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     private static final String TAG = "SkyRenderer";
 
     /** World-space scale: radius of the virtual celestial sphere in metres. */
-    private static final float WORLD_SCALE = 10f;
+    private static final float WORLD_SCALE = 9.5f;
 
     /** Half-height of a label quad in NDC units (viewport-independent). */
     private static final float LABEL_NDC_HALF_H = 0.035f;
