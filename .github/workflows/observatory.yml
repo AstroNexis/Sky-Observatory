@@ -122,7 +122,7 @@ jobs:
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: success()
         with:
           name: observatory-apk
