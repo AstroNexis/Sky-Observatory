@@ -46,7 +46,7 @@ Java_com_skyobservatory_native_1bridge_NativeGateway_nativeGetVersion(
 /**
  * Computes azimuth and altitude for a solar system body using SuperNOVAS.
  *
- * @param naifId          NAIF integer identifier (10=Sun, 301=Moon, 199=Mercury, etc.)
+ * @param naifId          NAIF integer identifier (10 = Sun)
  * @param julianDateTT    observation time as Julian Date in TT
  * @param latitudeDeg     observer geodetic latitude in degrees
  * @param longitudeDeg    observer geodetic longitude in degrees
@@ -70,19 +70,13 @@ static int computeAzAlt(
 
     // Map NAIF ID to the SuperNOVAS planet enum.
     enum novas_planet planetId;
-    switch (naifId) {
-        case 10:  planetId = NOVAS_SUN;     break;
-        case 301: planetId = NOVAS_MOON;    break;
-        case 199: planetId = NOVAS_MERCURY; break;
-        case 299: planetId = NOVAS_VENUS;   break;
-        case 499: planetId = NOVAS_MARS;    break;
-        case 599: planetId = NOVAS_JUPITER; break;
-        case 699: planetId = NOVAS_SATURN;  break;
-        case 799: planetId = NOVAS_URANUS;  break;
-        case 899: planetId = NOVAS_NEPTUNE; break;
-        default:
-            LOGE("computeAzAlt: unsupported NAIF ID %d", naifId);
-            return -1;
+    if (naifId == 10) {
+        planetId = NOVAS_SUN;
+    } else if (naifId == 301) {
+        planetId = NOVAS_MOON;
+    } else {
+        LOGE("computeAzAlt: unsupported NAIF ID %d", naifId);
+        return -1;
     }
 
     // 1. Set up the time specification.
