@@ -102,6 +102,7 @@ jobs:
               --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
               --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
               --key-pass "pass:${{ secrets.KEY_PASSWORD }}" \
+              --ks-type JKS \
               "$apk"
           done
 
