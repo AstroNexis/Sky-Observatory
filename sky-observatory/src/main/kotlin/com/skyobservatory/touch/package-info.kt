@@ -36,12 +36,7 @@
  *    - Manages touch lifecycle and state transitions
  *    - Provides consume methods for gesture deltas
  * 
- * 4. [CameraInteractor] - Handles camera-specific interaction logic
- *    - Applies gestures to camera transformations
- *    - Supports pan, zoom, and rotation operations
- *    - Provides interface for custom camera implementations
- * 
- * 5. [TouchController] - Main facade class
+ * 4. [TouchController] - Main facade class
  *    - Coordinates all components
  *    - Maintains backward compatibility with original API
  *    - Provides access to individual components for advanced usage
@@ -66,7 +61,6 @@
  * val fingerTracker = touchController.getFingerTracker()
  * val gestureRecognizer = touchController.getGestureRecognizer()
  * val touchStateManager = touchController.getTouchStateManager()
- * val cameraInteractor = touchController.getCameraInteractor()
  * ```
  */
 package com.skyobservatory.touch

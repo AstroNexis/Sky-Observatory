@@ -48,6 +48,7 @@ class TouchStateManager {
     // Inertia state
     private var velocityX = 0f
     private var velocityY = 0f
+    private var inertiaDecay = INERTIA_DECAY
     private var enableInertia = true
 
     /**
@@ -113,8 +114,8 @@ class TouchStateManager {
         if (touching || !enableInertia) return Pair(0f, 0f)
 
         // Apply decay to velocities
-        velocityX *= INERTIA_DECAY
-        velocityY *= INERTIA_DECAY
+        velocityX *= inertiaDecay
+        velocityY *= inertiaDecay
 
         // If velocities are too small, stop inertia
         if (abs(velocityX) < INERTIA_MIN_VELOCITY &&
@@ -222,10 +223,8 @@ class TouchStateManager {
      * Sets the inertia decay factor (0-1, where 1 = no decay).
      */
     fun setInertiaDecay(decay: Float) {
-        // Clamp to reasonable range
         if (decay in 0.8f..1.0f) {
-            // Will be updated in companion object in a real implementation
-            // For now, we'll use the constant
+            inertiaDecay = decay
         }
     }
 }

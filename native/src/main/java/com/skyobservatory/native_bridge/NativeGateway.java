@@ -44,40 +44,6 @@ final class NativeGateway {
     static native String nativeGetVersion();
 
     /**
-     * Computes the topocentric azimuth of a solar system body.
-     *
-     * @param naifId          NAIF integer identifier of the target
-     * @param julianDateTT    observation time as Julian Date in TT
-     * @param latitudeDeg     observer geodetic latitude in degrees
-     * @param longitudeDeg    observer geodetic longitude in degrees
-     * @param altitudeMeters  observer altitude above WGS84 ellipsoid in metres
-     * @return azimuth in degrees [0, 360), or -1.0 if the call failed
-     */
-    static native double nativeCalculateAzimuth(
-            int naifId,
-            double julianDateTT,
-            double latitudeDeg,
-            double longitudeDeg,
-            double altitudeMeters);
-
-    /**
-     * Computes the topocentric altitude of a solar system body.
-     *
-     * @param naifId          NAIF integer identifier of the target
-     * @param julianDateTT    observation time as Julian Date in TT
-     * @param latitudeDeg     observer geodetic latitude in degrees
-     * @param longitudeDeg    observer geodetic longitude in degrees
-     * @param altitudeMeters  observer altitude above WGS84 ellipsoid in metres
-     * @return altitude in degrees [-90, 90], or -999.0 if the call failed
-     */
-    static native double nativeCalculateAltitude(
-            int naifId,
-            double julianDateTT,
-            double latitudeDeg,
-            double longitudeDeg,
-            double altitudeMeters);
-
-    /**
      * Computes azimuth, altitude, RA, dec, distance, and radial velocity
      * in a single native invocation. More efficient than separate calls.
      *

@@ -40,7 +40,11 @@ final class RendererBenchmark {
     private static final int WARMUP_FRAMES = 10;
     private static final int MEASURE_FRAMES = 200;
 
-    private static final float WORLD_SCALE = 10f;
+    private static final float WORLD_SCALE = 9.5f;
+
+    private static final double OBSERVER_LAT = 21.0285;
+    private static final double OBSERVER_LON = 105.8542;
+    private static final double OBSERVER_ALT = 12.0;
 
     private final AstroEngine engine;
 
@@ -51,7 +55,7 @@ final class RendererBenchmark {
     void run() {
         Log.i(TAG, "--- RendererBenchmark start ---");
 
-        Observer observer = new Observer(21.0285, 105.8542, 12.0);
+        Observer observer = new Observer(OBSERVER_LAT, OBSERVER_LON, OBSERVER_ALT);
         AstroTime time = AstroTime.now();
         List<CelestialObject> targets = Arrays.asList(
             CelestialObject.sun(),

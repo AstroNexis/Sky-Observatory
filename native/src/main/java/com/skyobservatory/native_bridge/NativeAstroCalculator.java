@@ -44,7 +44,7 @@ public class NativeAstroCalculator {
                 observer.getLongitudeDegrees(),
                 observer.getAltitudeMeters());
 
-        if (r.length < 7 || r[6] == ERROR_FLAG) {
+        if (r == null || r.length < 7 || r[6] == ERROR_FLAG) {
             throw new NativeException(
                     "Native calculation failed for " + target.getName());
         }
