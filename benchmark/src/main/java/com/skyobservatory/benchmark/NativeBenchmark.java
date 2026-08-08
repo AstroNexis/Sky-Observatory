@@ -30,12 +30,16 @@ final class NativeBenchmark {
     private static final int WARMUP_ITERATIONS = 10;
     private static final int MEASURE_ITERATIONS = 100;
 
+    private static final double OBSERVER_LAT = 21.0285;
+    private static final double OBSERVER_LON = 105.8542;
+    private static final double OBSERVER_ALT = 12.0;
+
     private final NativeAstroCalculator calculator = new NativeAstroCalculator();
 
     void run() {
         Log.i(TAG, "--- NativeBenchmark start ---");
 
-        Observer observer = new Observer(21.0285, 105.8542, 12.0);
+        Observer observer = new Observer(OBSERVER_LAT, OBSERVER_LON, OBSERVER_ALT);
         AstroTime time = AstroTime.now();
         CelestialObject[] targets = {
             CelestialObject.sun(),

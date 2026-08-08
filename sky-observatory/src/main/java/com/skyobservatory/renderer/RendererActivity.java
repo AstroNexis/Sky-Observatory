@@ -34,7 +34,6 @@ import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
-import com.skyobservatory.api.CartesianCoordinate;
 import com.skyobservatory.api.HorizontalCoordinate;
 import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
@@ -146,8 +145,12 @@ public class RendererActivity extends AppCompatActivity {
         });
     }
 
+    private static final double FALLBACK_LATITUDE = 21.0285;
+    private static final double FALLBACK_LONGITUDE = 105.8542;
+    private static final double FALLBACK_ALTITUDE = 0.0;
+
     private void useFallbackLocation() {
-        currentObserver = new Observer(21.0285, 105.8542, 0);
+        currentObserver = new Observer(FALLBACK_LATITUDE, FALLBACK_LONGITUDE, FALLBACK_ALTITUDE);
         Log.w(TAG, "Using fallback location (Hanoi)");
         startSdkUpdates();
     }
@@ -186,9 +189,8 @@ public class RendererActivity extends AppCompatActivity {
         for (CelestialObject target : CelestialObject.defaultTargets()) {
             try {
                 PositionResult pos = engine.calculatePosition(target, obs, time);
-                SkyCoordinate coord = new SkyCoordinate(
-                        new HorizontalCoordinate(pos.getAzimuthDegrees(), pos.getAltitudeDegrees()),
-                        new CartesianCoordinate(0.0, 0.0, 0.0));
+                SkyCoordinate coord = engine.project(
+                        new HorizontalCoordinate(pos.getAzimuthDegrees(), pos.getAltitudeDegrees()));
                 VisibilityState vis = pos.getAltitudeDegrees() >= 0
                         ? VisibilityState.VISIBLE
                         : VisibilityState.BELOW_HORIZON;

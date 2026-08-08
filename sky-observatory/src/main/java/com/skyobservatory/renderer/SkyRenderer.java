@@ -127,6 +127,11 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         try {
             ready = false;
+            // Clean up any stale GPU resources from previous context
+            for (ObservableObjectEntry entry : objectEntries) {
+                entry.bodyMesh.cleanup();
+                entry.labelMesh.cleanup();
+            }
             objectEntries.clear();
             GLES30.glClearColor(0.01f, 0.01f, 0.04f, 1f);
             GLES30.glDepthMask(true);
@@ -201,6 +206,11 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
      * Must be called on the GL thread (from queueEvent or onDrawFrame).
      */
     private void applySnapshot(SkySnapshot snapshot) {
+        // Free GPU resources from previous entries before rebuilding
+        for (ObservableObjectEntry entry : objectEntries) {
+            entry.bodyMesh.cleanup();
+            entry.labelMesh.cleanup();
+        }
         objectEntries.clear();
         for (ObservableObject obj : snapshot.getObjects()) {
             ObservableObjectEntry entry = objectFactory.build(obj);

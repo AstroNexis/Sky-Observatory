@@ -35,6 +35,10 @@ final class EngineBenchmark {
     private static final int WARMUP_ITERATIONS = 5;
     private static final int MEASURE_ITERATIONS = 50;
 
+    private static final double OBSERVER_LAT = 21.0285;
+    private static final double OBSERVER_LON = 105.8542;
+    private static final double OBSERVER_ALT = 12.0;
+
     private final AstroEngine engine;
 
     EngineBenchmark(AstroEngine engine) {
@@ -44,7 +48,7 @@ final class EngineBenchmark {
     void run() {
         Log.i(TAG, "--- EngineBenchmark start ---");
 
-        Observer observer = new Observer(21.0285, 105.8542, 12.0);
+        Observer observer = new Observer(OBSERVER_LAT, OBSERVER_LON, OBSERVER_ALT);
         AstroTime time = AstroTime.now();
         List<CelestialObject> targets = Arrays.asList(
             CelestialObject.sun(),
