@@ -60,12 +60,12 @@ public final class ShaderManager {
     public final int texturedColor;
 
     public ShaderManager() {
-        skyProgram     = createProgram(ShaderSources.SKY_VERTEX,      ShaderSources.SKY_FRAGMENT);
-        cardinalProgram = createProgram(ShaderSources.CARDINAL_VERTEX, ShaderSources.CARDINAL_FRAGMENT);
-        bodyProgram    = createProgram(ShaderSources.BODY_VERTEX,      ShaderSources.BODY_FRAGMENT);
-        labelProgram   = createProgram(ShaderSources.LABEL_VERTEX,     ShaderSources.LABEL_FRAGMENT);
-        horizonProgram = createProgram(ShaderSources.HORIZON_VERTEX,   ShaderSources.HORIZON_FRAGMENT);
-        texturedProgram = createProgram(ShaderSources.TEXTURED_VERTEX, ShaderSources.TEXTURED_FRAGMENT);
+        skyProgram     = ShaderLoader.createProgram(ShaderSources.SKY_VERTEX,      ShaderSources.SKY_FRAGMENT);
+        cardinalProgram = ShaderLoader.createProgram(ShaderSources.CARDINAL_VERTEX, ShaderSources.CARDINAL_FRAGMENT);
+        bodyProgram    = ShaderLoader.createProgram(ShaderSources.BODY_VERTEX,      ShaderSources.BODY_FRAGMENT);
+        labelProgram   = ShaderLoader.createProgram(ShaderSources.LABEL_VERTEX,     ShaderSources.LABEL_FRAGMENT);
+        horizonProgram = ShaderLoader.createProgram(ShaderSources.HORIZON_VERTEX,   ShaderSources.HORIZON_FRAGMENT);
+        texturedProgram = ShaderLoader.createProgram(ShaderSources.TEXTURED_VERTEX, ShaderSources.TEXTURED_FRAGMENT);
 
         skyMvp  = GLES30.glGetUniformLocation(skyProgram,  "uMvpMatrix");
         skyTex  = GLES30.glGetUniformLocation(skyProgram,  "uTexture");
@@ -92,28 +92,4 @@ public final class ShaderManager {
         texturedColor = GLES30.glGetUniformLocation(texturedProgram, "uColor");
     }
 
-    private static int createProgram(String vs, String fs) {
-        int vertex = compileShader(GLES30.GL_VERTEX_SHADER, vs);
-        int frag   = compileShader(GLES30.GL_FRAGMENT_SHADER, fs);
-        int prog   = GLES30.glCreateProgram();
-        GLES30.glAttachShader(prog, vertex);
-        GLES30.glAttachShader(prog, frag);
-        GLES30.glLinkProgram(prog);
-        int[] ok = new int[1];
-        GLES30.glGetProgramiv(prog, GLES30.GL_LINK_STATUS, ok, 0);
-        GLES30.glDeleteShader(vertex);
-        GLES30.glDeleteShader(frag);
-        if (ok[0] == 0) throw new RuntimeException("Link: " + GLES30.glGetProgramInfoLog(prog));
-        return prog;
     }
-
-    private static int compileShader(int type, String src) {
-        int s = GLES30.glCreateShader(type);
-        GLES30.glShaderSource(s, src);
-        GLES30.glCompileShader(s);
-        int[] ok = new int[1];
-        GLES30.glGetShaderiv(s, GLES30.GL_COMPILE_STATUS, ok, 0);
-        if (ok[0] == 0) throw new RuntimeException("Compile: " + GLES30.glGetShaderInfoLog(s));
-        return s;
-    }
-}
