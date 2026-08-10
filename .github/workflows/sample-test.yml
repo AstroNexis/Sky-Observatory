@@ -62,10 +62,10 @@ jobs:
           JAR=gradle/wrapper/gradle-wrapper.jar
           if [ ! -f "$JAR" ]; then
             curl -fsSL -o /tmp/gradle-bin.zip \
-              "https://services.gradle.org/distributions/gradle-9.6.1-bin.zip"
+              "https://services.gradle.org/distributions/gradle-9.7.0-bin.zip"
             unzip -q /tmp/gradle-bin.zip -d /tmp/gradle-install
-            /tmp/gradle-install/gradle-9.6.1/bin/gradle \
-              -p "$(pwd)" wrapper --gradle-version 9.6.1
+            /tmp/gradle-install/gradle-9.7.0/bin/gradle \
+              -p "$(pwd)" wrapper --gradle-version 9.7.0
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
@@ -91,10 +91,12 @@ jobs:
           echo "APK_SIGNER=$APK_SIGNER" >> $GITHUB_ENV
 
       - name: Decode keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > /tmp/keystore.jks
 
       - name: Sign sample-test APK (v1+v2+v3)
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           for apk in sample-test/build/outputs/apk/debug/*.apk; do
             [ -f "$apk" ] || continue
@@ -108,6 +110,7 @@ jobs:
           done
 
       - name: Verify APK signature
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           for apk in sample-test/build/outputs/apk/debug/*.apk; do
             [ -f "$apk" ] || continue
