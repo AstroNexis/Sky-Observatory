@@ -36,6 +36,7 @@ concurrency:
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
   JAVA_VERSION: "17"
+  NDK_VERSION: "27.2.12479018"
 
 jobs:
   renderer-build:
@@ -55,7 +56,7 @@ jobs:
 
       - run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-            "ndk;27.2.12479018"
+            "ndk;${{ env.NDK_VERSION }}"
 
       - run: chmod +x gradlew
 
@@ -107,6 +108,7 @@ jobs:
               --ks-pass "pass:${{ secrets.KEYSTORE_PASSWORD }}" \
               --ks-key-alias "${{ secrets.KEY_ALIAS }}" \
               --key-pass "pass:${{ secrets.KEY_PASSWORD }}" \
+              --ks-type JKS \
               "$apk"
           done
 
