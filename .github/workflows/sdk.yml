@@ -33,6 +33,7 @@ concurrency:
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
   JAVA_VERSION: "17"
+  NDK_VERSION: "27.2.12479018"
 
 jobs:
   build:
@@ -53,7 +54,7 @@ jobs:
       - name: Install Android NDK
         run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-            "ndk;27.2.12479018"
+            "ndk;${{ env.NDK_VERSION }}"
 
       - name: Make Gradle executable
         run: chmod +x gradlew
