@@ -72,7 +72,7 @@ public final class PlanetData {
             .textureFile("sun.jpg")
             .equatorialRadiusKm(695700.0)
             .meanRadiusKm(695700.0)
-            .renderScale(0.75f)
+            .renderScale(0.80f)
             .build();
 
     public static final PlanetData MERCURY = new Builder(CelestialObject.NAIF_MERCURY, "Mercury")
@@ -93,7 +93,7 @@ public final class PlanetData {
             .textureFile("moon.jpg")
             .equatorialRadiusKm(1738.1)
             .meanRadiusKm(1737.4)
-            .renderScale(0.50f)
+            .renderScale(0.25f)
             .build();
 
     public static final PlanetData MARS = new Builder(CelestialObject.NAIF_MARS, "Mars")
