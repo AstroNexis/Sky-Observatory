@@ -17,7 +17,7 @@ public class PlanetDataTest {
         assertEquals(695700.0, d.getEquatorialRadiusKm(), DELTA);
         assertEquals(695700.0, d.getMeanRadiusKm(), DELTA);
         assertEquals(695700.0 * 2.0, d.getDiameterKm(), DELTA);
-        assertEquals(0.75f, d.getRenderScale(), 0f);
+        assertEquals(0.80f, d.getRenderScale(), 0f);
         assertFalse(d.hasRings());
     }
 

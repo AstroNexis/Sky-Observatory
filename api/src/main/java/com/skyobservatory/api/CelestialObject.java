@@ -57,8 +57,8 @@ public final class CelestialObject {
     static {
         Map<Integer, CelestialObject> m = new LinkedHashMap<>();
         //                naifId         name        assetName    category                          radius  defaultOn
-        m.put(NAIF_SUN,     new CelestialObject(NAIF_SUN,     "Sun",     "sun.jpg",     ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY, 0.75f, true));
-        m.put(NAIF_MOON,    new CelestialObject(NAIF_MOON,    "Moon",    "moon.jpg",    ObservableObject.ObjectCategory.MOON,              0.50f, true));
+        m.put(NAIF_SUN,     new CelestialObject(NAIF_SUN,     "Sun",     "sun.jpg",     ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY, 0.80f, true));
+        m.put(NAIF_MOON,    new CelestialObject(NAIF_MOON,    "Moon",    "moon.jpg",    ObservableObject.ObjectCategory.MOON,              0.25f, true));
         m.put(NAIF_MERCURY, new CelestialObject(NAIF_MERCURY, "Mercury", "mercury.jpg", ObservableObject.ObjectCategory.PLANET,            0.10f, true));
         m.put(NAIF_VENUS,   new CelestialObject(NAIF_VENUS,   "Venus",   "venus.jpg",   ObservableObject.ObjectCategory.PLANET,            0.15f, true));
         m.put(NAIF_MARS,    new CelestialObject(NAIF_MARS,    "Mars",    "mars.jpg",    ObservableObject.ObjectCategory.PLANET,            0.12f, true));
