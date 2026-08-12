@@ -18,6 +18,7 @@ concurrency:
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx4g"
   JAVA_VERSION: "17"
+  NDK_VERSION: "27.2.12479018"
 
 jobs:
   unit-tests:
@@ -25,11 +26,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: temurin
@@ -37,7 +38,7 @@ jobs:
 
       - run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-            "ndk;27.2.12479018"
+            "ndk;${{ env.NDK_VERSION }}"
 
       - run: chmod +x gradlew
 
@@ -45,16 +46,16 @@ jobs:
           JAR=gradle/wrapper/gradle-wrapper.jar
           if [ ! -f "$JAR" ]; then
             curl -fsSL -o /tmp/gradle-bin.zip \
-              "https://services.gradle.org/distributions/gradle-9.6.1-bin.zip"
+              "https://services.gradle.org/distributions/gradle-9.7.0-bin.zip"
             unzip -q /tmp/gradle-bin.zip -d /tmp/gradle-install
-            /tmp/gradle-install/gradle-9.6.1/bin/gradle \
-              -p "$(pwd)" wrapper --gradle-version 9.6.1
+            /tmp/gradle-install/gradle-9.7.0/bin/gradle \
+              -p "$(pwd)" wrapper --gradle-version 9.7.0
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
       - run: ./gradlew test --stacktrace
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: unit-test-results

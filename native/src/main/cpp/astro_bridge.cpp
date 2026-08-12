@@ -46,7 +46,7 @@ Java_com_skyobservatory_native_1bridge_NativeGateway_nativeGetVersion(
 /**
  * Computes azimuth and altitude for a solar system body using SuperNOVAS.
  *
- * @param naifId          NAIF integer identifier (10 = Sun)
+ * @param naifId          NAIF integer identifier (10=Sun, 301=Moon, 199=Mercury, etc.)
  * @param julianDateTT    observation time as Julian Date in TT
  * @param latitudeDeg     observer geodetic latitude in degrees
  * @param longitudeDeg    observer geodetic longitude in degrees
@@ -70,13 +70,19 @@ static int computeAzAlt(
 
     // Map NAIF ID to the SuperNOVAS planet enum.
     enum novas_planet planetId;
-    if (naifId == 10) {
-        planetId = NOVAS_SUN;
-    } else if (naifId == 301) {
-        planetId = NOVAS_MOON;
-    } else {
-        LOGE("computeAzAlt: unsupported NAIF ID %d", naifId);
-        return -1;
+    switch (naifId) {
+        case 10:  planetId = NOVAS_SUN;     break;
+        case 301: planetId = NOVAS_MOON;    break;
+        case 199: planetId = NOVAS_MERCURY; break;
+        case 299: planetId = NOVAS_VENUS;   break;
+        case 499: planetId = NOVAS_MARS;    break;
+        case 599: planetId = NOVAS_JUPITER; break;
+        case 699: planetId = NOVAS_SATURN;  break;
+        case 799: planetId = NOVAS_URANUS;  break;
+        case 899: planetId = NOVAS_NEPTUNE; break;
+        default:
+            LOGE("computeAzAlt: unsupported NAIF ID %d", naifId);
+            return -1;
     }
 
     // 1. Set up the time specification.
@@ -191,74 +197,6 @@ Java_com_skyobservatory_native_1bridge_NativeGateway_nativeCalculatePosition(
     jdoubleArray ary = env->NewDoubleArray(7);
     env->SetDoubleArrayRegion(ary, 0, 7, results);
     return ary;
-}
-
-/**
- * Computes the apparent topocentric azimuth of a solar system body.
- *
- * @param naifId          NAIF integer identifier of the target body
- * @param julianDateTT    observation time as Julian Date in TT
- * @param latitudeDeg     observer geodetic latitude in degrees
- * @param longitudeDeg    observer geodetic longitude in degrees
- * @param altitudeMeters  observer altitude above ellipsoid in metres
- * @return topocentric azimuth in degrees [0, 360), or -1.0 on error
- */
-JNIEXPORT jdouble JNICALL
-Java_com_skyobservatory_native_1bridge_NativeGateway_nativeCalculateAzimuth(
-        JNIEnv* /* env */,
-        jclass  /* clazz */,
-        jint    naifId,
-        jdouble julianDateTT,
-        jdouble latitudeDeg,
-        jdouble longitudeDeg,
-        jdouble altitudeMeters) {
-
-    double azimuth = 0.0;
-    double altitude = 0.0;
-
-    int ret = computeAzAlt(naifId, julianDateTT, latitudeDeg, longitudeDeg,
-                           altitudeMeters, &azimuth, &altitude,
-                           NULL, NULL, NULL, NULL);
-    if (ret != 0) {
-        LOGE("nativeCalculateAzimuth: calculation failed for naif=%d", naifId);
-        return -1.0;
-    }
-
-    return azimuth;
-}
-
-/**
- * Computes the apparent topocentric altitude of a solar system body.
- *
- * @param naifId          NAIF integer identifier of the target body
- * @param julianDateTT    observation time as Julian Date in TT
- * @param latitudeDeg     observer geodetic latitude in degrees
- * @param longitudeDeg    observer geodetic longitude in degrees
- * @param altitudeMeters  observer altitude above ellipsoid in metres
- * @return topocentric altitude in degrees [-90, 90], or -999.0 on error
- */
-JNIEXPORT jdouble JNICALL
-Java_com_skyobservatory_native_1bridge_NativeGateway_nativeCalculateAltitude(
-        JNIEnv* /* env */,
-        jclass  /* clazz */,
-        jint    naifId,
-        jdouble julianDateTT,
-        jdouble latitudeDeg,
-        jdouble longitudeDeg,
-        jdouble altitudeMeters) {
-
-    double azimuth = 0.0;
-    double altitude = 0.0;
-
-    int ret = computeAzAlt(naifId, julianDateTT, latitudeDeg, longitudeDeg,
-                           altitudeMeters, &azimuth, &altitude,
-                           NULL, NULL, NULL, NULL);
-    if (ret != 0) {
-        LOGE("nativeCalculateAltitude: calculation failed for naif=%d", naifId);
-        return -999.0;
-    }
-
-    return altitude;
 }
 
 } // extern "C"

@@ -152,6 +152,24 @@ public final class MeshRenderer {
         GLES30.glBindVertexArray(0);
     }
 
+    public void cleanup() {
+        if (!initialized) return;
+        if (ebo != 0) {
+            GLES30.glDeleteBuffers(4, new int[]{vboPos, vboNorm, vboUv, ebo}, 0);
+        } else if (vboUv != 0) {
+            GLES30.glDeleteBuffers(2, new int[]{vboPos, vboUv}, 0);
+        } else {
+            GLES30.glDeleteBuffers(1, new int[]{vboPos}, 0);
+        }
+        GLES30.glDeleteVertexArrays(1, new int[]{vao}, 0);
+        vao = 0;
+        vboPos = 0;
+        vboNorm = 0;
+        vboUv = 0;
+        ebo = 0;
+        initialized = false;
+    }
+
     private static FloatBuffer toFloatBuffer(float[] data) {
         ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder());
         FloatBuffer fb = bb.asFloatBuffer();

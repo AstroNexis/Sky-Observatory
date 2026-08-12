@@ -25,7 +25,6 @@ import kotlin.math.sqrt
  * - FingerTracker: Tracks individual finger positions
  * - GestureRecognizer: Detects gestures from finger data
  * - TouchStateManager: Manages touch state, smoothing, and accumulation
- * - CameraInteractor: Handles camera-specific interactions
  *
  * The public API is designed to be compatible with the original TouchController
  * while providing a more modular and extensible architecture.
@@ -60,7 +59,6 @@ class TouchController {
     private val fingerTracker = FingerTracker()
     private val gestureRecognizer = GestureRecognizer(fingerTracker)
     private val touchStateManager = TouchStateManager()
-    private val cameraInteractor = CameraInteractor()
 
     // Gesture-state machine (mirrors DragRotateZoomGestureDetector in the reference).
     private enum class State { READY, DRAGGING, DRAGGING2 }
@@ -243,9 +241,6 @@ class TouchController {
     /** Returns the TouchStateManager instance for state management */
     fun getTouchStateManager(): TouchStateManager = touchStateManager
 
-    /** Returns the CameraInteractor instance for camera operations */
-    fun getCameraInteractor(): CameraInteractor = cameraInteractor
-
     /**
      * Resets all touch state and components to initial values.
      */
@@ -259,7 +254,6 @@ class TouchController {
 
         gestureRecognizer.reset()
         touchStateManager.reset()
-        cameraInteractor.reset()
     }
 
     /** Returns true if currently touching */
