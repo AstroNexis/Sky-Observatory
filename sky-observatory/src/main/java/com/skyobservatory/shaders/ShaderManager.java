@@ -52,6 +52,11 @@ public final class ShaderManager {
     public final int horizonMvp;
     public final int horizonColor;
 
+    // Saturn ring
+    public final int ringProgram;
+    public final int ringMvp;
+    public final int ringTex;
+
     // Kept for API compatibility; delegates to bodyProgram internally
     public final int texturedProgram;
     public final int texturedMvp;
@@ -65,6 +70,7 @@ public final class ShaderManager {
         bodyProgram    = ShaderLoader.createProgram(ShaderSources.BODY_VERTEX,      ShaderSources.BODY_FRAGMENT);
         labelProgram   = ShaderLoader.createProgram(ShaderSources.LABEL_VERTEX,     ShaderSources.LABEL_FRAGMENT);
         horizonProgram = ShaderLoader.createProgram(ShaderSources.HORIZON_VERTEX,   ShaderSources.HORIZON_FRAGMENT);
+        ringProgram    = ShaderLoader.createProgram(ShaderSources.RING_VERTEX,      ShaderSources.RING_FRAGMENT);
         texturedProgram = ShaderLoader.createProgram(ShaderSources.TEXTURED_VERTEX, ShaderSources.TEXTURED_FRAGMENT);
 
         skyMvp  = GLES30.glGetUniformLocation(skyProgram,  "uMvpMatrix");
@@ -85,6 +91,9 @@ public final class ShaderManager {
 
         horizonMvp   = GLES30.glGetUniformLocation(horizonProgram, "uMvpMatrix");
         horizonColor = GLES30.glGetUniformLocation(horizonProgram, "uColor");
+
+        ringMvp = GLES30.glGetUniformLocation(ringProgram, "uMvpMatrix");
+        ringTex = GLES30.glGetUniformLocation(ringProgram, "uTexture");
 
         texturedMvp   = GLES30.glGetUniformLocation(texturedProgram, "uMvpMatrix");
         texturedModel = GLES30.glGetUniformLocation(texturedProgram, "uModelMatrix");

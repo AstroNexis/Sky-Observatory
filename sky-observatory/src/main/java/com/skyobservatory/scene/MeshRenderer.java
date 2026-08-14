@@ -100,6 +100,39 @@ public final class MeshRenderer {
         initialized = true;
     }
 
+    public void uploadRing(RingMesh mesh) {
+        int[] ids = new int[4];
+        GLES30.glGenVertexArrays(1, ids, 0);
+        GLES30.glGenBuffers(3, ids, 1);
+        vao = ids[0];
+        vboPos = ids[1];
+        vboUv = ids[2];
+        ebo = ids[3];
+
+        GLES30.glBindVertexArray(vao);
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vboPos);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER,
+                mesh.getVertexCount() * 3 * 4, mesh.getVertexBuffer(), GLES30.GL_STATIC_DRAW);
+        GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 0, 0);
+        GLES30.glEnableVertexAttribArray(0);
+
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vboUv);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER,
+                mesh.getVertexCount() * 2 * 4, mesh.getTexCoordBuffer(), GLES30.GL_STATIC_DRAW);
+        GLES30.glVertexAttribPointer(2, 2, GLES30.GL_FLOAT, false, 0, 0);
+        GLES30.glEnableVertexAttribArray(2);
+
+        GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, ebo);
+        GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER,
+                mesh.getIndexCount() * 2, mesh.getIndexBuffer(), GLES30.GL_STATIC_DRAW);
+
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0);
+        GLES30.glBindVertexArray(0);
+
+        indexCount = mesh.getIndexCount();
+        initialized = true;
+    }
+
     public void uploadBillboard(SphereMesh mesh, float x, float y, float z) {
         upload(mesh);
         modelMatrix = Matrix4.identity();
