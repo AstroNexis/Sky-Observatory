@@ -124,7 +124,7 @@ public final class ShaderSources {
         + "void main() {\n"
         + "    vec4 tex = texture(uTexture, vTexCoord);\n"
         + "    float light = max(dot(normalize(vNormal), normalize(vec3(0.5, 0.8, 0.6))), 0.20);\n"
-        + "    fragColor = tex * light;\n"
+        + "    fragColor = vec4(tex.rgb * light, 1.0);\n"
         + "}\n";
 
     // Screen-space label overlay -- rendered as a 2D UI pass after the 3D scene.
@@ -190,5 +190,32 @@ public final class ShaderSources {
         + "layout(location = 0) out vec4 fragColor;\n"
         + "void main() {\n"
         + "    fragColor = uColor;\n"
+        + "}\n";
+
+    // Saturn ring -- flat textured washer with alpha discard for transparency.
+    // Uses the same MVP-driven vertex shader as the body but with a ring
+    // texture (single-channel alpha or RGBA).
+
+    public static final String RING_VERTEX = ""
+        + "#version 300 es\n"
+        + "uniform mat4 uMvpMatrix;\n"
+        + "layout(location = 0) in vec3 aPosition;\n"
+        + "layout(location = 2) in vec2 aTexCoord;\n"
+        + "out vec2 vTexCoord;\n"
+        + "void main() {\n"
+        + "    gl_Position = uMvpMatrix * vec4(aPosition, 1.0);\n"
+        + "    vTexCoord = aTexCoord;\n"
+        + "}\n";
+
+    public static final String RING_FRAGMENT = ""
+        + "#version 300 es\n"
+        + "precision mediump float;\n"
+        + "uniform sampler2D uTexture;\n"
+        + "in vec2 vTexCoord;\n"
+        + "layout(location = 0) out vec4 fragColor;\n"
+        + "void main() {\n"
+        + "    vec4 tex = texture(uTexture, vTexCoord);\n"
+        + "    if (tex.a < 0.05) discard;\n"
+        + "    fragColor = tex;\n"
         + "}\n";
 }

@@ -34,7 +34,9 @@ final class ObservableObjectEntry {
     final ObservableObject source;
     final MeshRenderer bodyMesh;
     final MeshRenderer labelMesh;
+    final MeshRenderer ringMesh;
     final int textureId;
+    final int ringTextureId;
     final int labelTextureId;
 
     /**
@@ -51,14 +53,18 @@ final class ObservableObjectEntry {
             ObservableObject source,
             MeshRenderer bodyMesh,
             MeshRenderer labelMesh,
+            MeshRenderer ringMesh,
             int textureId,
+            int ringTextureId,
             int labelTextureId,
             float labelAspect,
             String displayName) {
         this.source        = source;
         this.bodyMesh      = bodyMesh;
         this.labelMesh     = labelMesh;
+        this.ringMesh      = ringMesh;
         this.textureId     = textureId;
+        this.ringTextureId = ringTextureId;
         this.labelTextureId = labelTextureId;
         this.labelAspect   = labelAspect;
         this.displayName   = displayName;

@@ -131,6 +131,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             for (ObservableObjectEntry entry : objectEntries) {
                 entry.bodyMesh.cleanup();
                 entry.labelMesh.cleanup();
+                if (entry.ringMesh != null) {
+                    entry.ringMesh.cleanup();
+                }
             }
             objectEntries.clear();
             GLES30.glClearColor(0.01f, 0.01f, 0.04f, 1f);
@@ -210,6 +213,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         for (ObservableObjectEntry entry : objectEntries) {
             entry.bodyMesh.cleanup();
             entry.labelMesh.cleanup();
+            if (entry.ringMesh != null) entry.ringMesh.cleanup();
         }
         objectEntries.clear();
         for (ObservableObject obj : snapshot.getObjects()) {
@@ -245,6 +249,24 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         entry.labelMesh.modelMatrix.set(12, wx);
         entry.labelMesh.modelMatrix.set(13, wy);
         entry.labelMesh.modelMatrix.set(14, wz);
+
+        // Position ring mesh at the same world position as the body.
+        if (entry.ringMesh != null) {
+            // Tilt ring ~26° around the X axis so it's not edge-on from
+            // typical viewing angles (Saturn's axial tilt).
+            double tiltRad = Math.toRadians(26.0);
+            float ct = (float) Math.cos(tiltRad);
+            float st = (float) Math.sin(tiltRad);
+            entry.ringMesh.modelMatrix = Matrix4.identity();
+            entry.ringMesh.modelMatrix.set(0,  1f);
+            entry.ringMesh.modelMatrix.set(5,  ct);
+            entry.ringMesh.modelMatrix.set(6,  st);
+            entry.ringMesh.modelMatrix.set(9, -st);
+            entry.ringMesh.modelMatrix.set(10, ct);
+            entry.ringMesh.modelMatrix.set(12, wx);
+            entry.ringMesh.modelMatrix.set(13, wy);
+            entry.ringMesh.modelMatrix.set(14, wz);
+        }
     }
 
     // Draw passes
@@ -358,7 +380,26 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 // Labels are never occluded, never clipped by projection, and
 // are always correctly centered regardless of name length.
     private void drawCelestialObjects(Matrix4 vp) {
-        // Pass 1 -- body spheres
+        // Pass 1 -- ring textures (e.g. Saturn's rings), drawn as a flat
+        // textured washer with alpha discard.  Drawn before body spheres
+        // so the ring back half (farther from camera) is written behind the
+        // planet and the ring front half (closer to camera) occludes the
+        // planet correctly.  The ring inner radius (0.28) is larger than
+        // the sphere radius (0.18), so the body fits entirely inside the
+        // ring hole; the two shapes never overlap in 3D space.
+        GLES30.glUseProgram(shaders.ringProgram);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
+        GLES30.glUniform1i(shaders.ringTex, 0);
+
+        for (ObservableObjectEntry entry : objectEntries) {
+            if (entry.ringMesh == null) continue;
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.ringTextureId);
+            Matrix4 mvp = vp.multiply(entry.ringMesh.modelMatrix);
+            GLES30.glUniformMatrix4fv(shaders.ringMvp, 1, false, mvp.floatArray(), 0);
+            entry.ringMesh.draw();
+        }
+
+        // Pass 2 -- body spheres
         GLES30.glUseProgram(shaders.bodyProgram);
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glUniform1i(shaders.bodyTex, 0);
@@ -370,7 +411,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             entry.bodyMesh.draw();
         }
 
-        // Pass 2 -- 2D screen-space label overlay
+        // Pass 3 -- 2D screen-space label overlay
         //
         // Depth writes and testing are disabled so labels always paint over
         // the scene.  Each label's NDC centre is computed by projecting the
