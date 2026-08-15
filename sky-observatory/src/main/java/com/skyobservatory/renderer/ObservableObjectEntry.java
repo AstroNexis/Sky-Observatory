@@ -49,6 +49,9 @@ final class ObservableObjectEntry {
     /** Display name cached here to avoid repeated JNI calls in the draw loop. */
     final String displayName;
 
+    /** Draw priority: higher values are drawn last (on top). */
+    final int drawPriority;
+
     ObservableObjectEntry(
             ObservableObject source,
             MeshRenderer bodyMesh,
@@ -58,7 +61,8 @@ final class ObservableObjectEntry {
             int ringTextureId,
             int labelTextureId,
             float labelAspect,
-            String displayName) {
+            String displayName,
+            int drawPriority) {
         this.source        = source;
         this.bodyMesh      = bodyMesh;
         this.labelMesh     = labelMesh;
@@ -68,5 +72,6 @@ final class ObservableObjectEntry {
         this.labelTextureId = labelTextureId;
         this.labelAspect   = labelAspect;
         this.displayName   = displayName;
+        this.drawPriority  = drawPriority;
     }
 }

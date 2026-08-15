@@ -17,6 +17,7 @@ package com.skyobservatory.renderer;
 
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
+import com.skyobservatory.api.ObservableObject.ObjectCategory;
 import com.skyobservatory.api.PlanetData;
 import com.skyobservatory.resources.SkyResources;
 import com.skyobservatory.scene.MeshRenderer;
@@ -77,7 +78,22 @@ final class CelestialObjectFactory {
             }
         }
 
-        return new ObservableObjectEntry(obj, body, label, ring, texId, ringTexId, labelTexId, aspect, name);
+        int priority = priorityForCategory(obj.getCategory());
+        return new ObservableObjectEntry(obj, body, label, ring, texId, ringTexId, labelTexId, aspect, name, priority);
+    }
+
+    /** Higher priority = drawn last (on top when overlapping). */
+    private static int priorityForCategory(ObjectCategory cat) {
+        switch (cat) {
+            case MOON:               return 100;
+            case PLANET:
+            case SATELLITE:          return 50;
+            case SOLAR_SYSTEM_BODY:  return 30;
+            case STAR:
+            case DEEP_SKY:
+            case CONSTELLATION:      return 20;
+            default:                 return 10;
+        }
     }
 
     private SphereMesh sphereFor(float radius) {

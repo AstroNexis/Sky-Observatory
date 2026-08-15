@@ -31,6 +31,7 @@ import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.shaders.ShaderManager;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -221,6 +222,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             placeEntry(entry, obj);
             objectEntries.add(entry);
         }
+        // Sort by draw priority so higher-priority objects (e.g. Moon)
+        // are drawn last and appear on top when overlapping.
+        objectEntries.sort(Comparator.comparingInt(e -> e.drawPriority));
     }
 
     // Computes the world-space position for {@code obj} and writes it into
@@ -375,36 +379,35 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     }
 
     // Generic object draw loop -- O(n), no per-type branching.
-// Pass 1: draw all body spheres (3D, depth-tested).
+// Entries are sorted by drawPriority so that higher-priority objects
+// (e.g. Moon) are drawn last and appear on top when overlapping.
+// For each entry, the ring (if present) is drawn first, then the body
+// sphere, so the ring back half sits behind the planet.
+// Pass 1: draw all body spheres and rings (3D, depth-tested).
 // Pass 2: draw all labels as 2D screen-space overlay after the 3D pass.
 // Labels are never occluded, never clipped by projection, and
 // are always correctly centered regardless of name length.
     private void drawCelestialObjects(Matrix4 vp) {
-        // Pass 1 -- ring textures (e.g. Saturn's rings), drawn as a flat
-        // textured washer with alpha discard.  Drawn before body spheres
-        // so the ring back half (farther from camera) is written behind the
-        // planet and the ring front half (closer to camera) occludes the
-        // planet correctly.  The ring inner radius (0.28) is larger than
-        // the sphere radius (0.18), so the body fits entirely inside the
-        // ring hole; the two shapes never overlap in 3D space.
-        GLES30.glUseProgram(shaders.ringProgram);
+        // Pass 1 -- 3D body spheres and rings, drawn in priority order.
+        // Rings are drawn before their body sphere so the back half sits
+        // behind the planet.  The body shader writes alpha=1.0 so the
+        // planet is fully opaque and correctly occludes the ring behind it.
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glUniform1i(shaders.ringTex, 0);
 
         for (ObservableObjectEntry entry : objectEntries) {
-            if (entry.ringMesh == null) continue;
-            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.ringTextureId);
-            Matrix4 mvp = vp.multiply(entry.ringMesh.modelMatrix);
-            GLES30.glUniformMatrix4fv(shaders.ringMvp, 1, false, mvp.floatArray(), 0);
-            entry.ringMesh.draw();
-        }
+            // Ring pass (if present)
+            if (entry.ringMesh != null) {
+                GLES30.glUseProgram(shaders.ringProgram);
+                GLES30.glUniform1i(shaders.ringTex, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.ringTextureId);
+                Matrix4 mvp = vp.multiply(entry.ringMesh.modelMatrix);
+                GLES30.glUniformMatrix4fv(shaders.ringMvp, 1, false, mvp.floatArray(), 0);
+                entry.ringMesh.draw();
+            }
 
-        // Pass 2 -- body spheres
-        GLES30.glUseProgram(shaders.bodyProgram);
-        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
-        GLES30.glUniform1i(shaders.bodyTex, 0);
-
-        for (ObservableObjectEntry entry : objectEntries) {
+            // Body sphere
+            GLES30.glUseProgram(shaders.bodyProgram);
+            GLES30.glUniform1i(shaders.bodyTex, 0);
             GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.textureId);
             Matrix4 mvp = vp.multiply(entry.bodyMesh.modelMatrix);
             GLES30.glUniformMatrix4fv(shaders.bodyMvp, 1, false, mvp.floatArray(), 0);
