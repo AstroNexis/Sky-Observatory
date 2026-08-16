@@ -192,6 +192,45 @@ public final class ShaderSources {
         + "    fragColor = uColor;\n"
         + "}\n";
 
+    // Moon body -- textured sphere with dynamic sun-direction illumination for phase rendering.
+    // The sun direction (world-space, normalized) is passed as a uniform so the fragment
+    // shader can compute the terminator and illuminated fraction per-pixel.
+
+    public static final String MOON_VERTEX = ""
+        + "#version 300 es\n"
+        + "uniform mat4 uMvpMatrix;\n"
+        + "uniform mat4 uModelMatrix;\n"
+        + "layout(location = 0) in vec3 aPosition;\n"
+        + "layout(location = 1) in vec3 aNormal;\n"
+        + "layout(location = 2) in vec2 aTexCoord;\n"
+        + "out vec2 vTexCoord;\n"
+        + "out vec3 vWorldNormal;\n"
+        + "void main() {\n"
+        + "    gl_Position = uMvpMatrix * vec4(aPosition, 1.0);\n"
+        + "    vTexCoord = aTexCoord;\n"
+        + "    vWorldNormal = normalize(mat3(uModelMatrix) * aNormal);\n"
+        + "}\n";
+
+    public static final String MOON_FRAGMENT = ""
+        + "#version 300 es\n"
+        + "precision mediump float;\n"
+        + "uniform sampler2D uTexture;\n"
+        + "uniform vec3 uSunDirection;\n"
+        + "in vec2 vTexCoord;\n"
+        + "in vec3 vWorldNormal;\n"
+        + "layout(location = 0) out vec4 fragColor;\n"
+        + "void main() {\n"
+        + "    vec4 tex = texture(uTexture, vTexCoord);\n"
+        + "    vec3 n = normalize(vWorldNormal);\n"
+        + "    // Diffuse illumination from the sun direction.\n"
+        + "    // The terminator lies where dot(n, uSunDirection) = 0.\n"
+        + "    float sunLit = max(dot(n, uSunDirection), 0.0);\n"
+        + "    // Soft ambient on the dark side for earthshine effect.\n"
+        + "    float ambient = 0.05;\n"
+        + "    float light = ambient + 0.95 * sunLit;\n"
+        + "    fragColor = vec4(tex.rgb * light, 1.0);\n"
+        + "}\n";
+
     // Saturn ring -- flat textured washer with alpha discard for transparency.
     // Uses the same MVP-driven vertex shader as the body but with a ring
     // texture (single-channel alpha or RGBA).
