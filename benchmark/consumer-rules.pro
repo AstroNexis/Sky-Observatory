@@ -1,1 +1,1 @@
-
+# benchmark module -- no consumer rules needed.

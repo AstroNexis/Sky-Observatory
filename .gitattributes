@@ -1,0 +1,34 @@
+# normalize line endings to lf on checkout
+* text=auto eol=lf
+
+# binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.jar binary
+*.keystore binary
+*.jks binary
+*.aab binary
+*.apk binary
+*.so binary
+
+# diff treats these as text
+*.java text diff=java
+*.kt text diff=kotlin
+*.kts text diff=kotlin
+*.xml text diff=xml
+*.yml text diff=yaml
+*.properties text
+*.md text
+*.gradle text
+
+# generated files should not be in archives
+.gitattributes export-ignore
+.gitignore export-ignore
+.editorconfig export-ignore
+.mailmap export-ignore
+.github/ export-ignore
+gradlew.bat export-ignore
