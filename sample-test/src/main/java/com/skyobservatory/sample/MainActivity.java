@@ -37,6 +37,7 @@ import com.skyobservatory.api.EquatorialCoordinates;
 import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
 import com.skyobservatory.engine.EngineInitializer;
+import com.skyobservatory.engine.LocationRepository;
 
 import java.time.Instant;
 import java.time.ZoneId;

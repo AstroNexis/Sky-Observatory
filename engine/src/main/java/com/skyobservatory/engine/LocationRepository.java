@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.skyobservatory.renderer;
+package com.skyobservatory.engine;
 
 import android.content.Context;
 import android.location.Location;
@@ -31,16 +31,16 @@ import com.google.android.gms.tasks.CancellationTokenSource;
  * before calling {@link #getCurrentLocation(LocationCallback)}. This class does not
  * check permissions; it assumes they are already held.
  */
-final class LocationRepository {
+public final class LocationRepository {
 
-    interface LocationCallback {
+    public interface LocationCallback {
         void onLocation(Location location);
         void onError(String reason);
     }
 
     private final FusedLocationProviderClient fusedClient;
 
-    LocationRepository(Context context) {
+    public LocationRepository(Context context) {
         this.fusedClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
@@ -52,7 +52,7 @@ final class LocationRepository {
      *
      * @param callback receives the location or a user-readable error description
      */
-    void getCurrentLocation(LocationCallback callback) {
+    public void getCurrentLocation(LocationCallback callback) {
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .setDurationMillis(10_000)

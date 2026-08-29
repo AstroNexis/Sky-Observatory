@@ -19,8 +19,6 @@ import android.opengl.GLES30;
 
 import com.skyobservatory.math.Matrix4;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public final class MeshRenderer {
@@ -85,7 +83,7 @@ public final class MeshRenderer {
         vao = ids[0];
         vboPos = ids[1];
 
-        FloatBuffer buf = toFloatBuffer(verts);
+        FloatBuffer buf = MeshUtils.toFloatBuffer(verts);
 
         GLES30.glBindVertexArray(vao);
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vboPos);
@@ -151,12 +149,12 @@ public final class MeshRenderer {
 
         GLES30.glBindVertexArray(vao);
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vboPos);
-        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, verts.length * 4, toFloatBuffer(verts), GLES30.GL_STATIC_DRAW);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, verts.length * 4, MeshUtils.toFloatBuffer(verts), GLES30.GL_STATIC_DRAW);
         GLES30.glVertexAttribPointer(0, 3, GLES30.GL_FLOAT, false, 0, 0);
         GLES30.glEnableVertexAttribArray(0);
 
         GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vboUv);
-        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, uvs.length * 4, toFloatBuffer(uvs), GLES30.GL_STATIC_DRAW);
+        GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, uvs.length * 4, MeshUtils.toFloatBuffer(uvs), GLES30.GL_STATIC_DRAW);
         GLES30.glVertexAttribPointer(2, 2, GLES30.GL_FLOAT, false, 0, 0);
         GLES30.glEnableVertexAttribArray(2);
 
@@ -201,13 +199,5 @@ public final class MeshRenderer {
         vboUv = 0;
         ebo = 0;
         initialized = false;
-    }
-
-    private static FloatBuffer toFloatBuffer(float[] data) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(data.length * 4).order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(data);
-        fb.position(0);
-        return fb;
     }
 }

@@ -19,15 +19,7 @@ import android.view.MotionEvent
 import kotlin.math.sqrt
 
 /**
- * Modular touch controller for handling multi-touch gestures.
- *
- * This is the main facade class that coordinates between:
- * - FingerTracker: Tracks individual finger positions
- * - GestureRecognizer: Detects gestures from finger data
- * - TouchStateManager: Manages touch state, smoothing, and accumulation
- *
- * The public API is designed to be compatible with the original TouchController
- * while providing a more modular and extensible architecture.
+ * Touch controller for handling multi-touch gestures.
  *
  * Interaction model (matches Touch.zip / Sky Map / Star Walk reference):
  *   Single-finger drag:
@@ -54,11 +46,6 @@ class TouchController {
         private const val REFERENCE_FOV_DEG = 60f     // FOV at which DRAG_SCALE was tuned
         private const val PINCH_SENSITIVITY = 0.40f   // span-pixels -> FOV-change scale
     }
-
-    // Component instances
-    private val fingerTracker = FingerTracker()
-    private val gestureRecognizer = GestureRecognizer(fingerTracker)
-    private val touchStateManager = TouchStateManager()
 
     // Gesture-state machine (mirrors DragRotateZoomGestureDetector in the reference).
     private enum class State { READY, DRAGGING, DRAGGING2 }
@@ -100,8 +87,6 @@ class TouchController {
      * @param event The MotionEvent to process
      */
     fun onTouchEvent(event: MotionEvent) {
-        // Note: fingerTracker.update() is called inside gestureRecognizer.processEvent()
-        // below -- do NOT call it here again or finger state will be advanced twice per event.
         val action = event.action and MotionEvent.ACTION_MASK
 
         when {
@@ -193,9 +178,6 @@ class TouchController {
             }
         }
 
-        // Update modular components (for any code that reads them directly).
-        val gestureData = gestureRecognizer.processEvent(event)
-        touchStateManager.update(event, gestureData)
     }
 
     /**
@@ -230,19 +212,8 @@ class TouchController {
         return v
     }
 
-    // Modular component access for advanced usage
-
-    /** Returns the FingerTracker instance for advanced finger tracking */
-    fun getFingerTracker(): FingerTracker = fingerTracker
-
-    /** Returns the GestureRecognizer instance for custom gesture handling */
-    fun getGestureRecognizer(): GestureRecognizer = gestureRecognizer
-
-    /** Returns the TouchStateManager instance for state management */
-    fun getTouchStateManager(): TouchStateManager = touchStateManager
-
     /**
-     * Resets all touch state and components to initial values.
+     * Resets all touch state to initial values.
      */
     fun reset() {
         state = State.READY
@@ -251,9 +222,6 @@ class TouchController {
         distanceX = 0f
         distanceY = 0f
         pinchDelta = 0f
-
-        gestureRecognizer.reset()
-        touchStateManager.reset()
     }
 
     /** Returns true if currently touching */
