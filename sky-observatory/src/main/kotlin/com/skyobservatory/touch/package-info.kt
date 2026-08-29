@@ -14,53 +14,27 @@
  */
 
 /**
- * Touch Module - Modular Touch System Architecture
- * 
- * This package provides a modular touch handling system for multi-touch gestures
- * with the following components:
- * 
+ * Touch Module - Touch handling system for multi-touch gestures.
+ *
+ * This package provides a touch handling system with the following components:
+ *
  * 1. [FingerTracker] - Tracks individual finger positions and touch points
  *    - Manages finger lifecycle (down, move, up)
  *    - Handles multi-touch scenarios with up to 10 fingers
  *    - Provides utilities for accessing finger positions and spans
- * 
- * 2. [GestureRecognizer] - Detects gestures from finger tracking data
- *    - Recognizes pan, pinch, and rotation gestures
- *    - Applies sensitivity and acceleration factors
- *    - Handles multi-touch gesture combinations
- *    - Provides smoothed gesture data for camera interaction
- * 
- * 3. [TouchStateManager] - Manages touch state, smoothing, and inertia
- *    - Applies exponential moving average smoothing
- *    - Tracks velocity for inertia support
- *    - Manages touch lifecycle and state transitions
- *    - Provides consume methods for gesture deltas
- * 
- * 4. [TouchController] - Main facade class
- *    - Coordinates all components
- *    - Maintains backward compatibility with original API
- *    - Provides access to individual components for advanced usage
- * 
- * Architecture Benefits:
- * - Separation of concerns: Each component has a single responsibility
- * - Testability: Components can be tested independently
- * - Extensibility: New gesture types can be added without modifying core logic
- * - Maintainability: Clear component boundaries and dependencies
- * - Backward compatibility: Existing code continues to work unchanged
- * 
+ *
+ * 2. [TouchController] - Main touch controller class
+ *    - Handles single-finger pan and two-finger pinch gestures
+ *    - Accumulates deltas consumed by the renderer on the GL thread
+ *    - FOV-proportional drag sensitivity for consistent feel
+ *
  * Usage Example:
  * ```kotlin
- * // Basic usage (same as original)
  * val touchController = TouchController()
  * touchController.onTouchEvent(event)
  * val deltaX = touchController.consumeDeltaX()
  * val deltaY = touchController.consumeDeltaY()
  * val pinch = touchController.consumePinch()
- * 
- * // Advanced usage with modular components
- * val fingerTracker = touchController.getFingerTracker()
- * val gestureRecognizer = touchController.getGestureRecognizer()
- * val touchStateManager = touchController.getTouchStateManager()
  * ```
  */
 package com.skyobservatory.touch

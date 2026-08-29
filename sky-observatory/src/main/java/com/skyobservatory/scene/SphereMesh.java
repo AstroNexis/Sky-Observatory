@@ -15,8 +15,6 @@
 
 package com.skyobservatory.scene;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -70,21 +68,21 @@ public final class SphereMesh {
             }
         }
 
-        vertexBuffer = toFloatBuffer(verts);
-        normalBuffer = toFloatBuffer(norms);
-        texCoordBuffer = toFloatBuffer(uvs);
-        indexBuffer = toShortBuffer(idx);
+        vertexBuffer = MeshUtils.toFloatBuffer(verts);
+        normalBuffer = MeshUtils.toFloatBuffer(norms);
+        texCoordBuffer = MeshUtils.toFloatBuffer(uvs);
+        indexBuffer = MeshUtils.toShortBuffer(idx);
     }
 
     public SphereMesh(float[] verts, float[] uvs) {
         this.vertexCount = verts.length / 3;
         this.indexCount = verts.length / 3;
-        this.vertexBuffer = toFloatBuffer(verts);
-        this.texCoordBuffer = toFloatBuffer(uvs);
-        this.normalBuffer = toFloatBuffer(new float[verts.length]);
+        this.vertexBuffer = MeshUtils.toFloatBuffer(verts);
+        this.texCoordBuffer = MeshUtils.toFloatBuffer(uvs);
+        this.normalBuffer = MeshUtils.toFloatBuffer(new float[verts.length]);
         short[] idx = new short[vertexCount];
         for (int i = 0; i < vertexCount; i++) idx[i] = (short) i;
-        this.indexBuffer = toShortBuffer(idx);
+        this.indexBuffer = MeshUtils.toShortBuffer(idx);
     }
 
     public FloatBuffer getVertexBuffer() { return vertexBuffer; }
@@ -93,18 +91,4 @@ public final class SphereMesh {
     public ShortBuffer getIndexBuffer() { return indexBuffer; }
     public int getIndexCount() { return indexCount; }
     public int getVertexCount() { return vertexCount; }
-
-    private static FloatBuffer toFloatBuffer(float[] d) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(d.length * 4).order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(d); fb.position(0);
-        return fb;
-    }
-
-    private static ShortBuffer toShortBuffer(short[] d) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(d.length * 2).order(ByteOrder.nativeOrder());
-        ShortBuffer sb = bb.asShortBuffer();
-        sb.put(d); sb.position(0);
-        return sb;
-    }
 }

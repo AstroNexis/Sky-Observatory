@@ -33,12 +33,10 @@ import com.skyobservatory.api.AstroTime;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.Observer;
-import com.skyobservatory.api.PositionResult;
-import com.skyobservatory.api.HorizontalCoordinate;
-import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
 import com.skyobservatory.api.VisibilityState;
 import com.skyobservatory.engine.EngineInitializer;
+import com.skyobservatory.engine.LocationRepository;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.util.CrashHandler;
 
@@ -185,21 +183,14 @@ public class RendererActivity extends AppCompatActivity {
     }
 
     private List<ObservableObject> buildObservableList(Observer obs, AstroTime time) {
-        List<ObservableObject> result = new ArrayList<>();
-        for (CelestialObject target : CelestialObject.defaultTargets()) {
-            try {
-                PositionResult pos = engine.calculatePosition(target, obs, time);
-                SkyCoordinate coord = engine.project(
-                        new HorizontalCoordinate(pos.getAzimuthDegrees(), pos.getAltitudeDegrees()));
-                VisibilityState vis = pos.getAltitudeDegrees() >= 0
-                        ? VisibilityState.VISIBLE
-                        : VisibilityState.BELOW_HORIZON;
-                result.add(new ObservableObject(target, coord, vis, target.getCategory()));
-            } catch (Exception e) {
-                Log.e(TAG, "Position calc failed for " + target.getName(), e);
-            }
+        try {
+            SkySnapshot snapshot = engine.createSnapshot(
+                    CelestialObject.defaultTargets(), obs, time);
+            return snapshot.getObjects();
+        } catch (AstroException e) {
+            Log.e(TAG, "Snapshot creation failed", e);
+            return new ArrayList<>();
         }
-        return result;
     }
 
     @Override

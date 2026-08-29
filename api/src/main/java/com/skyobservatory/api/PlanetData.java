@@ -18,200 +18,88 @@ package com.skyobservatory.api;
 /**
  * Physical data for solar system bodies, sourced from IAU 2015 Resolution B3.
  *
- * <p>Each entry maps to a {@link CelestialObject} via NAIF ID. The
- * {@link #getRenderScale()} value matches {@link CelestialObject#getRenderRadius()}
- * so that rendering pipelines can use either source interchangeably.</p>
+ * <p>Deprecated. All fields are now available directly on {@link CelestialObject}.
+ * Use {@link CelestialObject#getEquatorialRadiusKm()}, {@link CelestialObject#getMeanRadiusKm()},
+ * {@link CelestialObject#getDiameterKm()}, {@link CelestialObject#getRenderRadius()}, and
+ * {@link CelestialObject#hasRings()} instead.</p>
  *
- * <p>Saturn includes a {@link #RING_TEXTURE} constant for the ring asset.</p>
- *
- * <p>Instances are immutable.</p>
+ * @deprecated Use {@link CelestialObject} directly. This class is retained for
+ *             backward compatibility and delegates to the catalog entries.
  */
+@Deprecated
 public final class PlanetData {
 
     /** Filename of Saturn's ring texture inside {@code assets/}. */
-    public static final String SATURN_RING_TEXTURE = "saturn_ring.png";
+    @Deprecated public static final String SATURN_RING_TEXTURE = CelestialObject.SATURN_RING_TEXTURE;
 
-    private final int naifId;
-    private final String name;
-    private final String textureFile;
-    private final double equatorialRadiusKm;
-    private final double meanRadiusKm;
-    private final double diameterKm;
-    private final float renderScale;
+    private final CelestialObject celestial;
 
-    private PlanetData(Builder b) {
-        this.naifId           = b.naifId;
-        this.name             = b.name;
-        this.textureFile      = b.textureFile;
-        this.equatorialRadiusKm = b.equatorialRadiusKm;
-        this.meanRadiusKm     = b.meanRadiusKm;
-        this.diameterKm       = b.equatorialRadiusKm * 2.0;
-        this.renderScale      = b.renderScale;
+    private PlanetData(CelestialObject celestial) {
+        this.celestial = celestial;
     }
 
-    public int getNaifId()                          { return naifId; }
-    public String getName()                         { return name; }
-    public String getTextureFile()                  { return textureFile; }
-    public double getEquatorialRadiusKm()           { return equatorialRadiusKm; }
-    public double getMeanRadiusKm()                 { return meanRadiusKm; }
-    public double getDiameterKm()                   { return diameterKm; }
-    public float getRenderScale()                   { return renderScale; }
+    @Deprecated public int getNaifId()                          { return celestial.getNaifId(); }
+    @Deprecated public String getName()                         { return celestial.getName(); }
+    @Deprecated public String getTextureFile()                  { return celestial.getAssetName(); }
+    @Deprecated public double getEquatorialRadiusKm()           { return celestial.getEquatorialRadiusKm(); }
+    @Deprecated public double getMeanRadiusKm()                 { return celestial.getMeanRadiusKm(); }
+    @Deprecated public double getDiameterKm()                   { return celestial.getDiameterKm(); }
+    @Deprecated public float getRenderScale()                   { return celestial.getRenderRadius(); }
+    @Deprecated public boolean hasRings()                       { return celestial.hasRings(); }
 
-    /** Returns {@code true} when this body has a ring texture. */
-    public boolean hasRings() {
-        return naifId == CelestialObject.NAIF_SATURN;
-    }
+    // Pre-built entries (delegating to CelestialObject.CATALOG)
 
-    // -----------------------------------------------------------------------
-    // Pre-built entries for every body in the CelestialObject catalog.
-    // IAU 2015 Resolution B3 nominal radii (km).
-    // Render scale matches CelestialObject.renderRadius.
-    // -----------------------------------------------------------------------
+    @Deprecated public static final PlanetData SUN     = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_SUN));
+    @Deprecated public static final PlanetData MERCURY = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_MERCURY));
+    @Deprecated public static final PlanetData VENUS   = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_VENUS));
+    @Deprecated public static final PlanetData MOON    = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_MOON));
+    @Deprecated public static final PlanetData MARS    = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_MARS));
+    @Deprecated public static final PlanetData JUPITER = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_JUPITER));
+    @Deprecated public static final PlanetData SATURN  = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_SATURN));
+    @Deprecated public static final PlanetData URANUS  = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_URANUS));
+    @Deprecated public static final PlanetData NEPTUNE = new PlanetData(CelestialObject.CATALOG.get(CelestialObject.NAIF_NEPTUNE));
 
-    public static final PlanetData SUN = new Builder(CelestialObject.NAIF_SUN, "Sun")
-            .textureFile("sun.jpg")
-            .equatorialRadiusKm(695700.0)
-            .meanRadiusKm(695700.0)
-            .renderScale(0.80f)
-            .build();
-
-    public static final PlanetData MERCURY = new Builder(CelestialObject.NAIF_MERCURY, "Mercury")
-            .textureFile("mercury.jpg")
-            .equatorialRadiusKm(2440.53)
-            .meanRadiusKm(2439.7)
-            .renderScale(0.10f)
-            .build();
-
-    public static final PlanetData VENUS = new Builder(CelestialObject.NAIF_VENUS, "Venus")
-            .textureFile("venus.jpg")
-            .equatorialRadiusKm(6051.8)
-            .meanRadiusKm(6051.8)
-            .renderScale(0.15f)
-            .build();
-
-    public static final PlanetData MOON = new Builder(CelestialObject.NAIF_MOON, "Moon")
-            .textureFile("moon.jpg")
-            .equatorialRadiusKm(1738.1)
-            .meanRadiusKm(1737.4)
-            .renderScale(0.25f)
-            .build();
-
-    public static final PlanetData MARS = new Builder(CelestialObject.NAIF_MARS, "Mars")
-            .textureFile("mars.jpg")
-            .equatorialRadiusKm(3396.19)
-            .meanRadiusKm(3389.5)
-            .renderScale(0.12f)
-            .build();
-
-    public static final PlanetData JUPITER = new Builder(CelestialObject.NAIF_JUPITER, "Jupiter")
-            .textureFile("jupiter.jpg")
-            .equatorialRadiusKm(71492.0)
-            .meanRadiusKm(69911.0)
-            .renderScale(0.20f)
-            .build();
-
-    public static final PlanetData SATURN = new Builder(CelestialObject.NAIF_SATURN, "Saturn")
-            .textureFile("saturn.jpg")
-            .equatorialRadiusKm(60268.0)
-            .meanRadiusKm(58232.0)
-            .renderScale(0.18f)
-            .build();
-
-    public static final PlanetData URANUS = new Builder(CelestialObject.NAIF_URANUS, "Uranus")
-            .textureFile(null)
-            .equatorialRadiusKm(25559.0)
-            .meanRadiusKm(25362.0)
-            .renderScale(0.12f)
-            .build();
-
-    public static final PlanetData NEPTUNE = new Builder(CelestialObject.NAIF_NEPTUNE, "Neptune")
-            .textureFile(null)
-            .equatorialRadiusKm(24764.0)
-            .meanRadiusKm(24622.0)
-            .renderScale(0.12f)
-            .build();
-
-    /** All entries indexed by NAIF ID. */
     private static final java.util.Map<Integer, PlanetData> ALL;
     static {
         java.util.Map<Integer, PlanetData> m = new java.util.LinkedHashMap<>();
-        m.put(SUN.naifId,     SUN);
-        m.put(MERCURY.naifId, MERCURY);
-        m.put(VENUS.naifId,   VENUS);
-        m.put(MOON.naifId,    MOON);
-        m.put(MARS.naifId,    MARS);
-        m.put(JUPITER.naifId, JUPITER);
-        m.put(SATURN.naifId,  SATURN);
-        m.put(URANUS.naifId,  URANUS);
-        m.put(NEPTUNE.naifId, NEPTUNE);
+        for (CelestialObject co : CelestialObject.CATALOG.values()) {
+            m.put(co.getNaifId(), new PlanetData(co));
+        }
         ALL = java.util.Collections.unmodifiableMap(m);
     }
 
-    /**
-     * Returns the {@link PlanetData} for the given NAIF ID, or {@code null}
-     * if no entry exists.
-     */
+    @Deprecated
     public static PlanetData fromNaifId(int naifId) {
         return ALL.get(naifId);
     }
 
-    // Builder
-
+    @Deprecated
     public static final class Builder {
         private final int naifId;
         private final String name;
-        private String textureFile;
-        private double equatorialRadiusKm;
-        private double meanRadiusKm;
-        private float renderScale;
 
-        public Builder(int naifId, String name) {
+        @Deprecated public Builder(int naifId, String name) {
             this.naifId = naifId;
             this.name = name;
         }
 
-        public Builder textureFile(String textureFile) {
-            this.textureFile = textureFile;
-            return this;
-        }
+        @Deprecated public Builder textureFile(String textureFile) { return this; }
+        @Deprecated public Builder equatorialRadiusKm(double equatorialRadiusKm) { return this; }
+        @Deprecated public Builder meanRadiusKm(double meanRadiusKm) { return this; }
+        @Deprecated public Builder renderScale(float renderScale) { return this; }
 
-        public Builder equatorialRadiusKm(double equatorialRadiusKm) {
-            this.equatorialRadiusKm = equatorialRadiusKm;
-            return this;
-        }
-
-        public Builder meanRadiusKm(double meanRadiusKm) {
-            this.meanRadiusKm = meanRadiusKm;
-            return this;
-        }
-
-        public Builder renderScale(float renderScale) {
-            this.renderScale = renderScale;
-            return this;
-        }
-
+        @Deprecated
         public PlanetData build() {
-            return new PlanetData(this);
+            CelestialObject co = CelestialObject.fromNaifId(naifId);
+            if (co != null) return new PlanetData(co);
+            // Return a minimal fallback for custom entries
+            return new PlanetData(new CelestialObject(naifId, name));
         }
     }
 
     @Override
+    @Deprecated
     public String toString() {
-        return "PlanetData{name=" + name + ", naifId=" + naifId
-                + ", eqRadius=" + equatorialRadiusKm + "km"
-                + ", meanRadius=" + meanRadiusKm + "km"
-                + ", scale=" + renderScale + "}";
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) return true;
-        if (!(other instanceof PlanetData)) return false;
-        return naifId == ((PlanetData) other).naifId;
-    }
-
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(naifId);
+        return "PlanetData{name=" + celestial.getName() + ", naifId=" + celestial.getNaifId() + "}";
     }
 }

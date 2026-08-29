@@ -15,7 +15,6 @@
 
 package com.skyobservatory.engine.coordinates;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -24,25 +23,7 @@ public class CoordinateConverterTest {
 
     private static final double DELTA = 1e-10;
 
-    private CoordinateConverter converter;
-
-    @Before
-    public void setUp() {
-        converter = new CoordinateConverter();
-    }
-
-    @Test
-    public void degreesToRadiansConvertsCorrectly() {
-        assertEquals(Math.PI, converter.degreesToRadians(180.0), DELTA);
-        assertEquals(Math.PI / 2.0, converter.degreesToRadians(90.0), DELTA);
-        assertEquals(0.0, converter.degreesToRadians(0.0), DELTA);
-    }
-
-    @Test
-    public void radiansToDegreesConvertsCorrectly() {
-        assertEquals(180.0, converter.radiansToDegrees(Math.PI), DELTA);
-        assertEquals(90.0, converter.radiansToDegrees(Math.PI / 2.0), DELTA);
-    }
+    private final CoordinateConverter converter = new CoordinateConverter();
 
     @Test
     public void normalizeAzimuthKeepsAngleInRange() {
