@@ -3,7 +3,7 @@
 ## reporting a vulnerability
 
 if you find a security issue in sky vault, please don't open a public issue.
-instead, send an email to **phucan.work@outlook.com** with as much detail as
+instead, send an email to **phucan@tutamail.com** with as much detail as
 you can provide.
 
 we'll try to get back to you within a week. once the issue is confirmed, we'll
