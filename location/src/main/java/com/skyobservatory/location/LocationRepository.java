@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-package com.skyobservatory.renderer;
+package com.skyobservatory.location;
 
 import android.content.Context;
 import android.location.Location;
@@ -26,33 +26,26 @@ import com.google.android.gms.tasks.CancellationTokenSource;
 
 /**
  * Obtains the device's current location via {@link FusedLocationProviderClient}.
- *
- * Callers are responsible for verifying that location permission has been granted
- * before calling {@link #getCurrentLocation(LocationCallback)}. This class does not
- * check permissions; it assumes they are already held.
  */
-final class LocationRepository {
+public final class LocationRepository {
 
-    interface LocationCallback {
+    public interface LocationCallback {
         void onLocation(Location location);
         void onError(String reason);
     }
 
     private final FusedLocationProviderClient fusedClient;
 
-    LocationRepository(Context context) {
-        this.fusedClient = LocationServices.getFusedLocationProviderClient(context);
+    public LocationRepository(Context context) {
+        fusedClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
     /**
      * Requests a single current location fix.
      *
-     * Uses {@link Priority#PRIORITY_HIGH_ACCURACY} with a 10-second timeout and a
-     * 30-second max accepted cache age. The callback is invoked on the main thread.
-     *
-     * @param callback receives the location or a user-readable error description
+     * Callers are responsible for verifying that location permission is held.
      */
-    void getCurrentLocation(LocationCallback callback) {
+    public void getCurrentLocation(LocationCallback callback) {
         CurrentLocationRequest request = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .setDurationMillis(10_000)

@@ -39,6 +39,7 @@ import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
 import com.skyobservatory.api.VisibilityState;
 import com.skyobservatory.engine.EngineInitializer;
+import com.skyobservatory.location.LocationRepository;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.util.CrashHandler;
 
