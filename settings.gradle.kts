@@ -19,6 +19,7 @@ rootProject.name = "sky-observatory"
 include(":api")
 include(":engine")
 include(":native")
+include(":location")
 include(":sample-test")
 include(":sky-observatory")
 include(":benchmark")
