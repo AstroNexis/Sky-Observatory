@@ -395,10 +395,6 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         // planet is fully opaque and correctly occludes the ring behind it.
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
 
-        // Compute the sun direction (world-space) from the Sun's position
-        // for moon phase shading.  The Sun is always present in the snapshot.
-        float[] sunDir = computeSunDirection();
-
         for (ObservableObjectEntry entry : objectEntries) {
             // Ring pass (if present)
             if (entry.ringMesh != null) {
@@ -412,6 +408,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
             // Body sphere -- use the moon shader for the moon, regular body shader otherwise.
             boolean isMoon = entry.source.getTarget().getNaifId() == CelestialObject.NAIF_MOON;
+            float[] sunDir = isMoon ? computeSunDirection(entry) : null;
 
             if (isMoon && sunDir != null) {
                 GLES30.glUseProgram(shaders.moonProgram);
@@ -488,15 +485,18 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * Computes the world-space direction from the observer (origin) toward the Sun.
-     * Returns null if the Sun is not present in the current object list.
+     * Computes the world-space direction from the Moon toward the Sun.
+     * Returns null if the Sun is not present or both bodies overlap.
      */
-    private float[] computeSunDirection() {
+    private float[] computeSunDirection(ObservableObjectEntry moon) {
+        float moonX = moon.bodyMesh.modelMatrix.get(12);
+        float moonY = moon.bodyMesh.modelMatrix.get(13);
+        float moonZ = moon.bodyMesh.modelMatrix.get(14);
         for (ObservableObjectEntry entry : objectEntries) {
             if (entry.source.getTarget().getNaifId() == CelestialObject.NAIF_SUN) {
-                float wx = entry.bodyMesh.modelMatrix.get(12);
-                float wy = entry.bodyMesh.modelMatrix.get(13);
-                float wz = entry.bodyMesh.modelMatrix.get(14);
+                float wx = entry.bodyMesh.modelMatrix.get(12) - moonX;
+                float wy = entry.bodyMesh.modelMatrix.get(13) - moonY;
+                float wz = entry.bodyMesh.modelMatrix.get(14) - moonZ;
                 float len = (float) Math.sqrt(wx * wx + wy * wy + wz * wz);
                 if (len > 1e-6f) {
                     return new float[]{wx / len, wy / len, wz / len};
