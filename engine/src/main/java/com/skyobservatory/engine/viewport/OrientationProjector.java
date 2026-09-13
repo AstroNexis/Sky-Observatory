@@ -74,7 +74,16 @@ final class OrientationProjector {
         double rx = -fz;
         double ry = 0.0;
         double rz = fx;
-        double invLenR = 1.0 / Math.sqrt(rx * rx + ry * ry + rz * rz);
+        double rightLength = Math.sqrt(rx * rx + ry * ry + rz * rz);
+        if (rightLength < 1e-12) {
+            // At the zenith or nadir, forward is parallel to world up.
+            // Keep yaw as the limiting horizontal orientation.
+            rx = cy;
+            ry = 0.0;
+            rz = sy;
+            rightLength = 1.0;
+        }
+        double invLenR = 1.0 / rightLength;
         rx *= invLenR;
         ry *= invLenR;
         rz *= invLenR;
