@@ -23,6 +23,7 @@ import android.util.Log;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.SkySnapshot;
+import com.skyobservatory.api.VisibilityState;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.camera.SkyCamera;
 import com.skyobservatory.touch.TouchController;
@@ -219,6 +220,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         }
         objectEntries.clear();
         for (ObservableObject obj : snapshot.getObjects()) {
+            if (obj.getVisibility() != VisibilityState.VISIBLE) {
+                continue;
+            }
             ObservableObjectEntry entry = objectFactory.build(obj);
             placeEntry(entry, obj);
             objectEntries.add(entry);
