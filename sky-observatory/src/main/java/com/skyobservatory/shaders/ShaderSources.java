@@ -225,10 +225,8 @@ public final class ShaderSources {
         + "    // Diffuse illumination from the sun direction.\n"
         + "    // The terminator lies where dot(n, uSunDirection) = 0.\n"
         + "    float sunLit = max(dot(n, uSunDirection), 0.0);\n"
-        + "    // Soft ambient on the dark side for earthshine effect.\n"
-        + "    float ambient = 0.05;\n"
-        + "    float light = ambient + 0.95 * sunLit;\n"
-        + "    fragColor = vec4(tex.rgb * light, 1.0);\n"
+        + "    // Do not add ambient light: the unilluminated hemisphere must be dark.\n"
+        + "    fragColor = vec4(tex.rgb * sunLit, 1.0);\n"
         + "}\n";
 
     // Saturn ring -- flat textured washer with alpha discard for transparency.
