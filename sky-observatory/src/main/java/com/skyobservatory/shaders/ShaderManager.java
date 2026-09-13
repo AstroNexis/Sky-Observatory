@@ -35,6 +35,13 @@ public final class ShaderManager {
     public final int bodyMvp;
     public final int bodyTex;
 
+    // Moon body (textured sphere with sun-direction illumination for phases)
+    public final int moonProgram;
+    public final int moonMvp;
+    public final int moonModel;
+    public final int moonTex;
+    public final int moonSunDir;
+
     // Camera-facing billboard label
     public final int labelProgram;
     /** NDC xy position of the projected parent body centre. */
@@ -68,6 +75,7 @@ public final class ShaderManager {
         skyProgram     = ShaderLoader.createProgram(ShaderSources.SKY_VERTEX,      ShaderSources.SKY_FRAGMENT);
         cardinalProgram = ShaderLoader.createProgram(ShaderSources.CARDINAL_VERTEX, ShaderSources.CARDINAL_FRAGMENT);
         bodyProgram    = ShaderLoader.createProgram(ShaderSources.BODY_VERTEX,      ShaderSources.BODY_FRAGMENT);
+        moonProgram    = ShaderLoader.createProgram(ShaderSources.MOON_VERTEX,     ShaderSources.MOON_FRAGMENT);
         labelProgram   = ShaderLoader.createProgram(ShaderSources.LABEL_VERTEX,     ShaderSources.LABEL_FRAGMENT);
         horizonProgram = ShaderLoader.createProgram(ShaderSources.HORIZON_VERTEX,   ShaderSources.HORIZON_FRAGMENT);
         ringProgram    = ShaderLoader.createProgram(ShaderSources.RING_VERTEX,      ShaderSources.RING_FRAGMENT);
@@ -82,6 +90,11 @@ public final class ShaderManager {
 
         bodyMvp = GLES30.glGetUniformLocation(bodyProgram, "uMvpMatrix");
         bodyTex = GLES30.glGetUniformLocation(bodyProgram, "uTexture");
+
+        moonMvp    = GLES30.glGetUniformLocation(moonProgram, "uMvpMatrix");
+        moonModel  = GLES30.glGetUniformLocation(moonProgram, "uModelMatrix");
+        moonTex    = GLES30.glGetUniformLocation(moonProgram, "uTexture");
+        moonSunDir = GLES30.glGetUniformLocation(moonProgram, "uSunDirection");
 
         labelNdcCenter  = GLES30.glGetUniformLocation(labelProgram, "uNdcCenter");
         labelNdcOffsetY = GLES30.glGetUniformLocation(labelProgram, "uNdcOffsetY");

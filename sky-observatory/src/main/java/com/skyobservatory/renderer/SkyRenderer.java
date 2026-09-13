@@ -20,6 +20,7 @@ import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 
+import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.SkySnapshot;
 import com.skyobservatory.camera.SensorController;
@@ -405,12 +406,25 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
                 entry.ringMesh.draw();
             }
 
-            // Body sphere
-            GLES30.glUseProgram(shaders.bodyProgram);
-            GLES30.glUniform1i(shaders.bodyTex, 0);
-            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.textureId);
-            Matrix4 mvp = vp.multiply(entry.bodyMesh.modelMatrix);
-            GLES30.glUniformMatrix4fv(shaders.bodyMvp, 1, false, mvp.floatArray(), 0);
+            // Body sphere -- use the moon shader for the moon, regular body shader otherwise.
+            boolean isMoon = entry.source.getTarget().getNaifId() == CelestialObject.NAIF_MOON;
+            float[] sunDir = isMoon ? computeSunDirection(entry) : null;
+
+            if (isMoon && sunDir != null) {
+                GLES30.glUseProgram(shaders.moonProgram);
+                GLES30.glUniform1i(shaders.moonTex, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.textureId);
+                Matrix4 mvp = vp.multiply(entry.bodyMesh.modelMatrix);
+                GLES30.glUniformMatrix4fv(shaders.moonMvp, 1, false, mvp.floatArray(), 0);
+                GLES30.glUniformMatrix4fv(shaders.moonModel, 1, false, entry.bodyMesh.modelMatrix.floatArray(), 0);
+                GLES30.glUniform3f(shaders.moonSunDir, sunDir[0], sunDir[1], sunDir[2]);
+            } else {
+                GLES30.glUseProgram(shaders.bodyProgram);
+                GLES30.glUniform1i(shaders.bodyTex, 0);
+                GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, entry.textureId);
+                Matrix4 mvp = vp.multiply(entry.bodyMesh.modelMatrix);
+                GLES30.glUniformMatrix4fv(shaders.bodyMvp, 1, false, mvp.floatArray(), 0);
+            }
             entry.bodyMesh.draw();
         }
 
@@ -468,6 +482,28 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         GLES30.glDepthMask(true);
+    }
+
+    /**
+     * Computes the world-space direction from the Moon toward the Sun.
+     * Returns null if the Sun is not present or both bodies overlap.
+     */
+    private float[] computeSunDirection(ObservableObjectEntry moon) {
+        float moonX = moon.bodyMesh.modelMatrix.get(12);
+        float moonY = moon.bodyMesh.modelMatrix.get(13);
+        float moonZ = moon.bodyMesh.modelMatrix.get(14);
+        for (ObservableObjectEntry entry : objectEntries) {
+            if (entry.source.getTarget().getNaifId() == CelestialObject.NAIF_SUN) {
+                float wx = entry.bodyMesh.modelMatrix.get(12) - moonX;
+                float wy = entry.bodyMesh.modelMatrix.get(13) - moonY;
+                float wz = entry.bodyMesh.modelMatrix.get(14) - moonZ;
+                float len = (float) Math.sqrt(wx * wx + wy * wy + wz * wz);
+                if (len > 1e-6f) {
+                    return new float[]{wx / len, wy / len, wz / len};
+                }
+            }
+        }
+        return null;
     }
 
     // Camera
