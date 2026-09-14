@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 
 public class OrientationProjectorTest {
 
@@ -106,6 +107,32 @@ public class OrientationProjectorTest {
         assertEquals(0.0, result.getX(), DELTA);
         assertEquals(-1.0, result.getY(), DELTA);
         assertEquals(0.0, result.getZ(), DELTA);
+    }
+
+    @Test
+    public void pitch90_usesStableBasis() {
+        CartesianCoordinate result = projector.transform(
+                new CartesianCoordinate(0.0, 0.0, -1.0),
+                new CameraOrientation(0.0, 90.0, 0.0));
+        assertFalse(Double.isNaN(result.getX()));
+        assertFalse(Double.isInfinite(result.getX()));
+        assertFalse(Double.isNaN(result.getY()));
+        assertFalse(Double.isInfinite(result.getY()));
+        assertFalse(Double.isNaN(result.getZ()));
+        assertFalse(Double.isInfinite(result.getZ()));
+    }
+
+    @Test
+    public void pitchMinus90_withRoll_preservesFiniteProjection() {
+        CartesianCoordinate result = projector.transform(
+                new CartesianCoordinate(1.0, 0.0, 0.0),
+                new CameraOrientation(45.0, -90.0, 30.0));
+        assertFalse(Double.isNaN(result.getX()));
+        assertFalse(Double.isInfinite(result.getX()));
+        assertFalse(Double.isNaN(result.getY()));
+        assertFalse(Double.isInfinite(result.getY()));
+        assertFalse(Double.isNaN(result.getZ()));
+        assertFalse(Double.isInfinite(result.getZ()));
     }
 
     @Test
