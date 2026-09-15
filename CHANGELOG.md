@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Upcoming release, focusing on community infrastructure and project configuration.
+Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
 
 ### Added
 
@@ -21,12 +21,35 @@ Upcoming release, focusing on community infrastructure and project configuration
 
  - `sky-observatory/proguard-rules.pro` for release-build minification.
 
+ - #30: Moon-phase rendering using sun-direction illumination.
+
 ### Changed
 
  - Expanded `.gitignore` to cover compiled artifacts (`*.jar`, `*.aar`), editor temp files, and
    profiler output.
 
  - Populated the previously empty `CHANGELOG.md` and `benchmark/consumer-rules.pro`.
+
+ - #39: Shared location repository functionality across the application.
+
+ - #32, #34, #36, and #38: Updated Material, Android, and Gradle dependencies and the Gradle
+   wrapper.
+
+ - #37: Updated the GitHub Actions Java setup and workflow configuration.
+
+### Fixed
+
+ - #45: Renderer updates now restart correctly after activity resume without duplicate workers,
+   stale callbacks, or queued snapshots from paused lifecycle generations.
+
+ - #46: Camera projection remains stable at zenith and nadir while preserving yaw and roll.
+
+ - #47: Renderer skips `BELOW_HORIZON` objects before allocating or drawing GPU resources while
+   retaining them in snapshots.
+
+### Dependencies
+
+ - #48: Kotlin Android plugin updated from 2.4.10 to 2.4.20.
 
 
 ## [0.1.1-alpha] - 2026-07-04
