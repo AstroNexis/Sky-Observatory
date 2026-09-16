@@ -62,6 +62,21 @@ public class InputValidatorTest {
     }
 
     @Test(expected = AstroException.class)
+    public void nonFiniteLatitudeThrows() throws AstroException {
+        validator.validateObserver(new Observer(Double.NaN, 0.0, 0.0));
+    }
+
+    @Test(expected = AstroException.class)
+    public void nonFiniteLongitudeThrows() throws AstroException {
+        validator.validateObserver(new Observer(0.0, Double.POSITIVE_INFINITY, 0.0));
+    }
+
+    @Test(expected = AstroException.class)
+    public void nonFiniteAltitudeThrows() throws AstroException {
+        validator.validateObserver(new Observer(0.0, 0.0, Double.NEGATIVE_INFINITY));
+    }
+
+    @Test(expected = AstroException.class)
     public void nullObserverThrows() throws AstroException {
         validator.validateObserver(null);
     }
