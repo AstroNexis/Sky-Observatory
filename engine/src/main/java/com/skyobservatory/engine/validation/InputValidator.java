@@ -45,6 +45,19 @@ public final class InputValidator {
         }
         double lat = observer.getLatitudeDegrees();
         double lon = observer.getLongitudeDegrees();
+        double altitude = observer.getAltitudeMeters();
+        if (!Double.isFinite(lat)) {
+            throw new ValidationException(
+                    "Observer latitude must be a finite value, got: " + lat);
+        }
+        if (!Double.isFinite(lon)) {
+            throw new ValidationException(
+                    "Observer longitude must be a finite value, got: " + lon);
+        }
+        if (!Double.isFinite(altitude)) {
+            throw new ValidationException(
+                    "Observer altitude must be a finite value, got: " + altitude);
+        }
         if (lat < -90.0 || lat > 90.0) {
             throw new ValidationException(
                     "Observer latitude " + lat + " is outside valid range [-90, 90]");
