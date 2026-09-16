@@ -20,6 +20,8 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
 
  - #47: Renderer skips `BELOW_HORIZON` objects before allocating or drawing GPU resources while
    retaining them in snapshots.
+   
+ - #50: Observer validation now rejects non-finite latitude, longitude, and altitude values.
 
 ### Added
 
