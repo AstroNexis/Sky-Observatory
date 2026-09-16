@@ -11,6 +11,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
 
+### Fixed
+
+ - #45: Renderer updates now restart correctly after activity resume without duplicate workers,
+   stale callbacks, or queued snapshots from paused lifecycle generations.
+
+ - #46: Camera projection remains stable at zenith and nadir while preserving yaw and roll.
+
+ - #47: Renderer skips `BELOW_HORIZON` objects before allocating or drawing GPU resources while
+   retaining them in snapshots.
+
 ### Added
 
  - #31: Community files -- code of conduct, security policy, support guide, and GitHub issue/PR
@@ -22,6 +32,8 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
  - `sky-observatory/proguard-rules.pro` for release-build minification.
 
  - #30: Moon-phase rendering using sun-direction illumination.
+
+ - #49: Add build and benchmark reporting scripts.
 
 ### Changed
 
@@ -37,20 +49,9 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
 
  - #37: Updated the GitHub Actions Java setup and workflow configuration.
 
-### Fixed
-
- - #45: Renderer updates now restart correctly after activity resume without duplicate workers,
-   stale callbacks, or queued snapshots from paused lifecycle generations.
-
- - #46: Camera projection remains stable at zenith and nadir while preserving yaw and roll.
-
- - #47: Renderer skips `BELOW_HORIZON` objects before allocating or drawing GPU resources while
-   retaining them in snapshots.
-
 ### Dependencies
 
  - #48: Kotlin Android plugin updated from 2.4.10 to 2.4.20.
-
 
 ## [0.1.1-alpha] - 2026-07-04
 
