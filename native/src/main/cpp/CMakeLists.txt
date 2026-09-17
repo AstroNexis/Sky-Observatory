@@ -4,14 +4,8 @@ project(astro_bridge VERSION 0.1.1 LANGUAGES C CXX)
 
 # ---------------------------------------------------------------------------
 # SuperNOVAS as a subdirectory dependency.
-#
-# The supernovas submodule lives at a path with a leading space relative to
-# the workspace root. From this CMakeLists.txt, the relative path going up
-# four levels from native/src/main/cpp/ reaches astronomy-sdk/, and then
-# into "native/src/main/cpp/supernovas".
-#
-# We force all the optional SuperNOVAS features off so the Android build
-# only compiles the core C99 astrometry library.
+# We force all optional features off so the Android build only compiles the
+# core C99 astrometry library.
 # ---------------------------------------------------------------------------
 
 set(BUILD_TESTING     OFF CACHE BOOL "" FORCE)
@@ -33,6 +27,13 @@ get_filename_component(
 )
 set(SUPERNOVAS_SOURCE_DIR "${WORKSPACE_ROOT}/native/src/main/cpp/supernovas")
 set(SUPERNOVAS_INCLUDE_DIR "${SUPERNOVAS_SOURCE_DIR}/include")
+
+if(NOT EXISTS "${SUPERNOVAS_SOURCE_DIR}/CMakeLists.txt")
+    message(FATAL_ERROR
+        "SuperNOVAS is missing. Initialize the repository submodules with "
+        "'git submodule update --init --recursive' and configure again."
+    )
+endif()
 
 add_subdirectory(
     "${SUPERNOVAS_SOURCE_DIR}"

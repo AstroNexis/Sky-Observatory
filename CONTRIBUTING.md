@@ -52,6 +52,13 @@ them faster.
 
 Android Studio can set up most of this for you.
 
+The native module depends on the SuperNOVAS Git submodule. Initialize it after
+cloning the repository, or before building an existing checkout:
+
+```bash
+git submodule update --init --recursive
+```
+
 ### Project Structure
 
 The project is divided into 6 modules:
