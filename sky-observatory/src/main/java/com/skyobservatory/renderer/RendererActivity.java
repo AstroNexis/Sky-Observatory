@@ -28,16 +28,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.skyobservatory.api.AstroEngine;
-import com.skyobservatory.api.AstroException;
 import com.skyobservatory.api.AstroSdk;
 import com.skyobservatory.api.AstroTime;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.Observer;
+import com.skyobservatory.api.PositionResult;
+import com.skyobservatory.api.HorizontalCoordinate;
+import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
 import com.skyobservatory.api.VisibilityState;
 import com.skyobservatory.engine.EngineInitializer;
-import com.skyobservatory.engine.LocationRepository;
+import com.skyobservatory.location.LocationRepository;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.util.CrashHandler;
 
@@ -154,62 +156,102 @@ public class RendererActivity extends AppCompatActivity {
         startSdkUpdates();
     }
 
+    private final Object sdkLock = new Object();
+    private volatile boolean resumed;
     private volatile boolean running;
+    private volatile long sdkGeneration;
     private Thread sdkThread;
 
     private void startSdkUpdates() {
-        running   = true;
-        sdkThread = new Thread(() -> {
-            while (running) {
-                try {
-                    Observer obs = currentObserver;
-                    if (obs == null) { Thread.sleep(100); continue; }
-
-                    AstroTime time = AstroTime.now();
-                    List<ObservableObject> observed = buildObservableList(obs, time);
-
-                    if (!observed.isEmpty()) {
-                        SkySnapshot snapshot = new SkySnapshot.Builder(time, obs, observed).build();
-                        glSurfaceView.queueEvent(() -> skyRenderer.updateSnapshot(snapshot));
-                    }
-
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    break;
-                }
+        synchronized (sdkLock) {
+            if (!resumed || (sdkThread != null && sdkThread.isAlive())) {
+                return;
             }
-        });
-        sdkThread.setDaemon(true);
-        sdkThread.start();
+            running = true;
+            long workerGeneration = sdkGeneration;
+            Thread worker = new Thread(() -> {
+                while (running && resumed && workerGeneration == sdkGeneration
+                        && Thread.currentThread() == sdkThread) {
+                    try {
+                        Observer obs = currentObserver;
+                        if (obs == null) {
+                            Thread.sleep(100);
+                            continue;
+                        }
+
+                        AstroTime time = AstroTime.now();
+                        List<ObservableObject> observed = buildObservableList(obs, time);
+
+                        if (!observed.isEmpty() && running && resumed
+                                && workerGeneration == sdkGeneration
+                                && Thread.currentThread() == sdkThread) {
+                            SkySnapshot snapshot = new SkySnapshot.Builder(time, obs, observed).build();
+                            glSurfaceView.queueEvent(() -> {
+                                if (resumed && workerGeneration == sdkGeneration) {
+                                    skyRenderer.updateSnapshot(snapshot);
+                                }
+                            });
+                        }
+
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            });
+            sdkThread = worker;
+            worker.setDaemon(true);
+            worker.start();
+        }
+    }
+
+    private void stopSdkUpdates() {
+        synchronized (sdkLock) {
+            running = false;
+            Thread worker = sdkThread;
+            sdkThread = null;
+            if (worker != null) {
+                worker.interrupt();
+            }
+        }
     }
 
     private List<ObservableObject> buildObservableList(Observer obs, AstroTime time) {
-        try {
-            SkySnapshot snapshot = engine.createSnapshot(
-                    CelestialObject.defaultTargets(), obs, time);
-            return snapshot.getObjects();
-        } catch (AstroException e) {
-            Log.e(TAG, "Snapshot creation failed", e);
-            return new ArrayList<>();
+        List<ObservableObject> result = new ArrayList<>();
+        for (CelestialObject target : CelestialObject.defaultTargets()) {
+            try {
+                PositionResult pos = engine.calculatePosition(target, obs, time);
+                SkyCoordinate coord = engine.project(
+                        new HorizontalCoordinate(pos.getAzimuthDegrees(), pos.getAltitudeDegrees()));
+                VisibilityState vis = pos.getAltitudeDegrees() >= 0
+                        ? VisibilityState.VISIBLE
+                        : VisibilityState.BELOW_HORIZON;
+                result.add(new ObservableObject(target, coord, vis, target.getCategory()));
+            } catch (Exception e) {
+                Log.e(TAG, "Position calc failed for " + target.getName(), e);
+            }
         }
+        return result;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        resumed = true;
         glSurfaceView.onResume();
         sensorController.start();
+        if (currentObserver != null) {
+            startSdkUpdates();
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        resumed = false;
+        sdkGeneration++;
         glSurfaceView.onPause();
         sensorController.stop();
-        running = false;
-        if (sdkThread != null) {
-            sdkThread.interrupt();
-            sdkThread = null;
-        }
+        stopSdkUpdates();
     }
 }
