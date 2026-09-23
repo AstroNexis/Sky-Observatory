@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.skyobservatory.api.AstroEngine;
+import com.skyobservatory.api.AstroException;
 import com.skyobservatory.api.AstroSdk;
 import com.skyobservatory.api.AstroTime;
 import com.skyobservatory.api.CelestialObject;
