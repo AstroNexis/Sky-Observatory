@@ -13,6 +13,9 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
 
 ### Fixed
 
+ - #51: Native builds now fail with a clear SuperNOVAS submodule message when the
+   dependency has not been initialized.
+
  - #45: Renderer updates now restart correctly after activity resume without duplicate workers,
    stale callbacks, or queued snapshots from paused lifecycle generations.
 
@@ -45,6 +48,9 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
  - Populated the previously empty `CHANGELOG.md` and `benchmark/consumer-rules.pro`.
 
  - #39: Shared location repository functionality across the application.
+
+ - #35: Consolidated celestial-object metadata and location services behind the shared SDK and
+   engine modules, while simplifying renderer, scene, shader, and touch-system code.
 
  - #32, #34, #36, and #38: Updated Material, Android, and Gradle dependencies and the Gradle
    wrapper.
