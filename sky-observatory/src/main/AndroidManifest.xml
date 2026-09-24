@@ -22,7 +22,7 @@
             tools:node="remove" />
 
         <activity
-            android:name="RendererActivity"
+            android:name=".renderer.RendererActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize">
             <intent-filter>
