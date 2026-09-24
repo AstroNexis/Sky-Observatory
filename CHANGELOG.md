@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.1.2-alpha] - 2026-09-24
 
 Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
 
