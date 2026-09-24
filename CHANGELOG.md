@@ -57,10 +57,6 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
 
  - #37: Updated the GitHub Actions Java setup and workflow configuration.
 
-### Dependencies
-
- - #48: Kotlin Android plugin updated from 2.4.10 to 2.4.20.
-
 ## [0.1.1-alpha] - 2026-07-04
 
 Bug-fix and touch-system overhaul release.
