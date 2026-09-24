@@ -15,8 +15,6 @@
 
 package com.skyobservatory.scene;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -89,9 +87,9 @@ public final class RingMesh {
             idx[ix++] = (short) outer1;
         }
 
-        vertexBuffer   = toFloatBuffer(verts);
-        texCoordBuffer = toFloatBuffer(uvs);
-        indexBuffer    = toShortBuffer(idx);
+        vertexBuffer   = MeshUtils.toFloatBuffer(verts);
+        texCoordBuffer = MeshUtils.toFloatBuffer(uvs);
+        indexBuffer    = MeshUtils.toShortBuffer(idx);
     }
 
     public FloatBuffer getVertexBuffer()   { return vertexBuffer; }
@@ -99,20 +97,4 @@ public final class RingMesh {
     public ShortBuffer getIndexBuffer()    { return indexBuffer; }
     public int getIndexCount()             { return indexCount; }
     public int getVertexCount()            { return vertexCount; }
-
-    private static FloatBuffer toFloatBuffer(float[] d) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(d.length * 4).order(ByteOrder.nativeOrder());
-        FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(d);
-        fb.position(0);
-        return fb;
-    }
-
-    private static ShortBuffer toShortBuffer(short[] d) {
-        ByteBuffer bb = ByteBuffer.allocateDirect(d.length * 2).order(ByteOrder.nativeOrder());
-        ShortBuffer sb = bb.asShortBuffer();
-        sb.put(d);
-        sb.position(0);
-        return sb;
-    }
 }

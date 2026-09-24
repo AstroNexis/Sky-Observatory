@@ -21,9 +21,6 @@ package com.skyobservatory.engine.coordinates;
  * Implements {@link CoordinateTransform} with the default rules:
  * azimuth normalized to [0, 360) and altitude clamped to [-90, 90].
  *
- * Also provides degree/radian conversion utilities used internally
- * by the engine and future coordinate frame transforms.
- *
  * Phase 1 only implements the normalization needed for horizontal output.
  * Full frame-of-reference transforms (ICRS->GCRS->TIRS->topocentric) are
  * extension points for Phase 3.
@@ -31,26 +28,6 @@ package com.skyobservatory.engine.coordinates;
 public final class CoordinateConverter implements CoordinateTransform {
 
     public CoordinateConverter() {}
-
-    /**
-     * Converts degrees to radians.
-     *
-     * @param degrees angle in degrees
-     * @return equivalent angle in radians
-     */
-    public double degreesToRadians(double degrees) {
-        return Math.toRadians(degrees);
-    }
-
-    /**
-     * Converts radians to degrees.
-     *
-     * @param radians angle in radians
-     * @return equivalent angle in degrees
-     */
-    public double radiansToDegrees(double radians) {
-        return Math.toDegrees(radians);
-    }
 
     /**
      * {@inheritDoc}

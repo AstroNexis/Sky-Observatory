@@ -18,7 +18,6 @@ package com.skyobservatory.renderer;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.ObservableObject.ObjectCategory;
-import com.skyobservatory.api.PlanetData;
 import com.skyobservatory.resources.SkyResources;
 import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.scene.RingMesh;
@@ -67,15 +66,12 @@ final class CelestialObjectFactory {
         // Build ring mesh for Saturn
         MeshRenderer ring = null;
         int ringTexId = 0;
-        if (def.getNaifId() == CelestialObject.NAIF_SATURN) {
-            PlanetData pd = PlanetData.fromNaifId(def.getNaifId());
-            if (pd != null && pd.hasRings()) {
-                RingMesh ringMesh = new RingMesh(0.28f, 0.50f, 48);
-                ring = new MeshRenderer();
-                ring.uploadRing(ringMesh);
-                ring.modelMatrix.set(13, -500f);
-                ringTexId = resources.getOrCreateSaturnRingTexture();
-            }
+        if (def.hasRings()) {
+            RingMesh ringMesh = new RingMesh(0.28f, 0.50f, 48);
+            ring = new MeshRenderer();
+            ring.uploadRing(ringMesh);
+            ring.modelMatrix.set(13, -500f);
+            ringTexId = resources.getOrCreateSaturnRingTexture();
         }
 
         int priority = priorityForCategory(obj.getCategory());

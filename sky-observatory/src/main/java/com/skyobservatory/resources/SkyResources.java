@@ -24,7 +24,7 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 import com.skyobservatory.api.CelestialObject;
-import com.skyobservatory.api.PlanetData;
+import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.scene.SphereMesh;
 
@@ -122,7 +122,7 @@ public final class SkyResources {
      */
     public int getOrCreateSaturnRingTexture() {
         if (saturnRingTextureId != null) return saturnRingTextureId;
-        int id = loadTextureFromAssets(PlanetData.SATURN_RING_TEXTURE);
+        int id = loadTextureFromAssets(CelestialObject.SATURN_RING_TEXTURE);
         saturnRingTextureId = id;
         return id;
     }

@@ -18,6 +18,7 @@ ignore:
   - "benchmark/**"
   - "sample-test/**"
   - "sky-observatory/**"
+  - "engine/src/main/java/com/skyobservatory/engine/LocationRepository.java"
 
 comment:
   layout: "reach,diff,files,footer"

@@ -34,6 +34,9 @@ import java.util.Map;
  */
 public final class CelestialObject {
 
+    /** Filename of Saturn's ring texture inside {@code assets/}. */
+    public static final String SATURN_RING_TEXTURE = "saturn_ring.png";
+
     // NAIF body IDs for well-known solar system objects.
     public static final int NAIF_SUN     = 10;
     public static final int NAIF_MOON    = 301;
@@ -56,16 +59,16 @@ public final class CelestialObject {
     public static final Map<Integer, CelestialObject> CATALOG;
     static {
         Map<Integer, CelestialObject> m = new LinkedHashMap<>();
-        //                naifId         name        assetName    category                          radius  defaultOn
-        m.put(NAIF_SUN,     new CelestialObject(NAIF_SUN,     "Sun",     "sun.jpg",     ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY, 0.80f, true));
-        m.put(NAIF_MOON,    new CelestialObject(NAIF_MOON,    "Moon",    "moon.jpg",    ObservableObject.ObjectCategory.MOON,              0.25f, true));
-        m.put(NAIF_MERCURY, new CelestialObject(NAIF_MERCURY, "Mercury", "mercury.jpg", ObservableObject.ObjectCategory.PLANET,            0.10f, true));
-        m.put(NAIF_VENUS,   new CelestialObject(NAIF_VENUS,   "Venus",   "venus.jpg",   ObservableObject.ObjectCategory.PLANET,            0.15f, true));
-        m.put(NAIF_MARS,    new CelestialObject(NAIF_MARS,    "Mars",    "mars.jpg",    ObservableObject.ObjectCategory.PLANET,            0.12f, true));
-        m.put(NAIF_JUPITER, new CelestialObject(NAIF_JUPITER, "Jupiter", "jupiter.jpg", ObservableObject.ObjectCategory.PLANET,            0.20f, true));
-        m.put(NAIF_SATURN,  new CelestialObject(NAIF_SATURN,  "Saturn",  "saturn.jpg",  ObservableObject.ObjectCategory.PLANET,            0.18f, true));
-        m.put(NAIF_URANUS,  new CelestialObject(NAIF_URANUS,  "Uranus",  null,          ObservableObject.ObjectCategory.PLANET,            0.12f, true));
-        m.put(NAIF_NEPTUNE, new CelestialObject(NAIF_NEPTUNE, "Neptune", null,          ObservableObject.ObjectCategory.PLANET,            0.12f, true));
+        //                naifId         name        assetName    category                          radius  defaultOn  equRadiusKm  meanRadiusKm  rings
+        m.put(NAIF_SUN,     new CelestialObject(NAIF_SUN,     "Sun",     "sun.jpg",     ObservableObject.ObjectCategory.SOLAR_SYSTEM_BODY, 0.80f, true,  695700.0,  695700.0,  false));
+        m.put(NAIF_MOON,    new CelestialObject(NAIF_MOON,    "Moon",    "moon.jpg",    ObservableObject.ObjectCategory.MOON,              0.25f, true,  1738.1,   1737.4,    false));
+        m.put(NAIF_MERCURY, new CelestialObject(NAIF_MERCURY, "Mercury", "mercury.jpg", ObservableObject.ObjectCategory.PLANET,            0.10f, true,  2440.53,  2439.7,    false));
+        m.put(NAIF_VENUS,   new CelestialObject(NAIF_VENUS,   "Venus",   "venus.jpg",   ObservableObject.ObjectCategory.PLANET,            0.15f, true,  6051.8,   6051.8,    false));
+        m.put(NAIF_MARS,    new CelestialObject(NAIF_MARS,    "Mars",    "mars.jpg",    ObservableObject.ObjectCategory.PLANET,            0.12f, true,  3396.19,  3389.5,    false));
+        m.put(NAIF_JUPITER, new CelestialObject(NAIF_JUPITER, "Jupiter", "jupiter.jpg", ObservableObject.ObjectCategory.PLANET,            0.20f, true,  71492.0,  69911.0,   false));
+        m.put(NAIF_SATURN,  new CelestialObject(NAIF_SATURN,  "Saturn",  "saturn.jpg",  ObservableObject.ObjectCategory.PLANET,            0.18f, true,  60268.0,  58232.0,   true));
+        m.put(NAIF_URANUS,  new CelestialObject(NAIF_URANUS,  "Uranus",  null,          ObservableObject.ObjectCategory.PLANET,            0.12f, true,  25559.0,  25362.0,   false));
+        m.put(NAIF_NEPTUNE, new CelestialObject(NAIF_NEPTUNE, "Neptune", null,          ObservableObject.ObjectCategory.PLANET,            0.12f, true,  24764.0,  24622.0,   false));
         CATALOG = Collections.unmodifiableMap(m);
     }
 
@@ -100,6 +103,12 @@ public final class CelestialObject {
     /** Render sphere radius in world units. */
     private final float renderRadius;
     private final boolean enabledByDefault;
+    /** Equatorial radius in km (IAU 2015 Resolution B3). */
+    private final double equatorialRadiusKm;
+    /** Mean radius in km (IAU 2015 Resolution B3). */
+    private final double meanRadiusKm;
+    /** Whether this body has a ring texture (e.g. Saturn). */
+    private final boolean hasRings;
 
     public CelestialObject(
             int naifId,
@@ -107,7 +116,10 @@ public final class CelestialObject {
             String assetName,
             ObservableObject.ObjectCategory category,
             float renderRadius,
-            boolean enabledByDefault) {
+            boolean enabledByDefault,
+            double equatorialRadiusKm,
+            double meanRadiusKm,
+            boolean hasRings) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("CelestialObject name must not be null or empty");
         }
@@ -117,10 +129,13 @@ public final class CelestialObject {
         this.category         = category;
         this.renderRadius     = renderRadius;
         this.enabledByDefault = enabledByDefault;
+        this.equatorialRadiusKm = equatorialRadiusKm;
+        this.meanRadiusKm     = meanRadiusKm;
+        this.hasRings         = hasRings;
     }
 
     public CelestialObject(int naifId, String name) {
-        this(naifId, name, null, ObservableObject.ObjectCategory.UNKNOWN, 0.15f, false);
+        this(naifId, name, null, ObservableObject.ObjectCategory.UNKNOWN, 0.15f, false, 0.0, 0.0, false);
     }
 
     public int getNaifId()                               { return naifId; }
@@ -130,6 +145,14 @@ public final class CelestialObject {
     public ObservableObject.ObjectCategory getCategory() { return category; }
     public float getRenderRadius()                       { return renderRadius; }
     public boolean isEnabledByDefault()                  { return enabledByDefault; }
+    /** Equatorial radius in km (IAU 2015 Resolution B3). */
+    public double getEquatorialRadiusKm()                { return equatorialRadiusKm; }
+    /** Mean radius in km (IAU 2015 Resolution B3). */
+    public double getMeanRadiusKm()                      { return meanRadiusKm; }
+    /** Diameter in km (2 x equatorial radius). */
+    public double getDiameterKm()                        { return equatorialRadiusKm * 2.0; }
+    /** Returns {@code true} when this body has a ring texture (e.g. Saturn). */
+    public boolean hasRings()                            { return hasRings; }
 
     // Legacy convenience factories kept for API compatibility.
 

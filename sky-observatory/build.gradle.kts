@@ -28,9 +28,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":api"))
     implementation(project(":engine"))
     implementation(project(":location"))
     implementation(libs.appcompat)
-    implementation(libs.play.services.location)
 }

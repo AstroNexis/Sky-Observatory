@@ -17,37 +17,6 @@ package com.skyobservatory.shaders;
 
 public final class ShaderSources {
 
-    // Textured sphere (unused by scalable path but kept for compatibility)
-
-    public static final String TEXTURED_VERTEX = ""
-        + "#version 300 es\n"
-        + "uniform mat4 uMvpMatrix;\n"
-        + "uniform mat4 uModelMatrix;\n"
-        + "layout(location = 0) in vec3 aPosition;\n"
-        + "layout(location = 1) in vec3 aNormal;\n"
-        + "layout(location = 2) in vec2 aTexCoord;\n"
-        + "out vec2 vTexCoord;\n"
-        + "out vec3 vNormal;\n"
-        + "void main() {\n"
-        + "    gl_Position = uMvpMatrix * vec4(aPosition, 1.0);\n"
-        + "    vTexCoord = aTexCoord;\n"
-        + "    vNormal = normalize(mat3(uModelMatrix) * aNormal);\n"
-        + "}\n";
-
-    public static final String TEXTURED_FRAGMENT = ""
-        + "#version 300 es\n"
-        + "precision mediump float;\n"
-        + "uniform sampler2D uTexture;\n"
-        + "uniform vec4 uColor;\n"
-        + "in vec2 vTexCoord;\n"
-        + "in vec3 vNormal;\n"
-        + "layout(location = 0) out vec4 fragColor;\n"
-        + "void main() {\n"
-        + "    vec4 tex = texture(uTexture, vTexCoord);\n"
-        + "    float light = max(dot(vNormal, normalize(vec3(0.5, 0.8, 0.6))), 0.15);\n"
-        + "    fragColor = tex * vec4(vec3(light), 1.0) * uColor;\n"
-        + "}\n";
-
     // Sky dome
 
     public static final String SKY_VERTEX = ""
