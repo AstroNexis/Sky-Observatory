@@ -29,6 +29,16 @@ public class CelestialObjectTest {
     }
 
     @Test
+    public void physicalPropertiesAreExposed() {
+        CelestialObject saturn = CelestialObject.fromNaifId(CelestialObject.NAIF_SATURN);
+
+        assertEquals(60268.0, saturn.getEquatorialRadiusKm(), 0.0);
+        assertEquals(58232.0, saturn.getMeanRadiusKm(), 0.0);
+        assertEquals(120536.0, saturn.getDiameterKm(), 0.0);
+        assertTrue(saturn.hasRings());
+    }
+
+    @Test
     public void equalityBasedOnNaifId() {
         CelestialObject a = CelestialObject.sun();
         CelestialObject b = new CelestialObject(CelestialObject.NAIF_SUN, "Sol");
