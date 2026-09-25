@@ -1,91 +1,89 @@
-<p align="center">
-  <img src="/sky-observatory/src/main/res/mipmap-xxxhdpi/ic_launcher.png" alt="Sky Vault" width="200" />
-</p>
-
-<div align="center">
-
-[![Codecov](https://codecov.io/gh/AstroNexis/sky-observatory/branch/master/graph/badge.svg)](https://codecov.io/gh/AstroNexis/sky-observatory)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/AstroNexis/sky-observatory/blob/main/LICENSE)
-[![Build](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml)
-[![Tests](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml)
-[![Benchmark](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml)
-
-</div>
-
 # Sky Vault
 
-<br clear="all">
+Sky Vault is an open-source astronomy project that blends a modular SDK, native astrometry, and an Android sky viewer into one clean workflow. It is built for tracking celestial objects in real time, using high-precision calculations from SuperNOVAS and a renderer designed for observation-focused use.
 
-[Sky Vault](https://github.com/AstroNexis/sky-observatory) is an open-source app for observing celestial objects in the sky. The project includes a user interface and uses [SuperNOVAS](https://github.com/Sigmyne/SuperNOVAS/) as its core astronomical computation library.
+This project is more than a simple Moon-and-Sun app. The current catalog includes solar-system bodies across the main planetary range, with the architecture in place to grow beyond that in future phases.
 
-Sky Vault is inspired by existing applications such as **Sky Map** and **Star Walk**. The purpose of this project is to create a personal, minimalistic application for sky observation.
+> Note: the project is designed around a clean API boundary. App code should use the public SDK in the api module instead of reaching directly into engine internals.
 
-<br clear="all">
+## Why this project exists
 
-## Downloads
+Sky Vault aims to combine a lightweight user experience with accurate astronomy data. The experience is intentionally minimal, but the calculation layer is more capable than the early project notes suggest.
 
-- **Latest Alpha Build**: Download from [Actions](https://github.com/AstroNexis/sky-observatory/actions/)
-- **Latest Stable Build**: Download from [Releases](https://github.com/AstroNexis/sky-observatory/releases)
+The design is inspired by astronomy apps that help people read the sky in context, while keeping the project open and self-contained for experimentation and learning.
 
-[<img src="https://raw.githubusercontent.com/Kunzisoft/Github-badge/main/get-it-on-github.png" alt="Get it on GitHub" height="80">](https://github.com/AstroNexis/sky-observatory/releases/latest)
+## Main capabilities
 
-## Table of Contents
+- Real-time position and visibility calculations
+- Solar-system object tracking
+- Observer-aware sky evaluation
+- Native C++ integration through SuperNOVAS
+- Modular Android app structure
+- Benchmark and sample-test support for validation and demos
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Progress](#progress)
-- [Project Structure](#project-structure)
-- [SuperNOVAS](#supernovas)
-- [Contributing](#contributing)
-- [License](#license)
+## Supported objects
 
------------------------------------------------------------------------------
+The current catalog is not limited to the Moon and Sun. It includes these bodies:
 
-## Introduction
+- Sun
+- Moon
+- Mercury
+- Venus
+- Mars
+- Jupiter
+- Saturn
+- Uranus
+- Neptune
 
-Sky Vault is an open-source astronomy application designed for observing celestial objects in the night sky. The project is inspired by existing applications such as Sky Map and Star Walk, with the goal of creating a personal, minimalistic tool for sky observation.
+> Note: the current implementation focuses on solar-system bodies. Star and deep-sky catalog support is reserved for a future phase rather than a current feature.
 
-Currently, the application is available for download only through GitHub via the Actions or Releases pages. The project is currently licensed under **Apache-2.0**, though this may be changed to **MIT** in the future:-).
+## Project structure
 
-## Features
+The repository is organized into a few clear modules:
 
-- Real-time identification of celestial objects
-- Offline operation
-- Support for basic astronomical objects
-- Minimalistic user interface
+- [api](api) - public SDK contracts, value objects, and shared interfaces
+- [engine](engine) - astronomy logic, validation, coordinate conversion, and position calculations
+- [native](native) - JNI and C++ bridge to the SuperNOVAS calculation layer
+- [sky-observatory](sky-observatory) - Android app with rendering and observation UI
+- [benchmark](benchmark) - performance checks and comparison runs
+- [sample-test](sample-test) - demo and integration-style testing
 
-## Progress
+## SDK and engine startup
 
-Currently, the application can observe two celestial objects: the Moon and the Sun. In the near future, additional features will be developed, including:
+The project is structured around a small but important startup flow:
 
-- Observation of constellations
-- Live effects
-- And more...
+1. Register the engine provider.
+2. Initialize AstroSdk.
+3. Fetch the AstroEngine through the SDK surface.
+4. Use the engine for calculations without depending on internal modules.
 
-## Project Structure
-
-The project is divided into 6 main modules:
-
-1. [/api](/api) -- Module containing API interface definitions for the application.
-
-2. [/benchmark](/benchmark) -- Module for performance testing and benchmarking of project components.
-
-3. [/engine](/engine) -- The core of the application, containing main processing logic and calculations.
-
-4. [/native](/native) -- Module containing native components written in C++ (for integration with the SuperNOVAS library).
-
-5. [/sample-test](/sample-test) -- Module containing sample code or tests for the application.
-
-6. [/sky-observatory](/sky-observatory) -- Main Android/Java application module, containing source code for the user interface and application logic.
+This keeps the app and any future integrations aligned with the public contract instead of the internals.
 
 ## SuperNOVAS
 
-Sky Vault uses **SuperNOVAS** as its core astronomical computation library. SuperNOVAS is a C/C++ open-source library that provides high-precision astrometry calculations.
+Sky Vault uses SuperNOVAS as its core astrometry engine. SuperNOVAS provides the precision needed for celestial calculations, and the Java layer wraps that behavior behind the project SDK.
+
+## Building and testing
+
+The repository uses Gradle and the Java toolchain described by the project configuration. Common commands include:
+
+```bash
+./gradlew :sky-observatory:assembleDebug
+./gradlew :api:assembleDebug :engine:assembleDebug :native:assembleDebug
+./gradlew test
+./gradlew :api:test :engine:test :native:test
+```
+
+For a targeted unit-test run, use the module-specific task with a --tests filter.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to contribute to this project.
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request or proposing changes.
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full text.
+
+## Project note
+
+This repo is a practical astronomy toolkit with a clean SDK boundary and a strong emphasis on modularity. It is a good fit for experimentation, education, and building a focused sky-observation experience without locking the core logic into the UI layer.
