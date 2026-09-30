@@ -13,8 +13,7 @@ The next update is scheduled for release on October 15, 2026.
 
 ### Removed
 
- - #58: Duplicate `LocationRepository` from the engine module. The location module already
-   provides the same functionality.
+ - #59: Duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
 
 ## [0.1.2-alpha] - 2026-09-24
 
