@@ -81,7 +81,7 @@ public final class EngineInitializer {
         PositionProvider positionProvider = nativeCalculator::calculatePosition;
         PositionCalculator positionCalculator =
                 new PositionCalculator(validator, converter, positionProvider);
-        EphemerisCalculator ephemerisCalculator = new EphemerisCalculator(positionProvider);
+        EphemerisCalculator ephemerisCalculator = new EphemerisCalculator(validator, positionProvider);
         return new DefaultAstroEngine(positionCalculator, ephemerisCalculator);
     }
 }

@@ -7,6 +7,8 @@ import com.skyobservatory.api.EphemerisResult;
 import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
 
+import com.skyobservatory.engine.validation.InputValidator;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +33,7 @@ public class EphemerisCalculatorTest {
                 new PositionResult.Builder(180.0, 45.0, target, obs, t)
                         .distanceAu(1.0)
                         .build();
-        EphemerisCalculator calc = new EphemerisCalculator(stub);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), stub);
         EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
 
         assertTrue(result.hasVisualMagnitude());
@@ -46,7 +48,7 @@ public class EphemerisCalculatorTest {
                 new PositionResult.Builder(90.0, 30.0, target, obs, t)
                         .distanceAu(0.002569)
                         .build();
-        EphemerisCalculator calc = new EphemerisCalculator(stub);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), stub);
         EphemerisResult result = calc.calculate(CelestialObject.moon(), observer, time);
 
         assertTrue(result.hasVisualMagnitude());
@@ -57,7 +59,7 @@ public class EphemerisCalculatorTest {
     public void calculateWithoutDistanceReturnsOnlyRiseSet() throws AstroException {
         PositionProvider stub = (target, obs, t) ->
                 new PositionResult(180.0, -10.0, target, obs, t);
-        EphemerisCalculator calc = new EphemerisCalculator(stub);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), stub);
         EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
 
         assertFalse(result.hasVisualMagnitude());
@@ -71,7 +73,7 @@ public class EphemerisCalculatorTest {
                 new PositionResult.Builder(0.0, 0.0, target, obs, t)
                         .distanceAu(2.5)
                         .build();
-        EphemerisCalculator calc = new EphemerisCalculator(stub);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), stub);
         EphemerisResult result = calc.calculate(asteroid, observer, time);
 
         assertFalse(result.hasVisualMagnitude());
@@ -84,7 +86,7 @@ public class EphemerisCalculatorTest {
                 new PositionResult.Builder(180.0, 45.0, target, obs, t)
                         .distanceAu(1.0)
                         .build();
-        EphemerisCalculator calc = new EphemerisCalculator(stub);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), stub);
         EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
 
         // Body is always above horizon, so rise/set may or may not be found
@@ -101,7 +103,7 @@ public class EphemerisCalculatorTest {
         PositionProvider failing = (target, obs, t) -> {
             throw new AstroException("provider failed");
         };
-        EphemerisCalculator calc = new EphemerisCalculator(failing);
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), failing);
         calc.calculate(CelestialObject.sun(), observer, time);
     }
 }
