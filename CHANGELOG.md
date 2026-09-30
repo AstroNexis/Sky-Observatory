@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+The next update is scheduled for release on October 15, 2026.
+
+### Removed
+
+ - #58: Duplicate `LocationRepository` from the engine module. The location module already
+   provides the same functionality.
+
 ## [0.1.2-alpha] - 2026-09-24
 
 Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
