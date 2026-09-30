@@ -1,5 +1,10 @@
 # Sky Vault
 
+[![Codecov](https://codecov.io/gh/AstroNexis/sky-observatory/branch/master/graph/badge.svg)](https://codecov.io/gh/AstroNexis/sky-observatory)
+[![Build](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/observatory.yml)
+[![Tests](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/test.yml)
+[![Benchmark](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml/badge.svg)](https://github.com/AstroNexis/sky-observatory/actions/workflows/benchmark.yml)
+
 An open-source astronomy SDK and Android sky viewer, built on top of
 [SuperNOVAS](https://github.com/Sigmyne/SuperNOVAS) for the calculation
 layer.
