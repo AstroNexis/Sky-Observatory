@@ -28,7 +28,6 @@ android {
 dependencies {
     api(project(":api"))
     implementation(project(":native"))
-    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)
