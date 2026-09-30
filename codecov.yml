@@ -6,7 +6,10 @@ coverage:
   round: down
 
   status:
-    patch: off
+    patch:
+      default:
+        target: auto
+        threshold: 0.5%
 
     project:
       default:
@@ -16,6 +19,7 @@ coverage:
 
 ignore:
   - "benchmark/**"
+  - "location/**"
   - "sample-test/**"
   - "sky-observatory/**"
 
