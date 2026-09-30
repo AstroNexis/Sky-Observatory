@@ -24,7 +24,6 @@ import android.opengl.GLES30;
 import android.opengl.GLUtils;
 
 import com.skyobservatory.api.CelestialObject;
-import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.scene.MeshRenderer;
 import com.skyobservatory.scene.SphereMesh;
 
