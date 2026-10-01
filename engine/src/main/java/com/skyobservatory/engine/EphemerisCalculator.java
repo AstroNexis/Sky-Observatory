@@ -21,6 +21,7 @@ import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.EphemerisResult;
 import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
+import com.skyobservatory.engine.validation.InputValidator;
 
 /**
  * Computes extended ephemeris fields from SuperNOVAS position data.
@@ -111,13 +112,16 @@ final class EphemerisCalculator {
 
     // -----------------------------------------------------------------------
 
+    private final InputValidator validator;
     private final PositionProvider provider;
 
     /**
+     * @param validator pre-flight input validation
      * @param provider the position calculation backend; shared with
      *                 {@link PositionCalculator}
      */
-    EphemerisCalculator(PositionProvider provider) {
+    EphemerisCalculator(InputValidator validator, PositionProvider provider) {
+        this.validator = validator;
         this.provider = provider;
     }
 
@@ -135,6 +139,10 @@ final class EphemerisCalculator {
             CelestialObject target,
             Observer observer,
             AstroTime time) throws AstroException {
+
+        validator.validateTarget(target);
+        validator.validateObserver(observer);
+        validator.validateTime(time);
 
         EphemerisResult.Builder builder = new EphemerisResult.Builder();
 

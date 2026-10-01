@@ -44,7 +44,7 @@ public class DefaultAstroEngineTest {
 
         PositionCalculator posCalc = new PositionCalculator(
                 new InputValidator(), new CoordinateConverter(), stubProvider);
-        EphemerisCalculator ephCalc = new EphemerisCalculator(stubProvider);
+        EphemerisCalculator ephCalc = new EphemerisCalculator(new InputValidator(), stubProvider);
         engine = new DefaultAstroEngine(posCalc, ephCalc);
     }
 
