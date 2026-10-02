@@ -29,8 +29,8 @@ android {
 }
 
 dependencies {
-    // The sample only sees the api module directly. Engine and native are
-    // pulled in transitively, which is the intended consumption pattern.
+    // The sample depends on the engine and location modules directly.
+    // Native is pulled transitively through :engine.
     implementation(project(":api"))
     implementation(project(":engine"))
     implementation(project(":location"))
