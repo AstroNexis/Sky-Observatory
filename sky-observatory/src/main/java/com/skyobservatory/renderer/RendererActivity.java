@@ -84,7 +84,7 @@ public class RendererActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CrashHandler.init(getApplicationContext());
+        CrashHandler.init(RendererActivity.class);
 
         EngineInitializer.register();
         AstroSdk.initialize();

@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.skyobservatory.sample"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.skyobservatory.sample"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

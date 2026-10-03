@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.skyobservatory.renderer"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.skyobservatory.renderer"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.2"
     }
@@ -31,4 +31,5 @@ dependencies {
     implementation(project(":engine"))
     implementation(project(":location"))
     implementation(libs.appcompat)
+    implementation("io.github.tutorialsandroid:crashx:7.0.1")
 }
