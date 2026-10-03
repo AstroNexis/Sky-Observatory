@@ -22,7 +22,7 @@
             tools:node="remove" />
 
         <activity
-            android:name=".renderer.RendererActivity"
+            android:name=".RendererActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize">
             <intent-filter>
@@ -32,7 +32,7 @@
         </activity>
 
         <activity
-            android:name=".util.SkyCrashActivity"
+            android:name="com.skyobservatory.util.SkyCrashActivity"
             android:exported="false"
             android:process=":error_activity"
             android:theme="@style/Theme.AppCompat.NoActionBar"
