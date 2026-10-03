@@ -67,6 +67,14 @@ public class AstroSdkTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    public void registerEngineProvider_thenInitialize_returnsEngine() {
+        AstroSdk.registerEngineProvider(() -> stubProvider().create());
+        AstroSdk.initialize();
+        assertNotNull(AstroSdk.getEngine());
+    }
+
+    @Test
     public void resetForTesting_allowsReinitialization() {
         AstroSdk.registerProvider(stubProvider());
         AstroSdk.initialize();

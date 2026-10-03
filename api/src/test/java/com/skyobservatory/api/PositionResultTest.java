@@ -113,4 +113,21 @@ public class PositionResultTest {
         PositionResult result = new PositionResult(180.0, 45.0, sun, greenwich, j2000);
         assertTrue(result.toString().contains("Sun"));
     }
+
+    @Test
+    public void toStringContainsEquatorialWhenPresent() {
+        PositionResult result = new PositionResult.Builder(90.0, 30.0, sun, greenwich, j2000)
+                .equatorial(new EquatorialCoordinates(270.0, -23.44))
+                .build();
+        assertTrue(result.toString().contains("RA"));
+        assertTrue(result.toString().contains("Dec"));
+    }
+
+    @Test
+    public void toStringContainsDistanceWhenPresent() {
+        PositionResult result = new PositionResult.Builder(90.0, 30.0, sun, greenwich, j2000)
+                .distanceAu(1.5)
+                .build();
+        assertTrue(result.toString().contains("dist"));
+    }
 }

@@ -114,4 +114,46 @@ public class InputValidatorTest {
     public void nullTargetThrows() throws AstroException {
         validator.validateTarget(null);
     }
+
+    // Boundary value tests
+
+    @Test
+    public void latitudeAtPositiveBoundaryPasses() throws AstroException {
+        validator.validateObserver(new Observer(90.0, 0.0, 0.0));
+    }
+
+    @Test
+    public void latitudeAtNegativeBoundaryPasses() throws AstroException {
+        validator.validateObserver(new Observer(-90.0, 0.0, 0.0));
+    }
+
+    @Test
+    public void longitudeAtPositiveBoundaryPasses() throws AstroException {
+        validator.validateObserver(new Observer(0.0, 180.0, 0.0));
+    }
+
+    @Test
+    public void longitudeAtNegativeBoundaryPasses() throws AstroException {
+        validator.validateObserver(new Observer(0.0, -180.0, 0.0));
+    }
+
+    @Test
+    public void jdAtMinimumBoundaryPasses() throws AstroException {
+        validator.validateTime(new AstroTime(2305812.5));
+    }
+
+    @Test
+    public void jdAtMaximumBoundaryPasses() throws AstroException {
+        validator.validateTime(new AstroTime(2524593.5));
+    }
+
+    @Test(expected = AstroException.class)
+    public void jdBelowMinimumThrows() throws AstroException {
+        validator.validateTime(new AstroTime(2305812.4));
+    }
+
+    @Test(expected = AstroException.class)
+    public void jdAboveMaximumThrows() throws AstroException {
+        validator.validateTime(new AstroTime(2524593.6));
+    }
 }

@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.time.Instant;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -87,5 +88,39 @@ public class AstroTimeTest {
     public void julianCenturiesFromJ2000_oneJulianCenturyAfterJ2000_returnsOne() {
         AstroTime onecenturyLater = new AstroTime(AstroTime.J2000_EPOCH + 36525.0);
         assertEquals(1.0, onecenturyLater.julianCenturiesFromJ2000(), DELTA);
+    }
+
+    @Test
+    public void toStringContainsJdLabel() {
+        String s = AstroTime.j2000().toString();
+        assertTrue(s.contains("JD"));
+        assertTrue(s.contains(String.valueOf(AstroTime.J2000_EPOCH)));
+    }
+
+    @Test
+    public void equalsByValue() {
+        AstroTime a = new AstroTime(2451545.0);
+        AstroTime b = new AstroTime(2451545.0);
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+    }
+
+    @Test
+    public void notEqualsDifferentJd() {
+        AstroTime a = new AstroTime(2451545.0);
+        AstroTime b = new AstroTime(2451546.0);
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    public void notEqualsNull() {
+        AstroTime t = new AstroTime(0.0);
+        assertNotEquals(null, t);
+    }
+
+    @Test
+    public void notEqualsDifferentType() {
+        AstroTime t = new AstroTime(0.0);
+        assertNotEquals("string", t);
     }
 }

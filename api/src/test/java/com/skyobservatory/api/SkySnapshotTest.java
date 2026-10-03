@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class SkySnapshotTest {
@@ -118,6 +119,25 @@ public class SkySnapshotTest {
         SkySnapshot snapshot = new SkySnapshot.Builder(time, observer, createSampleObjects()).build();
         String s = snapshot.toString();
         assertTrue(s.contains("objects=2"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void builder_nullTime_throws() {
+        Observer observer = new Observer(0.0, 0.0, 0.0);
+        new SkySnapshot.Builder(null, observer, createSampleObjects());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void builder_nullObserver_throws() {
+        AstroTime time = AstroTime.j2000();
+        new SkySnapshot.Builder(time, null, createSampleObjects());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void builder_nullObjects_throws() {
+        AstroTime time = AstroTime.j2000();
+        Observer observer = new Observer(0.0, 0.0, 0.0);
+        new SkySnapshot.Builder(time, observer, null);
     }
 
     private static List<ObservableObject> createSampleObjects() {
