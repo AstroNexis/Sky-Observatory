@@ -18,8 +18,24 @@ package com.skyobservatory.api;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotEquals;
 
 public class CelestialObjectTest {
+
+    @Test
+    public void defaultTargetsReturnsEnabledObjects() {
+        java.util.List<CelestialObject> targets = CelestialObject.defaultTargets();
+        assertFalse(targets.isEmpty());
+        for (CelestialObject obj : targets) {
+            assertTrue(obj.isEnabledByDefault());
+        }
+    }
+
+    @Test
+    public void defaultTargetsIncludesSun() {
+        java.util.List<CelestialObject> targets = CelestialObject.defaultTargets();
+        assertTrue(targets.contains(CelestialObject.sun()));
+    }
 
     @Test
     public void sunFactoryHasCorrectNaifId() {
@@ -56,5 +72,52 @@ public class CelestialObjectTest {
     @Test(expected = IllegalArgumentException.class)
     public void constructorRejectsEmptyName() {
         new CelestialObject(1, "");
+    }
+
+    @Test
+    public void moonFactoryHasCorrectNaifId() {
+        CelestialObject moon = CelestialObject.moon();
+        assertEquals(CelestialObject.NAIF_MOON, moon.getNaifId());
+    }
+
+    @Test
+    public void marsFactoryHasCorrectNaifId() {
+        CelestialObject mars = CelestialObject.mars();
+        assertEquals(CelestialObject.NAIF_MARS, mars.getNaifId());
+    }
+
+    @Test
+    public void fromNaifIdReturnsKnownObject() {
+        CelestialObject jupiter = CelestialObject.fromNaifId(CelestialObject.NAIF_JUPITER);
+        assertNotNull(jupiter);
+        assertEquals("Jupiter", jupiter.getName());
+    }
+
+    @Test
+    public void fromNaifIdReturnsNullForUnknown() {
+        assertNull(CelestialObject.fromNaifId(999999));
+    }
+
+    @Test
+    public void toStringContainsName() {
+        String s = CelestialObject.sun().toString();
+        assertTrue(s.contains("Sun"));
+    }
+
+    @Test
+    public void notEqualsDifferentNaifId() {
+        CelestialObject a = CelestialObject.sun();
+        CelestialObject b = CelestialObject.moon();
+        assertNotEquals(a, b);
+    }
+
+    @Test
+    public void notEqualsNull() {
+        assertNotEquals(null, CelestialObject.sun());
+    }
+
+    @Test
+    public void notEqualsDifferentType() {
+        assertNotEquals("string", CelestialObject.sun());
     }
 }
