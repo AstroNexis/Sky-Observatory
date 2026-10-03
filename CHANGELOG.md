@@ -15,6 +15,10 @@ The next update is scheduled for release on October 15, 2026.
 
 - #70: Correct activity class paths in AndroidManifest.xml.
 
+### Added
+
+- #71: Add missing unit tests across api and engine modules.
+
 ### Removed
 
  - #59: Duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
