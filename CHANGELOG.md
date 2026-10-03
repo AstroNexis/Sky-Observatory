@@ -11,13 +11,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 The next update is scheduled for release on October 15, 2026.
 
+### Fixed
+
+- #70: Correct activity class paths in AndroidManifest.xml.
+
 ### Removed
 
  - #59: Duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
 
 ### Change
 
-- #69: Replace custom crash handler with Crashx library
+- #69: Replace custom crash handler with Crashx library.
 
 ## [0.1.2-alpha] - 2026-09-24
 
