@@ -15,6 +15,10 @@ The next update is scheduled for release on October 15, 2026.
 
  - #59: Duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
 
+### Change
+
+- #69: Replace custom crash handler with Crashx library
+
 ## [0.1.2-alpha] - 2026-09-24
 
 Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
