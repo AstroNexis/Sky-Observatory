@@ -82,7 +82,15 @@ public class SkyCamera {
         float rz = fx*uy - fy*ux;
         float rl = (float) Math.sqrt(rx*rx + ry*ry + rz*rz);
         if (rl > 1e-10f) { rx /= rl; ry /= rl; rz /= rl; }
-        else { rx = 1; ry = 0; rz = 0; }
+        else {
+            // Forward is parallel to world up (zenith/nadir).
+            // Derive right from yaw to preserve horizontal orientation.
+            float yawRad = (float) Math.toRadians(yawDeg);
+            rx = (float) Math.cos(yawRad);
+            ry = 0f;
+            rz = (float) Math.sin(yawRad);
+            rl = 1f;
+        }
 
         // Reorthogonalise up = right x forward
         float uxn = ry*fz - rz*fy;
