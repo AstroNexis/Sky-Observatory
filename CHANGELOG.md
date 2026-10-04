@@ -14,6 +14,7 @@ The next update is scheduled for release on October 15, 2026.
 ### Fixed
 
 - #70: Correct activity class paths in AndroidManifest.xml.
+- #68: Preserve yaw at zenith in SkyCamera view matrix.
 
 ### Added
 
