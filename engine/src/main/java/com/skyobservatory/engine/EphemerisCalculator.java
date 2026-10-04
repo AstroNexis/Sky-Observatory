@@ -301,10 +301,10 @@ final class EphemerisCalculator {
             double a0 = altSamples[i];
             double a1 = altSamples[i + 1];
 
-            if (a0 < HORIZON_ALTITUDE_DEG && a1 >= HORIZON_ALTITUDE_DEG && riseJd == null) {
+            if (a0 < HORIZON_ALTITUDE_DEG && a1 > HORIZON_ALTITUDE_DEG && riseJd == null) {
                 // Rising crossing bracketed in [jdSamples[i], jdSamples[i+1]].
                 riseJd = bisect(target, observer, jdSamples[i], jdSamples[i + 1], true);
-            } else if (a0 >= HORIZON_ALTITUDE_DEG && a1 < HORIZON_ALTITUDE_DEG && setJd == null) {
+            } else if (a0 > HORIZON_ALTITUDE_DEG && a1 < HORIZON_ALTITUDE_DEG && setJd == null) {
                 // Setting crossing bracketed in [jdSamples[i], jdSamples[i+1]].
                 setJd = bisect(target, observer, jdSamples[i], jdSamples[i + 1], false);
             }
@@ -339,7 +339,7 @@ final class EphemerisCalculator {
             double jdMid  = (jdLow + jdHigh) * 0.5;
             double altMid = altitudeAt(target, observer, jdMid);
 
-            boolean midAbove = altMid >= HORIZON_ALTITUDE_DEG;
+            boolean midAbove = altMid > HORIZON_ALTITUDE_DEG;
 
             if (rising) {
                 // We want the negative-to-positive crossing.
