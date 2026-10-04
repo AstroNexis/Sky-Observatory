@@ -209,7 +209,7 @@ final class EphemerisCalculator {
     /**
      * Computes apparent angular diameter in arc-minutes from distance and radius.
      *
-     * Formula: {@code diameter_rad = 2 * arctan(R_km / (d_km))}
+     * Formula: {@code diameter_rad = 2 * asin(R_km / d_km)}
      * where {@code d_km = distAu * KM_PER_AU} and {@code R_km} is the
      * IAU 2015 mean equatorial radius.
      *
@@ -235,7 +235,7 @@ final class EphemerisCalculator {
         }
 
         double distKm     = distAu * KM_PER_AU;
-        double halfAngleRad = Math.atan(radiusKm / distKm);
+        double halfAngleRad = Math.asin(radiusKm / distKm);
         double diameterDeg  = 2.0 * Math.toDegrees(halfAngleRad);
         double diameterArcmin = diameterDeg * ARCMIN_PER_DEG;
 
