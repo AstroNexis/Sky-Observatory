@@ -106,4 +106,21 @@ public class EphemerisCalculatorTest {
         EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), failing);
         calc.calculate(CelestialObject.sun(), observer, time);
     }
+
+    @Test
+    public void computeRiseSetWhenBodyCrossesHorizon() throws AstroException {
+        // Parabolic altitude: -10 at midnight, peaks at +4.4 at midday,
+        // back to -10 at next midnight. Crosses zero near 5.4h and 18.6h,
+        // between sample points (48 samples = one every 0.5h).
+        PositionProvider crossing = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double alt = -10.0 + hours * (24.0 - hours) * 0.1;
+            return new PositionResult.Builder(180.0, alt, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), crossing);
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue("Expected a rise time for crossing body", result.hasRiseTime());
+        assertTrue("Expected a set time for crossing body", result.hasSetTime());
+    }
 }
