@@ -223,7 +223,7 @@ public class RendererActivity extends AppCompatActivity {
                 PositionResult pos = engine.calculatePosition(target, obs, time);
                 SkyCoordinate coord = engine.project(
                         new HorizontalCoordinate(pos.getAzimuthDegrees(), pos.getAltitudeDegrees()));
-                VisibilityState vis = pos.getAltitudeDegrees() >= 0
+                VisibilityState vis = pos.isAboveHorizon()
                         ? VisibilityState.VISIBLE
                         : VisibilityState.BELOW_HORIZON;
                 result.add(new ObservableObject(target, coord, vis, target.getCategory()));
