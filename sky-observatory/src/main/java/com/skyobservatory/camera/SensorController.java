@@ -78,6 +78,37 @@ public class SensorController implements SensorEventListener {
     public float getUpY() { return smoothedUp[1]; }
     public float getUpZ() { return smoothedUp[2]; }
 
+    /**
+     * Returns the rotation, in radians, to apply to screen-space labels so that
+     * their text stays aligned with the device screen when the phone is rolled
+     * in its own plane. Zero when upright or when the view is vertical (roll is
+     * undefined when looking straight up or down).
+     */
+    public float getLabelRollRadians() {
+        float[] f = smoothedForward;
+        float[] u = smoothedUp;
+
+        // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
+        float gx = -f[0] * f[1];
+        float gy = 1f - f[1] * f[1];
+        float gz = -f[2] * f[1];
+        float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
+        if (gl < 1e-4f) return 0f;
+        gx /= gl; gy /= gl; gz /= gl;
+
+        // Screen-right when upright: forward x gravity-up.
+        float rx = f[1] * gz - f[2] * gy;
+        float ry = f[2] * gx - f[0] * gz;
+        float rz = f[0] * gy - f[1] * gx;
+
+        float sinRoll = u[0] * rx + u[1] * ry + u[2] * rz;
+        float cosRoll = u[0] * gx + u[1] * gy + u[2] * gz;
+        float roll = (float) Math.atan2(sinRoll, cosRoll);
+
+        // Text rotates opposite to the device's roll so it reads upright on screen.
+        return -roll;
+    }
+
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (usingRotationVector) {
