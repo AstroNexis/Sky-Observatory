@@ -112,13 +112,20 @@ public final class ShaderSources {
         + "uniform float uNdcOffsetY;\n"  // downward shift from body center (NDC units, negative)
         + "uniform float uNdcHalfW;\n"    // half-width  of the quad in NDC
         + "uniform float uNdcHalfH;\n"    // half-height of the quad in NDC
+        + "uniform float uRoll;\n"        // screen roll in radians (text follows device orientation)
+        + "uniform float uAspect;\n"      // viewport width / height
         + "layout(location = 0) in vec2 aLocalPos;\n"  // local quad corner in [-1,+1]
         + "layout(location = 2) in vec2 aTexCoord;\n"
         + "out vec2 vTexCoord;\n"
         + "void main() {\n"
-        + "    vec2 pos = uNdcCenter\n"
-        + "             + vec2(aLocalPos.x * uNdcHalfW,\n"
-        + "                    uNdcOffsetY + aLocalPos.y * uNdcHalfH);\n"
+        + "    vec2 local = vec2(aLocalPos.x * uNdcHalfW,\n"
+        + "                      uNdcOffsetY + aLocalPos.y * uNdcHalfH);\n"
+        + "    // Rotate in square pixel space so the label is not sheared on non-square screens.\n"
+        + "    vec2 sq = vec2(local.x * uAspect, local.y);\n"
+        + "    float c = cos(uRoll);\n"
+        + "    float s = sin(uRoll);\n"
+        + "    sq = vec2(c * sq.x - s * sq.y, s * sq.x + c * sq.y);\n"
+        + "    vec2 pos = uNdcCenter + vec2(sq.x / uAspect, sq.y);\n"
         + "    // z = 0, w = 1 -- paints at mid-depth, depth test disabled.\n"
         + "    gl_Position = vec4(pos, 0.0, 1.0);\n"
         + "    vTexCoord = aTexCoord;\n"
