@@ -443,6 +443,13 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glUniform1i(shaders.labelTex, 0);
 
+        // Labels follow the device roll so their text stays upright on screen.
+        float labelRoll = (sensorController != null && sensorController.hasOrientation())
+                ? sensorController.getLabelRollRadians() : 0f;
+        GLES30.glUniform1f(shaders.labelRoll, labelRoll);
+        GLES30.glUniform1f(shaders.labelAspect,
+                viewportH > 0 ? (float) viewportW / (float) viewportH : 1f);
+
         // Aspect ratio correction: NDC x spans [-1,+1] across the screen width,
         // NDC y spans [-1,+1] across the screen height.  To make the label quad
         // appear at the correct pixel aspect ratio we scale the half-width by
