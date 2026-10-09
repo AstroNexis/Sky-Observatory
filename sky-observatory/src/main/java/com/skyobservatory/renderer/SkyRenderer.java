@@ -23,7 +23,6 @@ import android.util.Log;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.ObservableObject;
 import com.skyobservatory.api.SkySnapshot;
-import com.skyobservatory.api.VisibilityState;
 import com.skyobservatory.camera.SensorController;
 import com.skyobservatory.camera.SkyCamera;
 import com.skyobservatory.touch.TouchController;
@@ -219,10 +218,10 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             if (entry.ringMesh != null) entry.ringMesh.cleanup();
         }
         objectEntries.clear();
+        // Every object is built, including those below the horizon: the sky is a
+        // full sphere and the camera can look below the horizon ring, so dropping
+        // them made the Sun, Moon and planets vanish whenever they had set.
         for (ObservableObject obj : snapshot.getObjects()) {
-            if (obj.getVisibility() != VisibilityState.VISIBLE) {
-                continue;
-            }
             ObservableObjectEntry entry = objectFactory.build(obj);
             placeEntry(entry, obj);
             objectEntries.add(entry);
