@@ -16,6 +16,7 @@
 package com.skyobservatory.renderer;
 
 import android.content.Context;
+import android.view.WindowManager;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
@@ -110,6 +111,18 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
     public TouchController getTouchController() { return touchController; }
     public void setSensorController(SensorController sc) { this.sensorController = sc; }
+
+    /**
+     * Returns the rotation to apply to label quads so their text reads upright on
+     * screen. Android already turns the window by the display rotation (a
+     * counter-clockwise quarter turn per step), so labels turn back by the same amount.
+     */
+    private float labelCounterRotationRadians() {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) return 0f;
+        int quarterTurns = wm.getDefaultDisplay().getRotation();
+        return -quarterTurns * (float) (Math.PI / 2.0);
+    }
 
     // Public data interface
 
@@ -443,10 +456,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
         GLES30.glUniform1i(shaders.labelTex, 0);
 
-        // Labels follow the device roll so their text stays upright on screen.
-        float labelRoll = (sensorController != null && sensorController.hasOrientation())
-                ? sensorController.getLabelRollRadians() : 0f;
-        GLES30.glUniform1f(shaders.labelRoll, labelRoll);
+        GLES30.glUniform1f(shaders.labelRoll, labelCounterRotationRadians());
         GLES30.glUniform1f(shaders.labelAspect,
                 viewportH > 0 ? (float) viewportW / (float) viewportH : 1f);
 
@@ -582,3 +592,4 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         }
     }
 }
+
