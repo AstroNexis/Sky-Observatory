@@ -81,8 +81,10 @@ public class SensorController implements SensorEventListener {
     /**
      * Returns the rotation, in radians, to apply to screen-space labels so that
      * their text stays aligned with the device screen when the phone is rolled
-     * in its own plane. Zero when upright or when the view is vertical (roll is
-     * undefined when looking straight up or down).
+     * in its own plane. The result snaps to one of four orientations (0, 90,
+     * 180 or 270 degrees), so text is only ever horizontal or vertical. Zero
+     * when the view is vertical (roll is undefined when looking straight up
+     * or down).
      */
     public float getLabelRollRadians() {
         float[] f = smoothedForward;
@@ -105,8 +107,11 @@ public class SensorController implements SensorEventListener {
         float cosRoll = u[0] * gx + u[1] * gy + u[2] * gz;
         float roll = (float) Math.atan2(sinRoll, cosRoll);
 
-        // Text rotates opposite to the device's roll so it reads upright on screen.
-        return -roll;
+        // Snap to the nearest quarter turn so labels only read horizontally or
+        // vertically. Text rotates opposite to the device's roll so it stays upright.
+        final float quarterTurn = (float) (Math.PI / 2.0);
+        float snapped = Math.round(roll / quarterTurn) * quarterTurn;
+        return -snapped;
     }
 
     @Override

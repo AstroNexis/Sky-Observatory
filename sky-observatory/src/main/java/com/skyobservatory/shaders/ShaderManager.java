@@ -52,6 +52,10 @@ public final class ShaderManager {
     public final int labelNdcHalfW;
     /** Half-height of the label quad in NDC units. */
     public final int labelNdcHalfH;
+    /** Screen roll in radians applied to label quads. */
+    public final int labelRoll;
+    /** Viewport width / height, used to rotate labels without shearing. */
+    public final int labelAspect;
     public final int labelTex;
 
     // Horizon glow ring
@@ -92,6 +96,8 @@ public final class ShaderManager {
         labelNdcOffsetY = GLES30.glGetUniformLocation(labelProgram, "uNdcOffsetY");
         labelNdcHalfW   = GLES30.glGetUniformLocation(labelProgram, "uNdcHalfW");
         labelNdcHalfH   = GLES30.glGetUniformLocation(labelProgram, "uNdcHalfH");
+        labelRoll       = GLES30.glGetUniformLocation(labelProgram, "uRoll");
+        labelAspect     = GLES30.glGetUniformLocation(labelProgram, "uAspect");
         labelTex        = GLES30.glGetUniformLocation(labelProgram, "uTexture");
 
         horizonMvp   = GLES30.glGetUniformLocation(horizonProgram, "uMvpMatrix");
