@@ -31,10 +31,25 @@ public class SkyCamera {
 
     private float yawDeg, pitchDeg;
 
+    /**
+     * Sets the view direction from the device. The up vector is rebuilt from world
+     * up (gravity) projected onto the view plane, so rolling the phone does not
+     * rotate or distort the sky. The supplied up vector is only used when looking
+     * straight up or down, where world up is undefined.
+     */
     public void buildViewFromVectors(float fx, float fy, float fz,
                                      float ux, float uy, float uz) {
         forwardX = fx; forwardY = fy; forwardZ = fz;
-        upX = ux; upY = uy; upZ = uz;
+
+        float lx = -fx * fy;
+        float ly = 1f - fy * fy;
+        float lz = -fz * fy;
+        float len = (float) Math.sqrt(lx * lx + ly * ly + lz * lz);
+        if (len < 1e-4f) {
+            upX = ux; upY = uy; upZ = uz;
+        } else {
+            upX = lx / len; upY = ly / len; upZ = lz / len;
+        }
     }
 
     public void applyYawDelta(float degrees) {
