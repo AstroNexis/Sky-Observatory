@@ -23,6 +23,7 @@ The next update is scheduled for release on October 15, 2026.
 ### Added
 
 - #71: Add missing unit tests across api and engine modules.
+- #79: Add rotate celestial labels with screen orientation.
 
 ### Removed
 
