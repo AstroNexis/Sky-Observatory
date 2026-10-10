@@ -79,12 +79,29 @@ jobs:
 
       - name: Verify APK outputs
         run: |
-          ls -lh sky-observatory/build/outputs/apk/debug/*.apk 2>/dev/null || \
-            (echo "::error::Debug APK not found at expected path" && exit 1)
-          echo "Debug APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/debug/*.apk) bytes"
-          ls -lh sky-observatory/build/outputs/apk/release/*.apk 2>/dev/null || \
-            (echo "::error::Release APK not found at expected path" && exit 1)
-          echo "Release APK size: $(stat --printf='%s' sky-observatory/build/outputs/apk/release/*.apk) bytes"
+          shopt -s nullglob
+          debug_apks=(sky-observatory/build/outputs/apk/debug/*.apk)
+          release_apks=(sky-observatory/build/outputs/apk/release/*.apk)
+          if [ "${#debug_apks[@]}" -eq 0 ]; then
+            echo "::error::Debug APK not found at expected path"
+            exit 1
+          fi
+          if [ "${#release_apks[@]}" -eq 0 ]; then
+            echo "::error::Release APK not found at expected path"
+            exit 1
+          fi
+          {
+            echo "### Unsigned APKs"
+            echo ""
+            echo "| File | Size | SHA-256 |"
+            echo "| --- | --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for apk in "${debug_apks[@]}" "${release_apks[@]}"; do
+            size=$(du -h "$apk" | cut -f1)
+            sha=$(sha256sum "$apk" | cut -d' ' -f1)
+            echo "APK: $(basename "$apk")  size: $size  sha256: $sha"
+            echo "| $(basename "$apk") | $size | \`$sha\` |" >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Resolve apksigner path
         run: |
@@ -132,14 +149,68 @@ jobs:
               grep -E "Verified using v1 scheme|Verified using v2 scheme|Verified using v3 scheme"
           done
 
+      - name: Print signed APK details
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          shopt -s nullglob
+          apks=(sky-observatory/build/outputs/apk/release/*.apk)
+          {
+            echo "### Signed release APK"
+            echo ""
+            echo "| File | Size | SHA-256 |"
+            echo "| --- | --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for apk in "${apks[@]}"; do
+            size=$(du -h "$apk" | cut -f1)
+            sha=$(sha256sum "$apk" | cut -d' ' -f1)
+            echo "APK: $(basename "$apk")  size: $size  sha256: $sha"
+            echo "| $(basename "$apk") | $size | \`$sha\` |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
+
+      - name: Package debug and release APKs
+        run: |
+          shopt -s nullglob
+          debug_apks=(sky-observatory/build/outputs/apk/debug/*.apk)
+          release_apks=(sky-observatory/build/outputs/apk/release/*.apk)
+          if [ "${#debug_apks[@]}" -eq 0 ] || [ "${#release_apks[@]}" -eq 0 ]; then
+            echo "::error::Cannot package, one or both APK sets are missing"
+            exit 1
+          fi
+          mkdir -p dist
+          rm -f dist/observatory-debug.zip dist/observatory-release.zip
+          zip -j dist/observatory-debug.zip "${debug_apks[@]}"
+          zip -j dist/observatory-release.zip "${release_apks[@]}"
+          {
+            echo "### Packaged builds"
+            echo ""
+            echo "| Zip | Size | SHA-256 |"
+            echo "| --- | --- | --- |"
+            for z in dist/observatory-debug.zip dist/observatory-release.zip; do
+              size=$(du -h "$z" | cut -f1)
+              sha=$(sha256sum "$z" | cut -d' ' -f1)
+              echo "| $(basename "$z") | $size | \`$sha\` |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          unzip -l dist/observatory-debug.zip
+          unzip -l dist/observatory-release.zip
 
       - uses: actions/upload-artifact@v7
         if: success()
         with:
-          name: observatory-apk
-          path: |
-            sky-observatory/build/outputs/apk/debug/*.apk
-            sky-observatory/build/outputs/apk/release/*.apk
+          name: observatory-debug
+          path: dist/observatory-debug.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v7
+        if: success()
+        with:
+          name: observatory-release
+          path: dist/observatory-release.zip
+          if-no-files-found: error
           retention-days: 14
