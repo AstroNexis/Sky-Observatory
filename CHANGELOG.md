@@ -15,7 +15,7 @@ The next update is scheduled for release on October 15, 2026.
 
 - #72: Use isAboveHorizon consistently so the renderer treats horizon boundary the same as the rest of the engine.
 
-- #70: Correct activity class paths in AndroidManifest.xml.
+- #70: Fix correct activity class paths in AndroidManifest.xml.
 
 - #68: Preserve yaw at zenith in SkyCamera view matrix.
 
@@ -24,6 +24,8 @@ The next update is scheduled for release on October 15, 2026.
 - #76: Fix Angular diameter uses atan instead of asin in EphemerisCalculator.
 
 - #78: Fix bug where planets disappear at night.
+
+- #81: Fix correct package paths in consumer rules.
 
 ### Added
 
