@@ -14,15 +14,21 @@ The next update is scheduled for release on October 15, 2026.
 ### Fixed
 
 - #72: Use isAboveHorizon consistently so the renderer treats horizon boundary the same as the rest of the engine.
+
 - #70: Correct activity class paths in AndroidManifest.xml.
+
 - #68: Preserve yaw at zenith in SkyCamera view matrix.
+
 - #75: Fix use asin for apparent angular diameter calculation.
+
 - #76: Fix Angular diameter uses atan instead of asin in EphemerisCalculator.
+
 - #78: Fix bug where planets disappear at night.
 
 ### Added
 
 - #71: Add missing unit tests across api and engine modules.
+
 - #79: Add rotate celestial labels with screen orientation.
 
 ### Removed
@@ -57,21 +63,11 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
  - #31: Community files -- code of conduct, security policy, support guide, and GitHub issue/PR
    templates.
 
- - Project configuration files: `.editorconfig`, `.gitattributes`, and `.mailmap` for cross-platform
-   consistency.
-
- - `sky-observatory/proguard-rules.pro` for release-build minification.
-
  - #30: Moon-phase rendering using sun-direction illumination.
 
  - #49: Add build and benchmark reporting scripts.
 
 ### Changed
-
- - Expanded `.gitignore` to cover compiled artifacts (`*.jar`, `*.aar`), editor temp files, and
-   profiler output.
-
- - Populated the previously empty `CHANGELOG.md` and `benchmark/consumer-rules.pro`.
 
  - #39: Shared location repository functionality across the application.
 
@@ -99,13 +95,6 @@ Bug-fix and touch-system overhaul release.
 
  - #1: Removed EMA lag and dropped move events from pan/pinch; exponential smoothing applied
    instead.
-
- - `jacoco` coverage task configuration and test compilation errors from CI.
-
- - APK signing: added `--ks-type JKS` flag to all workflows to prevent PKCS12 loading errors;
-   enabled signature schemes v2 and v3 across all workflows.
-
- - Codecov integration: fixed permissions and upload configuration.
 
 ### Added
 
