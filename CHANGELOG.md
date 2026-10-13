@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the [Sky Vault](https://github.com/AstroNexis/sky-observatory) project will be
+All notable changes to the [Sky Observatory](https://github.com/AstroNexis/sky-observatory) project will be
 documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
