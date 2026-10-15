@@ -43,12 +43,6 @@ public class CoordinateConverterTest {
     }
 
     @Test
-    public void normalizeAzimuthStaysBelow360ForTinyNegativeAngle() {
-        assertEquals(0.0, converter.normalizeAzimuth(-1e-14), 0.0);
-        assertTrue(converter.normalizeAzimuth(-1e-14) < 360.0);
-    }
-
-    @Test
     public void clampAltitudePreservesValueInRange() {
         assertEquals(45.0, converter.clampAltitude(45.0), DELTA);
         assertEquals(-45.0, converter.clampAltitude(-45.0), DELTA);

@@ -74,6 +74,10 @@ final class HorizontalToCartesianConverter {
         double azimuth = Math.toDegrees(Math.atan2(x, -z));
         if (azimuth < 0.0) {
             azimuth += 360.0;
+            // A tiny negative angle rounds up to exactly 360.0; keep the range half-open.
+            if (azimuth >= 360.0) {
+                azimuth = 0.0;
+            }
         }
 
         double altitude = Math.toDegrees(Math.asin(clamp(y, -1.0, 1.0)));

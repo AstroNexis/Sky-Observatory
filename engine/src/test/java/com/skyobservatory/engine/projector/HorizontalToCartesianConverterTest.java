@@ -93,6 +93,12 @@ public class HorizontalToCartesianConverterTest {
     }
 
     @Test
+    public void toHorizontal_azimuthStaysBelow360ForTinyWestOfNorth() {
+        HorizontalCoordinate result = converter.toHorizontal(new CartesianCoordinate(-1e-17, 0.0, -1.0));
+        assertEquals(0.0, result.getAzimuthDegrees(), 0.0);
+    }
+
+    @Test
     public void roundTrip_north() {
         HorizontalCoordinate original = new HorizontalCoordinate(0.0, 0.0);
         CartesianCoordinate cart = converter.toCartesian(original);
