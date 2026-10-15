@@ -37,6 +37,10 @@ public final class CoordinateConverter implements CoordinateTransform {
         double normalized = degrees % 360.0;
         if (normalized < 0.0) {
             normalized += 360.0;
+            // A tiny negative input rounds up to exactly 360.0; keep the range half-open.
+            if (normalized >= 360.0) {
+                normalized = 0.0;
+            }
         }
         return normalized;
     }
