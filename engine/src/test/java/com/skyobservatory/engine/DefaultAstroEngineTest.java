@@ -11,6 +11,7 @@ import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
 import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
+import com.skyobservatory.api.ValidationException;
 import com.skyobservatory.api.Viewport;
 import com.skyobservatory.api.VisibleSkyRegion;
 import com.skyobservatory.api.VisibilityState;
@@ -21,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -106,5 +108,15 @@ public class DefaultAstroEngineTest {
     @Test(expected = AstroException.class)
     public void calculatePositionThrowsOnInvalidTarget() throws AstroException {
         engine.calculatePosition(null, observer, time);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void createSnapshotThrowsOnNullTargets() throws AstroException {
+        engine.createSnapshot(null, observer, time);
+    }
+
+    @Test(expected = ValidationException.class)
+    public void createSnapshotThrowsOnEmptyTargets() throws AstroException {
+        engine.createSnapshot(Collections.<CelestialObject>emptyList(), observer, time);
     }
 }
