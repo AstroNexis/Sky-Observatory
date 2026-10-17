@@ -102,8 +102,10 @@ final class EphemerisCalculator {
     private static final int COARSE_SAMPLE_COUNT = 48;
 
     /**
-     * Bisection iteration limit. Each iteration halves the interval;
-     * 40 iterations give sub-millisecond precision for a 24-hour window.
+     * Bisection iteration limit. Each iteration halves the interval. A Julian
+     * Date near 2.45e6 has a double resolution of about 4.7e-10 days, which a
+     * half-hour bracket reaches after roughly 26 iterations; the loop stops
+     * there instead of running to this limit.
      */
     private static final int BISECTION_MAX_ITER = 40;
 
@@ -255,8 +257,9 @@ final class EphemerisCalculator {
      *       {@code time}.</li>
      *   <li>Sample altitude at {@link #COARSE_SAMPLE_COUNT} evenly-spaced
      *       points to locate sign changes (horizon crossings).</li>
-     *   <li>For each sign change, bisect to {@link #BISECTION_MAX_ITER}
-     *       iterations to pin the crossing to sub-minute precision.</li>
+     *   <li>For each sign change, bisect for at most {@link #BISECTION_MAX_ITER}
+     *       iterations, stopping early once the bracket cannot shrink further
+     *       in double precision.</li>
      *   <li>Classify each crossing as rise (altitude going positive) or set.</li>
      * </ol>
      *
@@ -337,6 +340,11 @@ final class EphemerisCalculator {
 
         for (int iter = 0; iter < BISECTION_MAX_ITER; iter++) {
             double jdMid  = (jdLow + jdHigh) * 0.5;
+
+            // Once the bracket spans adjacent doubles the midpoint rounds onto
+            // one of its ends and further iterations cannot narrow it.
+            if (jdMid <= jdLow || jdMid >= jdHigh) break;
+
             double altMid = altitudeAt(target, observer, jdMid);
 
             boolean midAbove = altMid > HORIZON_ALTITUDE_DEG;
