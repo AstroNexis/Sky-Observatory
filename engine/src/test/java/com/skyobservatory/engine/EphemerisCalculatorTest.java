@@ -123,4 +123,28 @@ public class EphemerisCalculatorTest {
         assertTrue("Expected a rise time for crossing body", result.hasRiseTime());
         assertTrue("Expected a set time for crossing body", result.hasSetTime());
     }
+
+    @Test
+    public void riseSetBisectionStopsOnceBracketCannotShrink() throws AstroException {
+        // Same parabola as above; roots are at 12 -/+ sqrt(44) hours after
+        // JD 2451544.5. The call count covers one position fetch, 49 coarse
+        // samples and two bisections; the limit sits below the 130 calls made
+        // when each bisection ran a fixed 40 iterations.
+        final int[] calls = {0};
+        PositionProvider crossing = (target, obs, t) -> {
+            calls[0]++;
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double alt = -10.0 + hours * (24.0 - hours) * 0.1;
+            return new PositionResult.Builder(180.0, alt, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), crossing);
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        double expectedRiseHours = 12.0 - Math.sqrt(44.0);
+        double expectedSetHours  = 12.0 + Math.sqrt(44.0);
+        assertEquals(2451544.5 + expectedRiseHours / 24.0, result.getRiseTimeJd(), 1e-8);
+        assertEquals(2451544.5 + expectedSetHours / 24.0, result.getSetTimeJd(), 1e-8);
+        assertTrue("Bisection kept sampling past double precision: " + calls[0] + " calls",
+                calls[0] < 110);
+    }
 }
