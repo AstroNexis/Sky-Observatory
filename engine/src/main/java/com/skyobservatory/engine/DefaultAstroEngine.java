@@ -27,6 +27,7 @@ import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
 import com.skyobservatory.api.SkyCoordinate;
 import com.skyobservatory.api.SkySnapshot;
+import com.skyobservatory.api.ValidationException;
 import com.skyobservatory.api.Viewport;
 import com.skyobservatory.api.VisibleSkyRegion;
 import com.skyobservatory.api.VisibilityState;
@@ -83,6 +84,10 @@ final class DefaultAstroEngine implements AstroEngine {
             List<CelestialObject> targets,
             Observer observer,
             AstroTime time) throws AstroException {
+
+        if (targets == null || targets.isEmpty()) {
+            throw new ValidationException("Targets must not be null or empty");
+        }
 
         List<ObservableObject> objects = new ArrayList<>(targets.size());
 
