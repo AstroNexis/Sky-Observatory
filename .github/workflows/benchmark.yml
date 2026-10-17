@@ -53,8 +53,16 @@ jobs:
             rm -rf /tmp/gradle-install /tmp/gradle-bin.zip
           fi
 
+      - name: Record build start time
+        run: echo "BUILD_START_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
+
       - name: Build benchmark
+        id: build
         run: ./gradlew :benchmark:assembleDebug --stacktrace
+
+      - name: Record build end time
+        if: always() && env.BUILD_START_EPOCH != ''
+        run: echo "BUILD_END_EPOCH=$(date +%s)" >> "$GITHUB_ENV"
 
       - name: Resolve apksigner path
         run: |
@@ -66,6 +74,7 @@ jobs:
           echo "APK_SIGNER=$APK_SIGNER" >> $GITHUB_ENV
 
       - name: Decode keystore
+        id: decode
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         if: env.KEYSTORE_BASE64 != ''
@@ -73,6 +82,7 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
 
       - name: Sign benchmark APK (v1+v2+v3)
+        id: sign
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -92,6 +102,7 @@ jobs:
           done
 
       - name: Verify APK signature
+        id: verify
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         if: env.KEYSTORE_BASE64 != ''
@@ -103,8 +114,196 @@ jobs:
           done
 
       - uses: actions/upload-artifact@v7
+        id: upload
         if: success()
         with:
           name: benchmark-aar
           path: benchmark/build/outputs/aar/*.aar
           retention-days: 14
+
+      - name: Benchmark build summary
+        if: always()
+        continue-on-error: true
+        env:
+          WORKFLOW_NAME: ${{ github.workflow }}
+          JOB_ID: ${{ github.job }}
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUNNER_LABEL: ${{ runner.os }} ${{ runner.arch }} (${{ runner.environment }})
+          # Must match the task run by the "Build benchmark" step.
+          GRADLE_TASK: ./gradlew :benchmark:assembleDebug
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          DECODE_OUTCOME: ${{ steps.decode.outcome }}
+          SIGN_OUTCOME: ${{ steps.sign.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          UPLOAD_OUTCOME: ${{ steps.upload.outcome }}
+          UPLOAD_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          OUTPUT_DIR="benchmark/build/outputs"
+
+          # Escapes Markdown/HTML metacharacters so that branch names and file
+          # names render as literal text, including inside table cells.
+          md_escape() {
+            printf '%s' "$1" | tr '\r\n' '  ' | sed \
+              -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' \
+              -e 's/[][\\`*_|~#!]/\\&/g'
+          }
+
+          outcome_label() {
+            case "$1" in
+              success)   echo "✅ Succeeded" ;;
+              failure)   echo "❌ Failed" ;;
+              cancelled) echo "⚠️ Cancelled" ;;
+              skipped)   echo "⏭️ Skipped" ;;
+              *)         echo "Not run" ;;
+            esac
+          }
+
+          fmt_size() {
+            numfmt --to=iec-i --suffix=B "$1" 2>/dev/null || echo "$1 B"
+          }
+
+          # Discover generated APK/AAR files without hardcoding names.
+          artifacts=()
+          if [ -d "$OUTPUT_DIR" ]; then
+            while IFS= read -r -d '' f; do
+              artifacts+=("$f")
+            done < <(find "$OUTPUT_DIR" -type f \( -name '*.apk' -o -name '*.aar' \) -print0 | sort -z)
+          fi
+          apk_count=0
+          aar_count=0
+          for f in "${artifacts[@]}"; do
+            case "$f" in
+              *.apk) apk_count=$((apk_count + 1)) ;;
+              *.aar) aar_count=$((aar_count + 1)) ;;
+            esac
+          done
+
+          emit_artifact_table() {
+            local ext="$1" title="$2" count="$3" f bytes
+            echo "#### $title"
+            echo ""
+            if [ "$count" -eq 0 ]; then
+              echo "_No $title found in \`$OUTPUT_DIR\`._"
+              echo ""
+              return
+            fi
+            echo "| File | Path | Size |"
+            echo "| --- | --- | --- |"
+            for f in "${artifacts[@]}"; do
+              case "$f" in
+                *."$ext")
+                  bytes=$(stat -c %s "$f" 2>/dev/null || echo 0)
+                  echo "| $(md_escape "${f##*/}") | $(md_escape "$f") | $(fmt_size "$bytes") |"
+                  ;;
+              esac
+            done
+            echo ""
+          }
+
+          # Branch / pull request context.
+          if [ -n "${PR_NUMBER:-}" ]; then
+            context="Pull request #$(md_escape "$PR_NUMBER"): $(md_escape "$HEAD_REF") → $(md_escape "$BASE_REF")"
+          else
+            context="$(md_escape "$REF_TYPE") $(md_escape "$REF_NAME")"
+          fi
+
+          java_detected=$(java -version 2>&1 | head -n 1)
+          ndk_state="not found in the Android SDK"
+          if [ -d "${ANDROID_HOME:-}/ndk/${NDK_VERSION}" ]; then
+            ndk_state="installed"
+          fi
+
+          # Build duration covers only the Gradle build step.
+          duration="not available"
+          if [[ "${BUILD_START_EPOCH:-}" =~ ^[0-9]+$ && "${BUILD_END_EPOCH:-}" =~ ^[0-9]+$ ]] \
+              && [ "$BUILD_END_EPOCH" -ge "$BUILD_START_EPOCH" ]; then
+            secs=$((BUILD_END_EPOCH - BUILD_START_EPOCH))
+            duration="$((secs / 60))m $((secs % 60))s"
+          fi
+
+          # Signing status is derived from step outcomes only. The sign and
+          # verify steps loop over APKs and succeed without action when none
+          # exist, so a success outcome is reported as performed/verified only
+          # when at least one APK was found.
+          if [ "$BUILD_OUTCOME" != "success" ]; then
+            sign_status="Not reached (build did not succeed)"
+            verify_status="Not reached (build did not succeed)"
+          elif [ "$DECODE_OUTCOME" = "failure" ]; then
+            sign_status="Failed (keystore could not be decoded)"
+            verify_status="Not performed"
+          elif [ "$SIGN_OUTCOME" = "skipped" ]; then
+            sign_status="Skipped (signing secrets unavailable)"
+            verify_status="Skipped (nothing was signed)"
+          elif [ "$SIGN_OUTCOME" = "failure" ]; then
+            sign_status="Failed"
+            verify_status="Not performed"
+          elif [ "$SIGN_OUTCOME" = "success" ]; then
+            if [ "$apk_count" -eq 0 ]; then
+              sign_status="Not performed (signing secrets present, but no APK was found to sign)"
+              verify_status="Not performed (no APK to verify)"
+            else
+              sign_status="Performed ($apk_count APK file(s))"
+              case "$VERIFY_OUTCOME" in
+                success) verify_status="Verified successfully" ;;
+                failure) verify_status="Failed" ;;
+                *)       verify_status="Not performed" ;;
+              esac
+            fi
+          else
+            sign_status="Not performed"
+            verify_status="Not performed"
+          fi
+
+          {
+            echo "## Benchmark build summary"
+            echo ""
+            echo "> This workflow **builds** the benchmark module. It does not run the benchmarks on a device or emulator, so no runtime performance measurements were collected."
+            echo ""
+            echo "### Build overview"
+            echo ""
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Build status | $(outcome_label "$BUILD_OUTCOME") |"
+            echo "| Workflow | $(md_escape "$WORKFLOW_NAME") |"
+            echo "| Gradle task | \`$GRADLE_TASK\` |"
+            echo "| Java version | $(md_escape "$JAVA_VERSION") (detected: $(md_escape "$java_detected")) |"
+            echo "| NDK version | $(md_escape "$NDK_VERSION") ($ndk_state) |"
+            echo "| Runner | $(md_escape "$RUNNER_LABEL") |"
+            echo "| Event | $(md_escape "$EVENT_NAME") |"
+            echo "| Branch / PR | $context |"
+            echo "| Commit | \`${COMMIT_SHA:0:7}\` |"
+            echo ""
+            echo "### Build artifacts"
+            echo ""
+            emit_artifact_table apk "APK files" "$apk_count"
+            emit_artifact_table aar "AAR files" "$aar_count"
+            echo "### Signing"
+            echo ""
+            echo "| Step | Status |"
+            echo "| --- | --- |"
+            echo "| APK signing | $sign_status |"
+            echo "| Signature verification | $verify_status |"
+            echo ""
+            echo "### Execution"
+            echo ""
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Gradle build duration | $duration |"
+            echo "| Job | $(md_escape "$JOB_ID") (status so far: $(md_escape "$JOB_STATUS")) |"
+            echo "| Run | [Run attempt $(md_escape "$RUN_ATTEMPT")]($RUN_URL) |"
+            if [ -n "${UPLOAD_URL:-}" ]; then
+              echo "| Artifact upload | $(outcome_label "$UPLOAD_OUTCOME") — [download]($UPLOAD_URL) |"
+            else
+              echo "| Artifact upload | $(outcome_label "$UPLOAD_OUTCOME") |"
+            fi
+            echo "| Runtime benchmarks | Not executed (build only) |"
+          } >> "$GITHUB_STEP_SUMMARY"
