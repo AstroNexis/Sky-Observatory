@@ -27,6 +27,8 @@ The next update is scheduled for release on October 15, 2026.
 
 - #81: Fix correct package paths in consumer rules.
 
+- #86: Fix reject null or empty snapshot targets.
+
 ### Added
 
 - #71: Add missing unit tests across api and engine modules.
