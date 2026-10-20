@@ -38,15 +38,27 @@ public final class Viewport {
      * @param horizontalFieldOfViewDegrees horizontal field of view in degrees (0, 180)
      * @param verticalFieldOfViewDegrees   vertical field of view in degrees (0, 180)
      * @param orientation                  the camera orientation; must not be null
+     * @throws IllegalArgumentException if a field of view is NaN or outside (0, 180),
+     *                                  or if the orientation is null
      */
     public Viewport(
             double horizontalFieldOfViewDegrees,
             double verticalFieldOfViewDegrees,
             CameraOrientation orientation) {
         if (orientation == null) throw new IllegalArgumentException("orientation must not be null");
+        requireValidFieldOfView("horizontalFieldOfViewDegrees", horizontalFieldOfViewDegrees);
+        requireValidFieldOfView("verticalFieldOfViewDegrees", verticalFieldOfViewDegrees);
         this.horizontalFieldOfViewDegrees = horizontalFieldOfViewDegrees;
         this.verticalFieldOfViewDegrees = verticalFieldOfViewDegrees;
         this.orientation = orientation;
+    }
+
+    // Written as a positive test so that NaN is rejected as well.
+    private static void requireValidFieldOfView(String name, double degrees) {
+        if (!(degrees > 0.0 && degrees < 180.0)) {
+            throw new IllegalArgumentException(
+                    name + " must be within (0, 180), got: " + degrees);
+        }
     }
 
     /** Returns the horizontal field of view in degrees. */

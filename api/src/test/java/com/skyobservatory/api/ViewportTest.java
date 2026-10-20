@@ -23,6 +23,26 @@ public class ViewportTest {
         new Viewport(90.0, 60.0, null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void zeroHorizontalFieldOfViewThrows() {
+        new Viewport(0.0, 60.0, ORIENTATION);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeVerticalFieldOfViewThrows() {
+        new Viewport(90.0, -60.0, ORIENTATION);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void fieldOfViewOf180Throws() {
+        new Viewport(180.0, 60.0, ORIENTATION);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nanFieldOfViewThrows() {
+        new Viewport(90.0, Double.NaN, ORIENTATION);
+    }
+
     @Test
     public void halfAngleDegrees() {
         Viewport v = new Viewport(90.0, 60.0, ORIENTATION);
