@@ -36,6 +36,11 @@ public class CameraOrientationTest {
         new CameraOrientation(0.0, 90.1, 0.0);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorRejectsPitchBelowDocumentedRange() {
+        new CameraOrientation(0.0, -90.1, 0.0);
+    }
+
     @Test
     public void equalsAndHashCode() {
         CameraOrientation a = new CameraOrientation(45.0, 30.0, 10.0);
