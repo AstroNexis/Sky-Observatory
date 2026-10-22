@@ -125,6 +125,22 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseSetWhenCrossingsFallOnSampleBoundaries() throws AstroException {
+        PositionProvider crossing = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double alt = (hours - 6.0) * (18.0 - hours);
+            return new PositionResult.Builder(180.0, alt, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), crossing);
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue("Expected a rise time at a sample boundary", result.hasRiseTime());
+        assertTrue("Expected a set time at a sample boundary", result.hasSetTime());
+        assertEquals(2451544.5 + 6.0 / 24.0, result.getRiseTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 18.0 / 24.0, result.getSetTimeJd(), 1e-8);
+    }
+
+    @Test
     public void riseSetBisectionStopsOnceBracketCannotShrink() throws AstroException {
         // Same parabola as above; roots are at 12 -/+ sqrt(44) hours after
         // JD 2451544.5. The call count covers one position fetch, 49 coarse
