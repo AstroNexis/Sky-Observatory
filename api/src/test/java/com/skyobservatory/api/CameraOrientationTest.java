@@ -22,6 +22,16 @@ public class CameraOrientationTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void constructorRejectsNonFiniteYaw() {
+        new CameraOrientation(Double.NaN, 0.0, 0.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorRejectsNonFiniteRoll() {
+        new CameraOrientation(0.0, 0.0, Double.POSITIVE_INFINITY);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void constructorRejectsPitchOutsideDocumentedRange() {
         new CameraOrientation(0.0, 90.1, 0.0);
     }
