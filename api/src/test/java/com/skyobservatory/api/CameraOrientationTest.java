@@ -16,6 +16,16 @@ public class CameraOrientationTest {
         assertEquals(10.0, o.getRollDegrees(), DELTA);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorRejectsNonFiniteAngles() {
+        new CameraOrientation(0.0, Double.NaN, 0.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorRejectsPitchOutsideDocumentedRange() {
+        new CameraOrientation(0.0, 90.1, 0.0);
+    }
+
     @Test
     public void equalsAndHashCode() {
         CameraOrientation a = new CameraOrientation(45.0, 30.0, 10.0);

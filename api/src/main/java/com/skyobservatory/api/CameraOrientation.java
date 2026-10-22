@@ -44,8 +44,18 @@ public final class CameraOrientation {
      * @param yawDegrees   yaw in degrees; 0 = north, positive = eastward
      * @param pitchDegrees pitch in degrees; 0 = level, positive = up
      * @param rollDegrees  roll in degrees; 0 = level, positive = clockwise
+     * @throws IllegalArgumentException if an angle is not finite or pitch is outside [-90, 90]
      */
     public CameraOrientation(double yawDegrees, double pitchDegrees, double rollDegrees) {
+        if (!Double.isFinite(yawDegrees)
+                || !Double.isFinite(pitchDegrees)
+                || !Double.isFinite(rollDegrees)) {
+            throw new IllegalArgumentException("Orientation angles must be finite");
+        }
+        if (pitchDegrees < -90.0 || pitchDegrees > 90.0) {
+            throw new IllegalArgumentException(
+                    "pitchDegrees must be within [-90, 90], got: " + pitchDegrees);
+        }
         this.yawDegrees = yawDegrees;
         this.pitchDegrees = pitchDegrees;
         this.rollDegrees = rollDegrees;
