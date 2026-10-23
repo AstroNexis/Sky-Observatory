@@ -108,6 +108,17 @@ public class PositionResultTest {
         new PositionResult.Builder(0.0, 0.0, sun, greenwich, j2000).distanceAu(-1.0);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void builderRejectsNaNDistance() {
+        new PositionResult.Builder(0.0, 0.0, sun, greenwich, j2000).distanceAu(Double.NaN);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void builderRejectsInfiniteDistance() {
+        new PositionResult.Builder(0.0, 0.0, sun, greenwich, j2000)
+                .distanceAu(Double.POSITIVE_INFINITY);
+    }
+
     @Test
     public void toStringContainsTargetName() {
         PositionResult result = new PositionResult(180.0, 45.0, sun, greenwich, j2000);
