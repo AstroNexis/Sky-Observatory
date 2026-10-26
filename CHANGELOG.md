@@ -29,6 +29,8 @@ The next update is scheduled for release on October 15, 2026.
 
 - #86: Fix reject null or empty snapshot targets.
 
+- #92: Fix reject non-finite position distances.
+
 ### Added
 
 - #71: Add missing unit tests across api and engine modules.
