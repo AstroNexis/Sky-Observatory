@@ -217,12 +217,13 @@ public final class PositionResult {
         /**
          * Sets the distance from the observer to the target in AU.
          *
-         * @param distanceAu distance in astronomical units; must be non-negative
+         * @param distanceAu distance in astronomical units; must be finite and non-negative
          * @return this builder
          */
         public Builder distanceAu(double distanceAu) {
-            if (distanceAu < 0.0) {
-                throw new IllegalArgumentException("distanceAu must be non-negative, got: " + distanceAu);
+            if (!Double.isFinite(distanceAu) || distanceAu < 0.0) {
+                throw new IllegalArgumentException(
+                        "distanceAu must be finite and non-negative, got: " + distanceAu);
             }
             this.distanceAu = distanceAu;
             return this;
