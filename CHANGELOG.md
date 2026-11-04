@@ -13,37 +13,39 @@ The next update is scheduled for release on October 15, 2026.
 
 ### Fixed
 
-- #72: Use isAboveHorizon consistently so the renderer treats horizon boundary the same as the rest of the engine.
+- #95: Fixed rise/set calculations missing horizon crossings at the start of the search day.
 
-- #70: Fix correct activity class paths in AndroidManifest.xml.
+- #72: Fixed inconsistent use of `isAboveHorizon` so the renderer treats the horizon boundary like the rest of the engine.
 
-- #68: Preserve yaw at zenith in SkyCamera view matrix.
+- #70: Fixed incorrect activity class paths in `AndroidManifest.xml`.
 
-- #75: Fix use asin for apparent angular diameter calculation.
+- #68: Preserved yaw at zenith in the `SkyCamera` view matrix.
 
-- #76: Fix Angular diameter uses atan instead of asin in EphemerisCalculator.
+- #75: Fixed apparent angular diameter calculation to use `asin`.
 
-- #78: Fix bug where planets disappear at night.
+- #76: Fixed angular diameter calculation using `atan` instead of `asin` in `EphemerisCalculator`.
 
-- #81: Fix correct package paths in consumer rules.
+- #78: Fixed a bug causing planets to disappear at night.
 
-- #86: Fix reject null or empty snapshot targets.
+- #81: Fixed incorrect package paths in consumer rules.
 
-- #92: Fix reject non-finite position distances.
+- #86: Fixed snapshot creation to reject null or empty targets.
+
+- #92: Fixed position results to reject non-finite distances.
 
 ### Added
 
-- #71: Add missing unit tests across api and engine modules.
+- #71: Added missing unit tests across the API and engine modules.
 
-- #79: Add rotate celestial labels with screen orientation.
+- #79: Added rotation of celestial labels with screen orientation.
 
 ### Removed
 
- - #59: Duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
+ - #59: Removed duplicate `LocationRepository` from the engine module. The location module already provides the same functionality.
 
-### Change
+### Changed
 
-- #69: Replace custom crash handler with Crashx library.
+- #69: Replaced custom crash handler with the Crashx library.
 
 ## [0.1.2-alpha] - 2026-09-24
 
@@ -51,27 +53,27 @@ Upcoming release, focusing on renderer reliability, astronomy visuals, and proje
 
 ### Fixed
 
- - #51: Native builds now fail with a clear SuperNOVAS submodule message when the
+ - #51: Fixed native builds to report a clear SuperNOVAS submodule message when the
    dependency has not been initialized.
 
- - #45: Renderer updates now restart correctly after activity resume without duplicate workers,
-   stale callbacks, or queued snapshots from paused lifecycle generations.
+ - #45: Fixed renderer updates not restarting correctly after activity resume, which could cause
+   duplicate workers, stale callbacks, or queued snapshots from paused lifecycle generations.
 
- - #46: Camera projection remains stable at zenith and nadir while preserving yaw and roll.
+ - #46: Fixed camera projection instability at zenith and nadir while preserving yaw and roll.
 
- - #47: Renderer skips `BELOW_HORIZON` objects before allocating or drawing GPU resources while
-   retaining them in snapshots.
+ - #47: Fixed renderer to skip `BELOW_HORIZON` objects before allocating or drawing GPU resources
+   while retaining them in snapshots.
    
- - #50: Observer validation now rejects non-finite latitude, longitude, and altitude values.
+ - #50: Fixed observer validation to reject non-finite latitude, longitude, and altitude values.
 
 ### Added
 
- - #31: Community files -- code of conduct, security policy, support guide, and GitHub issue/PR
+ - #31: Added community files -- code of conduct, security policy, support guide, and GitHub issue/PR
    templates.
 
- - #30: Moon-phase rendering using sun-direction illumination.
+ - #30: Added moon-phase rendering using sun-direction illumination.
 
- - #49: Add build and benchmark reporting scripts.
+ - #49: Added build and benchmark reporting scripts.
 
 ### Changed
 
@@ -91,47 +93,47 @@ Bug-fix and touch-system overhaul release.
 
 ### Fixed
 
- - #5: Crash handler no longer blocks the main process; moved to a separate process with a loop
-   guard and increased sleep to 4 seconds.
+ - #5: Fixed crash handler blocking the main process by moving it to a separate process with a loop
+   guard and increasing the sleep to 4 seconds.
 
- - #4: Horizon ring now renders correctly by disabling depth test in the draw pass.
+ - #4: Fixed horizon ring rendering by disabling depth testing in the draw pass.
 
- - #3: Touch system resolved Kotlin smart cast and compilation errors after migrating to the new
+ - #3: Fixed Kotlin smart cast and compilation errors after migrating the touch system to the new
    modular architecture.
 
- - #1: Removed EMA lag and dropped move events from pan/pinch; exponential smoothing applied
-   instead.
+ - #1: Fixed pan/pinch handling by removing EMA lag and dropped move events and applying
+   exponential smoothing instead.
 
 ### Added
 
- - #6: Modular touch system redesigned in Kotlin -- `FingerTracker`, `GestureRecognizer`,
+ - #6: Added a modular touch system in Kotlin -- `FingerTracker`, `GestureRecognizer`,
    `TouchController`, `TouchStateManager` with a 3-state machine and pinch-only zoom.
 
- - FOV-scaled drag sensitivity: `getFovDeg()` exposed on the camera, wired to `TouchController`
+ - Added FOV-scaled drag sensitivity: `getFovDeg()` exposed on the camera, wired to `TouchController`
    for uniform azimuth/altitude feel.
 
- - CI `workflow_dispatch` trigger on all workflows; concurrency groups and cancel-in-progress
+ - Added CI `workflow_dispatch` trigger on all workflows; concurrency groups and cancel-in-progress
    logic.
 
- - JaCoCo and Codecov integration for unit test coverage on `api`, `engine`, and `native` modules.
+ - Added JaCoCo and Codecov integration for unit test coverage on `api`, `engine`, and `native` modules.
 
- - `CONTRIBUTING.md` with build and test instructions.
+ - Added `CONTRIBUTING.md` with build and test instructions.
 
 ### Changed
 
- - Touch system rewritten from Java to Kotlin, moved into its own `touch/` module.
+ - Rewrote touch system from Java to Kotlin and moved it into its own `touch/` module.
 
- - Touch drag model: inverted azimuth/altitude axes for a "grab the sky" feel; uniform
-   sensitivity, FOV-scaled, no pinch rotation.
+ - Changed touch drag model to use inverted azimuth/altitude axes for a "grab the sky" feel, with
+   uniform FOV-scaled sensitivity and no pinch rotation.
 
- - Workflows updated to use `ubuntu-latest`, Gradle 9.6.1, and centralized NDK version
+ - Updated workflows to use `ubuntu-latest`, Gradle 9.6.1, and centralized NDK version
    (`27.2.12479018`).
 
- - `codecov.yml` now ignores benchmark, sample-test, and sky-observatory modules.
+ - Updated `codecov.yml` to ignore benchmark, sample-test, and sky-observatory modules.
 
 ### Removed
 
- - Old `TouchController.java` in the camera package after Kotlin migration.
+ - Removed old `TouchController.java` from the camera package after Kotlin migration.
 
 
 ## [0.1.0-alpha] - 2026-07-02
@@ -140,27 +142,27 @@ Initial pre-release of Sky Vault, providing the foundation for observing celesti
 
 ### Added
 
- - Core API module (`:api`) with interface definitions for astronomy calculations, celestial
+ - Added core API module (`:api`) with interface definitions for astronomy calculations, celestial
    objects, observers, coordinates, and ephemeris results.
 
- - Engine module (`:engine`) implementing the default astronomy engine, ephemeris calculator,
+ - Added engine module (`:engine`) implementing the default astronomy engine, ephemeris calculator,
    coordinate transformations, and viewport projections.
 
- - Native bridge module (`:native`) with C++ JNI bindings to SuperNOVAS for high-precision
+ - Added native bridge module (`:native`) with C++ JNI bindings to SuperNOVAS for high-precision
    astrometry.
 
- - Main application module (`:sky-observatory`) with OpenGL rendering, camera controls, and
+ - Added main application module (`:sky-observatory`) with OpenGL rendering, camera controls, and
    touch input.
 
- - Sample-test module (`:sample-test`) demonstrating SDK consumption.
+ - Added sample-test module (`:sample-test`) demonstrating SDK consumption.
 
- - Benchmark module (`:benchmark`) for performance testing.
+ - Added benchmark module (`:benchmark`) for performance testing.
 
- - CI workflows for unit tests, SDK builds, instrumented tests (API 29 emulator), observatory
+ - Added CI workflows for unit tests, SDK builds, instrumented tests (API 29 emulator), observatory
    APK builds, and benchmarks.
 
- - Dependabot configuration for Gradle and GitHub Actions dependency updates.
+ - Added Dependabot configuration for Gradle and GitHub Actions dependency updates.
 
- - `LICENSE` (Apache 2.0), `README.md`, and `codecov.yml`.
+ - Added `LICENSE` (Apache 2.0), `README.md`, and `codecov.yml`.
 
- - Initial `supernovas` git submodule for astronomical computation.
+ - Added initial `supernovas` git submodule for astronomical computation.
