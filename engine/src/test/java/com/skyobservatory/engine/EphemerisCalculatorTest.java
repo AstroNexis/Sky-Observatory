@@ -141,6 +141,36 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseAtStartOfDay() throws AstroException {
+        PositionProvider rising = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, hours, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), rising);
+
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(result.hasRiseTime());
+        assertEquals(2451544.5, result.getRiseTimeJd(), DELTA);
+        assertFalse(result.hasSetTime());
+    }
+
+    @Test
+    public void computeSetAtStartOfDay() throws AstroException {
+        PositionProvider setting = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, -hours, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), setting);
+
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(result.hasSetTime());
+        assertEquals(2451544.5, result.getSetTimeJd(), DELTA);
+        assertFalse(result.hasRiseTime());
+    }
+
+    @Test
     public void riseSetBisectionStopsOnceBracketCannotShrink() throws AstroException {
         // Same parabola as above; roots are at 12 -/+ sqrt(44) hours after
         // JD 2451544.5. The call count covers one position fetch, 49 coarse
