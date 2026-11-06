@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-The next update is scheduled for release on October 15, 2026.
+Upcoming release, expected arounid 15 November 2026.
 
 ### Fixed
 
