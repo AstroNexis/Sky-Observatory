@@ -13,8 +13,6 @@ Upcoming release, expected arounid 15 November 2026.
 
 ### Fixed
 
-- #95: Fixed rise/set calculations missing horizon crossings at the start of the search day.
-
 - #72: Fixed inconsistent use of `isAboveHorizon` so the renderer treats the horizon boundary like the rest of the engine.
 
 - #70: Fixed incorrect activity class paths in `AndroidManifest.xml`.
@@ -32,6 +30,10 @@ Upcoming release, expected arounid 15 November 2026.
 - #86: Fixed snapshot creation to reject null or empty targets.
 
 - #92: Fixed position results to reject non-finite distances.
+
+- #95: Fixed rise/set calculations missing horizon crossings at the start of the search day.
+
+- #96: Fixed ignore horizon tangencies.
 
 ### Added
 
