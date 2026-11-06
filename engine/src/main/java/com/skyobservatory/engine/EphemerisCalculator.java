@@ -304,14 +304,20 @@ final class EphemerisCalculator {
             double a0 = altSamples[i];
             double a1 = altSamples[i + 1];
 
-            if (a0 == HORIZON_ALTITUDE_DEG && a1 > HORIZON_ALTITUDE_DEG) {
+            if (i == 0 && a0 == HORIZON_ALTITUDE_DEG && a1 > HORIZON_ALTITUDE_DEG) {
                 riseJd = jdSamples[i];
-            } else if (a0 < HORIZON_ALTITUDE_DEG && a1 >= HORIZON_ALTITUDE_DEG) {
+            } else if (a0 < HORIZON_ALTITUDE_DEG && a1 >= HORIZON_ALTITUDE_DEG
+                    && (a1 > HORIZON_ALTITUDE_DEG
+                            || i + 2 == altSamples.length
+                            || altSamples[i + 2] > HORIZON_ALTITUDE_DEG)) {
                 // Rising crossing bracketed in [jdSamples[i], jdSamples[i+1]].
                 riseJd = bisect(target, observer, jdSamples[i], jdSamples[i + 1], true);
-            } else if (a0 == HORIZON_ALTITUDE_DEG && a1 < HORIZON_ALTITUDE_DEG) {
+            } else if (i == 0 && a0 == HORIZON_ALTITUDE_DEG && a1 < HORIZON_ALTITUDE_DEG) {
                 setJd = jdSamples[i];
-            } else if (a0 > HORIZON_ALTITUDE_DEG && a1 <= HORIZON_ALTITUDE_DEG) {
+            } else if (a0 > HORIZON_ALTITUDE_DEG && a1 <= HORIZON_ALTITUDE_DEG
+                    && (a1 < HORIZON_ALTITUDE_DEG
+                            || i + 2 == altSamples.length
+                            || altSamples[i + 2] < HORIZON_ALTITUDE_DEG)) {
                 // Setting crossing bracketed in [jdSamples[i], jdSamples[i+1]].
                 setJd = bisect(target, observer, jdSamples[i], jdSamples[i + 1], false);
             }

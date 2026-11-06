@@ -171,6 +171,23 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseSetDoesNotReportHorizonTangencies() throws AstroException {
+        for (double direction : new double[] {1.0, -1.0}) {
+            PositionProvider tangent = (target, obs, t) -> {
+                double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+                double altitude = direction * (hours - 12.0) * (hours - 12.0);
+                return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
+            };
+            EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), tangent);
+
+            EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+            assertFalse("A tangent is not a horizon crossing", result.hasRiseTime());
+            assertFalse("A tangent is not a horizon crossing", result.hasSetTime());
+        }
+    }
+
+    @Test
     public void riseSetBisectionStopsOnceBracketCannotShrink() throws AstroException {
         // Same parabola as above; roots are at 12 -/+ sqrt(44) hours after
         // JD 2451544.5. The call count covers one position fetch, 49 coarse
