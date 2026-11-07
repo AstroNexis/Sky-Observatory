@@ -68,6 +68,11 @@ final class PositionCalculator {
         validator.validateTime(time);
 
         PositionResult raw = provider.calculatePosition(target, observer, time);
+        if (raw == null
+                || !Double.isFinite(raw.getAzimuthDegrees())
+                || !Double.isFinite(raw.getAltitudeDegrees())) {
+            throw new AstroException("Position provider returned invalid horizontal coordinates");
+        }
 
         double azimuth = converter.normalizeAzimuth(raw.getAzimuthDegrees());
         double altitude = converter.clampAltitude(raw.getAltitudeDegrees());
