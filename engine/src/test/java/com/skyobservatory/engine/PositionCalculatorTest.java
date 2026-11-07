@@ -80,6 +80,25 @@ public class PositionCalculatorTest {
                 CelestialObject.sun(), new Observer(200.0, 0.0, 0.0), AstroTime.j2000());
     }
 
+    @Test(expected = AstroException.class)
+    public void calculateThrowsWhenProviderReturnsNonFiniteCoordinates() throws AstroException {
+        PositionProvider invalidProvider = (target, observer, time) ->
+                new PositionResult(Double.NaN, STUB_ALTITUDE, target, observer, time);
+        PositionCalculator invalidCalculator = new PositionCalculator(
+                new InputValidator(), new CoordinateConverter(), invalidProvider);
+
+        invalidCalculator.calculate(CelestialObject.sun(), new Observer(0, 0, 0), AstroTime.j2000());
+    }
+
+    @Test(expected = AstroException.class)
+    public void calculateThrowsWhenProviderReturnsNull() throws AstroException {
+        PositionProvider emptyProvider = (target, observer, time) -> null;
+        PositionCalculator emptyCalculator = new PositionCalculator(
+                new InputValidator(), new CoordinateConverter(), emptyProvider);
+
+        emptyCalculator.calculate(CelestialObject.sun(), new Observer(0, 0, 0), AstroTime.j2000());
+    }
+
     @Test
     public void azimuthIsNormalizedBeforeReturn() throws AstroException {
         Observer observer = new Observer(0.0, 0.0, 0.0);
