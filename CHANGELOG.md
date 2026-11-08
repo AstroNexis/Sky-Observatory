@@ -41,6 +41,8 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #102: Fixed label orientation near the zenith and nadir to use the default screen orientation.
 
+- #104: Fixed camera label orientation instability during device shake.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
@@ -56,6 +58,8 @@ Upcoming release, expected arounid 15 November 2026.
 - #69: Replaced custom crash handler with the Crashx library.
 
 - #100: Replaced the dark sky gradient with a uniform blue background.
+
+- #104: Refactored label orientation handling to publish smoothed forward/up vectors as a single coherent snapshot and reset gravity-reference sign on abrupt direction changes. 
 
 
 ## [0.1.2-alpha] - 2026-09-24
