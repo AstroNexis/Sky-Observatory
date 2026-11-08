@@ -50,7 +50,7 @@ appointed representative at an online or offline event.
 ## enforcement
 
 abusive, harassing, or otherwise unacceptable behavior may be reported to
-the project maintainer at **phucan.work@outlook.com**. all complaints will be
+the project maintainer at **phucan@tutamail.com**. all complaints will be
 reviewed and investigated and will result in a response that is deemed
 necessary and appropriate to the circumstances. the maintainer is obligated
 to maintain confidentiality regarding the reporter of an incident.
