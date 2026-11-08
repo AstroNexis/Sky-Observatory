@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public final class SkyResources {
 
-    public static final int SKY_BACKGROUND_COLOR = Color.rgb(52, 199, 89);
+    public static final int SKY_BACKGROUND_COLOR = Color.rgb(52, 152, 219);
 
     public int skyTextureId;
     public int defaultStarTextureId;
