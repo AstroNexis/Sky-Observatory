@@ -38,6 +38,7 @@ public class SensorController implements SensorEventListener {
     private volatile float[] smoothedForward = new float[]{0, 0, -1};
     private volatile float[] smoothedUp = new float[]{0, 1, 0};
     private volatile boolean hasData;
+    private final float[] lastLabelGravityUp = new float[3];
 
     private final float[] lastAccel = new float[3];
     private final float[] lastMag = new float[3];
@@ -82,21 +83,38 @@ public class SensorController implements SensorEventListener {
      * Returns the rotation, in radians, to apply to screen-space labels so that
      * their text stays aligned with the device screen when the phone is rolled
      * in its own plane. The result snaps to one of four orientations (0, 90,
-     * 180 or 270 degrees), so text is only ever horizontal or vertical. Zero
-     * when the view is vertical (roll is undefined when looking straight up
-     * or down).
+     * 180 or 270 degrees), so text is only ever horizontal or vertical. The
+     * default orientation is used when looking nearly straight up or down,
+     * where roll is undefined.
      */
     public float getLabelRollRadians() {
-        float[] f = smoothedForward;
-        float[] u = smoothedUp;
+        return calculateLabelRollRadians(smoothedForward, smoothedUp, lastLabelGravityUp);
+    }
+
+    static float calculateLabelRollRadians(
+            float[] f, float[] u, float[] previousGravityUp) {
 
         // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
         float gx = -f[0] * f[1];
         float gy = 1f - f[1] * f[1];
         float gz = -f[2] * f[1];
         float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
-        if (gl < 1e-4f) return 0f;
+        if (gl < 0.05f) return 0f;
         gx /= gl; gy /= gl; gz /= gl;
+
+        float previousLength = (float) Math.sqrt(
+                previousGravityUp[0] * previousGravityUp[0]
+                        + previousGravityUp[1] * previousGravityUp[1]
+                        + previousGravityUp[2] * previousGravityUp[2]);
+        float alignment = gx * previousGravityUp[0]
+                + gy * previousGravityUp[1]
+                + gz * previousGravityUp[2];
+        if (previousLength > 0f && alignment < 0f) {
+            gx = -gx; gy = -gy; gz = -gz;
+        }
+        previousGravityUp[0] = gx;
+        previousGravityUp[1] = gy;
+        previousGravityUp[2] = gz;
 
         // Screen-right when upright: forward x gravity-up.
         float rx = f[1] * gz - f[2] * gy;

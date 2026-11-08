@@ -14,4 +14,45 @@ public class SensorControllerTest {
         assertEquals(-quarterTurn, SensorController.snapLabelRoll(halfQuarterTurn), 1e-6f);
         assertEquals(quarterTurn, SensorController.snapLabelRoll(-halfQuarterTurn), 1e-6f);
     }
+
+    @Test
+    public void labelRollUsesDefaultOrientationNearPoles() {
+        float[] previousGravityUp = new float[3];
+
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, 1f, 0f}, new float[]{0f, 0f, 1f},
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, -1f, 0f}, new float[]{0f, 0f, -1f},
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, 0.999f, -0.0447f}, new float[]{0f, 0.0447f, 0.999f},
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.999f, -0.0447f}, new float[]{0f, 0.0447f, -0.999f},
+                previousGravityUp), 1e-6f);
+    }
+
+    @Test
+    public void labelRollStaysContinuousAcrossBothPoles() {
+        float[] previousGravityUp = new float[3];
+        float before = SensorController.calculateLabelRollRadians(
+                new float[]{0f, 0.995f, -0.1f}, new float[]{0f, 0.1f, 0.995f},
+                previousGravityUp);
+        float after = SensorController.calculateLabelRollRadians(
+                new float[]{0f, 0.995f, 0.1f}, new float[]{0f, 0.1f, 0.995f},
+                previousGravityUp);
+        assertEquals(0f, before, 1e-6f);
+        assertEquals(before, after, 1e-6f);
+
+        previousGravityUp = new float[3];
+        before = SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.995f, -0.1f}, new float[]{0f, 0.1f, -0.995f},
+                previousGravityUp);
+        after = SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.995f, 0.1f}, new float[]{0f, 0.1f, -0.995f},
+                previousGravityUp);
+        assertEquals(0f, before, 1e-6f);
+        assertEquals(before, after, 1e-6f);
+    }
 }
