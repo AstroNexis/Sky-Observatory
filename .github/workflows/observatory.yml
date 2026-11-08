@@ -172,38 +172,11 @@ jobs:
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
 
-      - name: Package debug and release APKs
-        run: |
-          shopt -s nullglob
-          debug_apks=(sky-observatory/build/outputs/apk/debug/*.apk)
-          release_apks=(sky-observatory/build/outputs/apk/release/*.apk)
-          if [ "${#debug_apks[@]}" -eq 0 ] || [ "${#release_apks[@]}" -eq 0 ]; then
-            echo "::error::Cannot package, one or both APK sets are missing"
-            exit 1
-          fi
-          mkdir -p dist
-          rm -f dist/observatory-debug.zip dist/observatory-release.zip
-          zip -j dist/observatory-debug.zip "${debug_apks[@]}"
-          zip -j dist/observatory-release.zip "${release_apks[@]}"
-          {
-            echo "### Packaged builds"
-            echo ""
-            echo "| Zip | Size | SHA-256 |"
-            echo "| --- | --- | --- |"
-            for z in dist/observatory-debug.zip dist/observatory-release.zip; do
-              size=$(du -h "$z" | cut -f1)
-              sha=$(sha256sum "$z" | cut -d' ' -f1)
-              echo "| $(basename "$z") | $size | \`$sha\` |"
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
-          unzip -l dist/observatory-debug.zip
-          unzip -l dist/observatory-release.zip
-
       - uses: actions/upload-artifact@v7
         if: success()
         with:
           name: observatory-debug
-          path: dist/observatory-debug.zip
+          path: sky-observatory/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -211,6 +184,6 @@ jobs:
         if: success()
         with:
           name: observatory-release
-          path: dist/observatory-release.zip
+          path: sky-observatory/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
