@@ -39,6 +39,7 @@ public class SensorController implements SensorEventListener {
     private volatile float[] smoothedUp = new float[]{0, 1, 0};
     private volatile boolean hasData;
     private float lastLabelRollRadians;
+    private final float[] lastLabelGravityUp = new float[3];
 
     private final float[] lastAccel = new float[3];
     private final float[] lastMag = new float[3];
@@ -89,11 +90,12 @@ public class SensorController implements SensorEventListener {
      */
     public float getLabelRollRadians() {
         lastLabelRollRadians = calculateLabelRollRadians(
-                smoothedForward, smoothedUp, lastLabelRollRadians);
+                smoothedForward, smoothedUp, lastLabelRollRadians, lastLabelGravityUp);
         return lastLabelRollRadians;
     }
 
-    static float calculateLabelRollRadians(float[] f, float[] u, float previousRoll) {
+    static float calculateLabelRollRadians(
+            float[] f, float[] u, float previousRoll, float[] previousGravityUp) {
 
         // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
         float gx = -f[0] * f[1];
@@ -102,6 +104,20 @@ public class SensorController implements SensorEventListener {
         float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
         if (gl < 1e-4f) return previousRoll;
         gx /= gl; gy /= gl; gz /= gl;
+
+        float previousLength = (float) Math.sqrt(
+                previousGravityUp[0] * previousGravityUp[0]
+                        + previousGravityUp[1] * previousGravityUp[1]
+                        + previousGravityUp[2] * previousGravityUp[2]);
+        float alignment = gx * previousGravityUp[0]
+                + gy * previousGravityUp[1]
+                + gz * previousGravityUp[2];
+        if (previousLength > 0f && alignment < 0f) {
+            gx = -gx; gy = -gy; gz = -gz;
+        }
+        previousGravityUp[0] = gx;
+        previousGravityUp[1] = gy;
+        previousGravityUp[2] = gz;
 
         // Screen-right when upright: forward x gravity-up.
         float rx = f[1] * gz - f[2] * gy;
