@@ -16,6 +16,7 @@
 package com.skyobservatory.renderer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
@@ -138,7 +139,11 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
                 }
             }
             objectEntries.clear();
-            GLES30.glClearColor(0.01f, 0.01f, 0.04f, 1f);
+            GLES30.glClearColor(
+                    Color.red(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    Color.green(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    Color.blue(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    1f);
             GLES30.glDepthMask(true);
             GLES30.glEnable(GLES30.GL_DEPTH_TEST);
             GLES30.glEnable(GLES30.GL_BLEND);
@@ -330,7 +335,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         GLES30.glDepthMask(true);
     }
 
-    // Deep-ocean blue horizon ring with a slight glow effect achieved by
+    // Dark red horizon ring with a slight glow effect achieved by
     // drawing two concentric rings at different Y offsets and blending.
     //
     // The horizon shader pins every vertex to the far clip plane
@@ -359,11 +364,11 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         GLES30.glDisable(GLES30.GL_DEPTH_TEST);   // sky dome + horizon both live at depth 1.0
         GLES30.glUseProgram(shaders.horizonProgram);
         GLES30.glUniformMatrix4fv(shaders.horizonMvp, 1, false, vp.floatArray(), 0);
-        // Primary ring -- solid deep-ocean blue
-        GLES30.glUniform4f(shaders.horizonColor, 0.05f, 0.28f, 0.60f, 1.0f);
+        // Primary ring -- solid dark red
+        GLES30.glUniform4f(shaders.horizonColor, 0.55f, 0.0f, 0.0f, 1.0f);
         horizonRing.draw();
         // Glow layer -- wider, translucent
-        GLES30.glUniform4f(shaders.horizonColor, 0.08f, 0.35f, 0.75f, 0.35f);
+        GLES30.glUniform4f(shaders.horizonColor, 0.75f, 0.05f, 0.05f, 0.35f);
         horizonRing.draw();
         GLES30.glEnable(GLES30.GL_DEPTH_TEST);
         GLES30.glDepthMask(true);
@@ -542,7 +547,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
     // Scene construction
 
-    /** Deep-ocean blue horizon ring at Y = 0 (world-space ground level). */
+    /** Dark red horizon ring at Y = 0 (world-space ground level). */
     private void buildHorizonRing() {
         int seg = 96;   // high segment count for smooth glow
         float r = WORLD_SCALE;
