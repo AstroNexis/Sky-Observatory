@@ -39,6 +39,8 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #99: Fixed asymmetric label rotation snapping when tilting the phone left or right.
 
+- #102: Fixed label orientation near the zenith and nadir to use the default screen orientation.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
