@@ -55,6 +55,9 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #69: Replaced custom crash handler with the Crashx library.
 
+- #100: Replaced the dark sky gradient with a uniform blue background.
+
+
 ## [0.1.2-alpha] - 2026-09-24
 
 Upcoming release, focusing on renderer reliability, astronomy visuals, and project maintenance.
