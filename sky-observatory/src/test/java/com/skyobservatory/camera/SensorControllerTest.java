@@ -14,4 +14,14 @@ public class SensorControllerTest {
         assertEquals(-quarterTurn, SensorController.snapLabelRoll(halfQuarterTurn), 1e-6f);
         assertEquals(quarterTurn, SensorController.snapLabelRoll(-halfQuarterTurn), 1e-6f);
     }
+
+    @Test
+    public void labelRollRetainsPreviousOrientationAtPoles() {
+        float previousRoll = (float) (Math.PI / 2.0);
+
+        assertEquals(previousRoll, SensorController.calculateLabelRollRadians(
+                new float[]{0f, 1f, 0f}, new float[]{0f, 0f, 1f}, previousRoll), 1e-6f);
+        assertEquals(previousRoll, SensorController.calculateLabelRollRadians(
+                new float[]{0f, -1f, 0f}, new float[]{0f, 0f, -1f}, previousRoll), 1e-6f);
+    }
 }
