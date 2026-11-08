@@ -35,6 +35,8 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #96: Fixed ignore horizon tangencies.
 
+- #97: Fixed null and non-finite horizontal coordinates returned by the position provider.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
