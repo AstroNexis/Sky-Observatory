@@ -37,6 +37,8 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #97: Fixed null and non-finite horizontal coordinates returned by the position provider.
 
+- #99: Fixed asymmetric label rotation snapping when tilting the phone left or right.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
