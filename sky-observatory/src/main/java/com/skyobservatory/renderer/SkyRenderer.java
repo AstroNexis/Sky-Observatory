@@ -16,6 +16,7 @@
 package com.skyobservatory.renderer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
@@ -138,7 +139,11 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
                 }
             }
             objectEntries.clear();
-            GLES30.glClearColor(0.01f, 0.01f, 0.04f, 1f);
+            GLES30.glClearColor(
+                    Color.red(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    Color.green(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    Color.blue(SkyResources.SKY_BACKGROUND_COLOR) / 255f,
+                    1f);
             GLES30.glDepthMask(true);
             GLES30.glEnable(GLES30.GL_DEPTH_TEST);
             GLES30.glEnable(GLES30.GL_BLEND);

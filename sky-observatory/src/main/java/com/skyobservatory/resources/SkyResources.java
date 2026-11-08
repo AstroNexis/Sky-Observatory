@@ -19,6 +19,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.opengl.GLES30;
 import android.opengl.GLUtils;
@@ -42,6 +43,8 @@ import java.util.Map;
  */
 public final class SkyResources {
 
+    public static final int SKY_BACKGROUND_COLOR = Color.rgb(52, 199, 89);
+
     public int skyTextureId;
     public int defaultStarTextureId;
     public int[] cardinalTextureIds = new int[4];
@@ -63,7 +66,7 @@ public final class SkyResources {
 
     public void generateAll() {
         defaultStarTextureId = generateStarTexture();
-        skyTextureId         = generateSkyGradient();
+        skyTextureId         = generateSkyTexture();
 
         for (int i = 0; i < 4; i++) {
             cardinalTextureIds[i] = generateLetterTexture(CARDINAL_LABELS[i]);
@@ -140,17 +143,10 @@ public final class SkyResources {
         }
     }
 
-    private int generateSkyGradient() {
-        int w = 1, h = 256;
-        int[] pixels = new int[w * h];
-        for (int y = 0; y < h; y++) {
-            float t = (float) y / h;
-            int ri  = (int)(3f  + 8f  * t);
-            int gi  = (int)(3f  + 10f * t);
-            int bi  = (int)(18f + 22f * t);
-            pixels[y * w] = (255 << 24) | (ri << 16) | (gi << 8) | bi;
-        }
-        return upload(Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888));
+    private int generateSkyTexture() {
+        Bitmap bmp = Bitmap.createBitmap(
+                new int[]{SKY_BACKGROUND_COLOR}, 1, 1, Bitmap.Config.ARGB_8888);
+        return upload(bmp);
     }
 
     private int generateStarTexture() {
