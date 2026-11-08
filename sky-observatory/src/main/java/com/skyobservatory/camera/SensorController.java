@@ -38,7 +38,6 @@ public class SensorController implements SensorEventListener {
     private volatile float[] smoothedForward = new float[]{0, 0, -1};
     private volatile float[] smoothedUp = new float[]{0, 1, 0};
     private volatile boolean hasData;
-    private float lastLabelRollRadians;
     private final float[] lastLabelGravityUp = new float[3];
 
     private final float[] lastAccel = new float[3];
@@ -85,24 +84,22 @@ public class SensorController implements SensorEventListener {
      * their text stays aligned with the device screen when the phone is rolled
      * in its own plane. The result snaps to one of four orientations (0, 90,
      * 180 or 270 degrees), so text is only ever horizontal or vertical. The
-     * previous orientation is retained when looking straight up or down,
+     * default orientation is used when looking nearly straight up or down,
      * where roll is undefined.
      */
     public float getLabelRollRadians() {
-        lastLabelRollRadians = calculateLabelRollRadians(
-                smoothedForward, smoothedUp, lastLabelRollRadians, lastLabelGravityUp);
-        return lastLabelRollRadians;
+        return calculateLabelRollRadians(smoothedForward, smoothedUp, lastLabelGravityUp);
     }
 
     static float calculateLabelRollRadians(
-            float[] f, float[] u, float previousRoll, float[] previousGravityUp) {
+            float[] f, float[] u, float[] previousGravityUp) {
 
         // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
         float gx = -f[0] * f[1];
         float gy = 1f - f[1] * f[1];
         float gz = -f[2] * f[1];
         float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
-        if (gl < 1e-4f) return previousRoll;
+        if (gl < 0.05f) return 0f;
         gx /= gl; gy /= gl; gz /= gl;
 
         float previousLength = (float) Math.sqrt(

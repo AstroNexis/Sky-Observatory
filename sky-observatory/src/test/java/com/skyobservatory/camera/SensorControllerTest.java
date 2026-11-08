@@ -16,16 +16,21 @@ public class SensorControllerTest {
     }
 
     @Test
-    public void labelRollRetainsPreviousOrientationAtPoles() {
-        float previousRoll = (float) (Math.PI / 2.0);
+    public void labelRollUsesDefaultOrientationNearPoles() {
         float[] previousGravityUp = new float[3];
 
-        assertEquals(previousRoll, SensorController.calculateLabelRollRadians(
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
                 new float[]{0f, 1f, 0f}, new float[]{0f, 0f, 1f},
-                previousRoll, previousGravityUp), 1e-6f);
-        assertEquals(previousRoll, SensorController.calculateLabelRollRadians(
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
                 new float[]{0f, -1f, 0f}, new float[]{0f, 0f, -1f},
-                previousRoll, previousGravityUp), 1e-6f);
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, 0.999f, -0.0447f}, new float[]{0f, 0.0447f, 0.999f},
+                previousGravityUp), 1e-6f);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.999f, -0.0447f}, new float[]{0f, 0.0447f, -0.999f},
+                previousGravityUp), 1e-6f);
     }
 
     @Test
@@ -33,20 +38,20 @@ public class SensorControllerTest {
         float[] previousGravityUp = new float[3];
         float before = SensorController.calculateLabelRollRadians(
                 new float[]{0f, 0.995f, -0.1f}, new float[]{0f, 0.1f, 0.995f},
-                0f, previousGravityUp);
+                previousGravityUp);
         float after = SensorController.calculateLabelRollRadians(
                 new float[]{0f, 0.995f, 0.1f}, new float[]{0f, 0.1f, 0.995f},
-                before, previousGravityUp);
+                previousGravityUp);
         assertEquals(0f, before, 1e-6f);
         assertEquals(before, after, 1e-6f);
 
         previousGravityUp = new float[3];
         before = SensorController.calculateLabelRollRadians(
                 new float[]{0f, -0.995f, -0.1f}, new float[]{0f, 0.1f, -0.995f},
-                0f, previousGravityUp);
+                previousGravityUp);
         after = SensorController.calculateLabelRollRadians(
                 new float[]{0f, -0.995f, 0.1f}, new float[]{0f, 0.1f, -0.995f},
-                before, previousGravityUp);
+                previousGravityUp);
         assertEquals(0f, before, 1e-6f);
         assertEquals(before, after, 1e-6f);
     }
