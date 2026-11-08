@@ -109,8 +109,13 @@ public class SensorController implements SensorEventListener {
 
         // Snap to the nearest quarter turn so labels only read horizontally or
         // vertically. Text rotates opposite to the device's roll so it stays upright.
+        return snapLabelRoll(roll);
+    }
+
+    static float snapLabelRoll(float roll) {
         final float quarterTurn = (float) (Math.PI / 2.0);
-        float snapped = Math.round(roll / quarterTurn) * quarterTurn;
+        float snapped = Math.copySign(
+                Math.round(Math.abs(roll) / quarterTurn) * quarterTurn, roll);
         return -snapped;
     }
 

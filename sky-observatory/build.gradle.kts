@@ -32,4 +32,5 @@ dependencies {
     implementation(project(":location"))
     implementation(libs.appcompat)
     implementation("io.github.tutorialsandroid:crashx:7.0.1")
+    testImplementation(libs.junit)
 }
