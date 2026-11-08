@@ -35,10 +35,10 @@ public class SensorController implements SensorEventListener {
     private final float[] rotationMatrix = new float[9];
     private final float[] remappedMatrix = new float[9];
 
-    private volatile float[] smoothedForward = new float[]{0, 0, -1};
-    private volatile float[] smoothedUp = new float[]{0, 1, 0};
+    private volatile float[] smoothedOrientation = new float[]{0, 0, -1, 0, 1, 0};
     private volatile boolean hasData;
     private final float[] lastLabelGravityUp = new float[3];
+    private final float[] lastLabelForward = new float[3];
 
     private final float[] lastAccel = new float[3];
     private final float[] lastMag = new float[3];
@@ -72,12 +72,12 @@ public class SensorController implements SensorEventListener {
 
     public boolean hasOrientation() { return hasData; }
 
-    public float getForwardX() { return smoothedForward[0]; }
-    public float getForwardY() { return smoothedForward[1]; }
-    public float getForwardZ() { return smoothedForward[2]; }
-    public float getUpX() { return smoothedUp[0]; }
-    public float getUpY() { return smoothedUp[1]; }
-    public float getUpZ() { return smoothedUp[2]; }
+    public float getForwardX() { return smoothedOrientation[0]; }
+    public float getForwardY() { return smoothedOrientation[1]; }
+    public float getForwardZ() { return smoothedOrientation[2]; }
+    public float getUpX() { return smoothedOrientation[3]; }
+    public float getUpY() { return smoothedOrientation[4]; }
+    public float getUpZ() { return smoothedOrientation[5]; }
 
     /**
      * Returns the rotation, in radians, to apply to screen-space labels so that
@@ -88,18 +88,26 @@ public class SensorController implements SensorEventListener {
      * where roll is undefined.
      */
     public float getLabelRollRadians() {
-        return calculateLabelRollRadians(smoothedForward, smoothedUp, lastLabelGravityUp);
+        float[] orientation = smoothedOrientation;
+        return calculateLabelRollRadians(orientation, lastLabelGravityUp, lastLabelForward);
     }
 
     static float calculateLabelRollRadians(
-            float[] f, float[] u, float[] previousGravityUp) {
+            float[] orientation, float[] previousGravityUp, float[] previousForward) {
+        float fx = orientation[0], fy = orientation[1], fz = orientation[2];
+        float ux = orientation[3], uy = orientation[4], uz = orientation[5];
 
         // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
-        float gx = -f[0] * f[1];
-        float gy = 1f - f[1] * f[1];
-        float gz = -f[2] * f[1];
+        float gx = -fx * fy;
+        float gy = 1f - fy * fy;
+        float gz = -fz * fy;
         float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
-        if (gl < 0.05f) return 0f;
+        if (gl < 0.05f) {
+            previousForward[0] = fx;
+            previousForward[1] = fy;
+            previousForward[2] = fz;
+            return 0f;
+        }
         gx /= gl; gy /= gl; gz /= gl;
 
         float previousLength = (float) Math.sqrt(
@@ -109,20 +117,26 @@ public class SensorController implements SensorEventListener {
         float alignment = gx * previousGravityUp[0]
                 + gy * previousGravityUp[1]
                 + gz * previousGravityUp[2];
-        if (previousLength > 0f && alignment < 0f) {
+        float forwardAlignment = fx * previousForward[0]
+                + fy * previousForward[1]
+                + fz * previousForward[2];
+        if (previousLength > 0f && alignment < 0f && forwardAlignment > 0.9f) {
             gx = -gx; gy = -gy; gz = -gz;
         }
         previousGravityUp[0] = gx;
         previousGravityUp[1] = gy;
         previousGravityUp[2] = gz;
+        previousForward[0] = fx;
+        previousForward[1] = fy;
+        previousForward[2] = fz;
 
         // Screen-right when upright: forward x gravity-up.
-        float rx = f[1] * gz - f[2] * gy;
-        float ry = f[2] * gx - f[0] * gz;
-        float rz = f[0] * gy - f[1] * gx;
+        float rx = fy * gz - fz * gy;
+        float ry = fz * gx - fx * gz;
+        float rz = fx * gy - fy * gx;
 
-        float sinRoll = u[0] * rx + u[1] * ry + u[2] * rz;
-        float cosRoll = u[0] * gx + u[1] * gy + u[2] * gz;
+        float sinRoll = ux * rx + uy * ry + uz * rz;
+        float cosRoll = ux * gx + uy * gy + uz * gz;
         float roll = (float) Math.atan2(sinRoll, cosRoll);
 
         // Snap to the nearest quarter turn so labels only read horizontally or
@@ -184,37 +198,37 @@ public class SensorController implements SensorEventListener {
         float uyu =  R[8];
         float uzs = -R[7];
 
-        float[] newForward;
-        float[] newUp;
+        float[] newOrientation = new float[6];
 
         if (!hasData) {
-            newForward = new float[]{fxe, fyu, fzs};
-            newUp      = new float[]{uxe, uyu, uzs};
+            newOrientation[0] = fxe; newOrientation[1] = fyu; newOrientation[2] = fzs;
+            newOrientation[3] = uxe; newOrientation[4] = uyu; newOrientation[5] = uzs;
         } else {
-            float[] f = smoothedForward;
-            float[] u = smoothedUp;
-            newForward = new float[]{
-                f[0] + (fxe - f[0]) * LOW_PASS,
-                f[1] + (fyu - f[1]) * LOW_PASS,
-                f[2] + (fzs - f[2]) * LOW_PASS
-            };
-            newUp = new float[]{
-                u[0] + (uxe - u[0]) * LOW_PASS,
-                u[1] + (uyu - u[1]) * LOW_PASS,
-                u[2] + (uzs - u[2]) * LOW_PASS
-            };
-            renormalize(newForward);
-            renormalize(newUp);
+            float[] orientation = smoothedOrientation;
+            newOrientation[0] = orientation[0] + (fxe - orientation[0]) * LOW_PASS;
+            newOrientation[1] = orientation[1] + (fyu - orientation[1]) * LOW_PASS;
+            newOrientation[2] = orientation[2] + (fzs - orientation[2]) * LOW_PASS;
+            newOrientation[3] = orientation[3] + (uxe - orientation[3]) * LOW_PASS;
+            newOrientation[4] = orientation[4] + (uyu - orientation[4]) * LOW_PASS;
+            newOrientation[5] = orientation[5] + (uzs - orientation[5]) * LOW_PASS;
+            renormalize(newOrientation, 0);
+            renormalize(newOrientation, 3);
         }
 
-        smoothedForward = newForward;
-        smoothedUp      = newUp;
+        smoothedOrientation = newOrientation;
         hasData         = true;
     }
 
-    private static void renormalize(float[] v) {
-        float l = (float) Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-        if (l > 1e-10f) { v[0] /= l; v[1] /= l; v[2] /= l; }
+    private static void renormalize(float[] v, int offset) {
+        float l = (float) Math.sqrt(
+                v[offset] * v[offset]
+                        + v[offset + 1] * v[offset + 1]
+                        + v[offset + 2] * v[offset + 2]);
+        if (l > 1e-10f) {
+            v[offset] /= l;
+            v[offset + 1] /= l;
+            v[offset + 2] /= l;
+        }
     }
 
     @Override
