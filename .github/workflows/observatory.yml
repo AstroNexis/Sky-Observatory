@@ -90,6 +90,12 @@ jobs:
             echo "::error::Release APK not found at expected path"
             exit 1
           fi
+          if [ "${#release_apks[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one release APK to sign"
+            exit 1
+          fi
+          unsigned_sha=$(sha256sum "${release_apks[0]}" | cut -d' ' -f1)
+          echo "UNSIGNED_RELEASE_SHA256=$unsigned_sha" >> "$GITHUB_ENV"
           {
             echo "### Unsigned APKs"
             echo ""
@@ -120,6 +126,7 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > /tmp/keystore.jks
 
       - name: Sign release APKs (v1+v2+v3)
+        id: sign
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -127,47 +134,55 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         if: env.KEYSTORE_BASE64 != ''
         run: |
-          for apk in sky-observatory/build/outputs/apk/release/*.apk; do
-            [ -f "$apk" ] || continue
-            $APK_SIGNER sign \
-              --ks /tmp/keystore.jks \
-              --ks-pass "pass:$KEYSTORE_PASSWORD" \
-              --ks-key-alias "$KEY_ALIAS" \
-              --key-pass "pass:$KEY_PASSWORD" \
-              --ks-type JKS \
-              "$apk"
-          done
+          shopt -s nullglob
+          apks=(sky-observatory/build/outputs/apk/release/*.apk)
+          if [ "${#apks[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one release APK to sign"
+            exit 1
+          fi
+          apk="${apks[0]}"
+          $APK_SIGNER sign \
+            --ks /tmp/keystore.jks \
+            --ks-pass "pass:$KEYSTORE_PASSWORD" \
+            --ks-key-alias "$KEY_ALIAS" \
+            --key-pass "pass:$KEY_PASSWORD" \
+            --ks-type JKS \
+            "$apk"
+          signed_apk=sky-observatory/build/outputs/apk/release/sky-observatory-release.apk
+          mv "$apk" "$signed_apk"
+          signed_sha=$(sha256sum "$signed_apk" | cut -d' ' -f1)
+          if [ "$signed_sha" = "$UNSIGNED_RELEASE_SHA256" ]; then
+            echo "::error::Signed APK SHA-256 matches the unsigned APK"
+            exit 1
+          fi
 
       - name: Verify APK signatures
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         if: env.KEYSTORE_BASE64 != ''
         run: |
-          for apk in sky-observatory/build/outputs/apk/release/*.apk; do
-            [ -f "$apk" ] || continue
-            $APK_SIGNER verify --verbose "$apk" 2>&1 | \
-              grep -E "Verified using v1 scheme|Verified using v2 scheme|Verified using v3 scheme"
-          done
+          signed_apk=sky-observatory/build/outputs/apk/release/sky-observatory-release.apk
+          if [ ! -f "$signed_apk" ]; then
+            echo "::error::Signed release APK not found"
+            exit 1
+          fi
+          $APK_SIGNER verify --verbose "$signed_apk" 2>&1 | \
+            grep -E "Verified using v1 scheme|Verified using v2 scheme|Verified using v3 scheme"
 
       - name: Print signed APK details
-        if: env.KEYSTORE_BASE64 != ''
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: steps.sign.outcome == 'success'
         run: |
-          shopt -s nullglob
-          apks=(sky-observatory/build/outputs/apk/release/*.apk)
+          apk=sky-observatory/build/outputs/apk/release/sky-observatory-release.apk
           {
             echo "### Signed release APK"
             echo ""
             echo "| File | Size | SHA-256 |"
             echo "| --- | --- | --- |"
           } >> "$GITHUB_STEP_SUMMARY"
-          for apk in "${apks[@]}"; do
-            size=$(du -h "$apk" | cut -f1)
-            sha=$(sha256sum "$apk" | cut -d' ' -f1)
-            echo "APK: $(basename "$apk")  size: $size  sha256: $sha"
-            echo "| $(basename "$apk") | $size | \`$sha\` |" >> "$GITHUB_STEP_SUMMARY"
-          done
+          size=$(du -h "$apk" | cut -f1)
+          sha=$(sha256sum "$apk" | cut -d' ' -f1)
+          echo "APK: $(basename "$apk")  size: $size  sha256: $sha"
+          echo "| $(basename "$apk") | $size | \`$sha\` |" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Run SDK tests
         run: ./gradlew :api:test :engine:test :native:test --stacktrace
@@ -181,9 +196,17 @@ jobs:
           retention-days: 14
 
       - uses: actions/upload-artifact@v7
-        if: success()
+        if: success() && steps.sign.outcome == 'success'
         with:
           name: observatory-release
+          path: sky-observatory/build/outputs/apk/release/sky-observatory-release.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v7
+        if: success() && steps.sign.outcome == 'skipped'
+        with:
+          name: observatory-release-unsigned
           path: sky-observatory/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 14
