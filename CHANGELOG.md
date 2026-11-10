@@ -43,6 +43,9 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #104: Fixed camera label orientation instability during device shake.
 
+- #106: Extended provider-result validation to ephemeris calculations, rejecting null or
+  non-finite horizontal coordinates.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
