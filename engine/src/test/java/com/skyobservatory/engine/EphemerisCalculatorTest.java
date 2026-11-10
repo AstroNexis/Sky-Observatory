@@ -129,6 +129,21 @@ public class EphemerisCalculatorTest {
         calc.calculate(CelestialObject.sun(), observer, time);
     }
 
+    @Test(expected = AstroException.class)
+    public void calculateRejectsNonFiniteSampledAltitude() throws AstroException {
+        final int[] calls = {0};
+        PositionProvider invalidSample = (target, obs, t) -> {
+            if (calls[0]++ == 0) {
+                return new PositionResult.Builder(180.0, 45.0, target, obs, t)
+                        .distanceAu(1.0)
+                        .build();
+            }
+            return new PositionResult(180.0, Double.NaN, target, obs, t);
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), invalidSample);
+        calc.calculate(CelestialObject.sun(), observer, time);
+    }
+
     @Test
     public void computeRiseSetWhenBodyCrossesHorizon() throws AstroException {
         // Parabolic altitude: -10 at midnight, peaks at +4.4 at midday,
