@@ -149,7 +149,7 @@ final class EphemerisCalculator {
         EphemerisResult.Builder builder = new EphemerisResult.Builder();
 
         // Obtain the current position to retrieve distance.
-        PositionResult current = provider.calculatePosition(target, observer, time);
+        PositionResult current = positionAt(target, observer, time);
 
         // Visual magnitude and apparent diameter require distance.
         if (current.hasDistance()) {
@@ -393,7 +393,19 @@ final class EphemerisCalculator {
             Observer observer,
             double jd) throws AstroException {
         AstroTime t = new AstroTime(jd);
-        PositionResult r = provider.calculatePosition(target, observer, t);
-        return r.getAltitudeDegrees();
+        return positionAt(target, observer, t).getAltitudeDegrees();
+    }
+
+    private PositionResult positionAt(
+            CelestialObject target,
+            Observer observer,
+            AstroTime time) throws AstroException {
+        PositionResult result = provider.calculatePosition(target, observer, time);
+        if (result == null
+                || !Double.isFinite(result.getAzimuthDegrees())
+                || !Double.isFinite(result.getAltitudeDegrees())) {
+            throw new AstroException("Position provider returned invalid horizontal coordinates");
+        }
+        return result;
     }
 }
