@@ -99,9 +99,9 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: |
-            api/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
-            engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+          files: >-
+            api/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml,
+            engine/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml,
             native/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
           fail_ci_if_error: true
 
