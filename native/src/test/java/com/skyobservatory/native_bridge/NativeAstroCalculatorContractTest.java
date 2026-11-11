@@ -15,6 +15,9 @@
 
 package com.skyobservatory.native_bridge;
 
+import com.skyobservatory.api.CelestialObject;
+import com.skyobservatory.api.NativeException;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -39,5 +42,10 @@ public class NativeAstroCalculatorContractTest {
             // Expected on host JVM where the .so is not present.
             // The test is still considered a pass for contract purposes.
         }
+    }
+
+    @Test(expected = NativeException.class)
+    public void nullNativeResponseThrowsNativeException() throws NativeException {
+        NativeAstroCalculator.validateResponse(null, CelestialObject.sun());
     }
 }

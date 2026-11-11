@@ -44,10 +44,7 @@ public class NativeAstroCalculator {
                 observer.getLongitudeDegrees(),
                 observer.getAltitudeMeters());
 
-        if (r.length < 7 || r[6] == ERROR_FLAG) {
-            throw new NativeException(
-                    "Native calculation failed for " + target.getName());
-        }
+        validateResponse(r, target);
 
         double azimuth     = r[0];
         double altitude    = r[1];
@@ -67,5 +64,13 @@ public class NativeAstroCalculator {
         }
 
         return builder.build();
+    }
+
+    static void validateResponse(double[] response, CelestialObject target)
+            throws NativeException {
+        if (response == null || response.length < 7 || response[6] == ERROR_FLAG) {
+            throw new NativeException(
+                    "Native calculation failed for " + target.getName());
+        }
     }
 }
