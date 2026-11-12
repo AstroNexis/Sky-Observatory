@@ -15,8 +15,12 @@
 
 package com.skyobservatory.native_bridge;
 
+import com.skyobservatory.api.AstroException;
+import com.skyobservatory.api.AstroTime;
 import com.skyobservatory.api.CelestialObject;
 import com.skyobservatory.api.NativeException;
+import com.skyobservatory.api.Observer;
+import com.skyobservatory.api.PositionResult;
 
 import org.junit.Test;
 
@@ -45,7 +49,41 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test(expected = NativeException.class)
-    public void nullNativeResponseThrowsNativeException() throws NativeException {
-        NativeAstroCalculator.validateResponse(null, CelestialObject.sun());
+    public void nullNativeResponseThrowsNativeException() throws AstroException {
+        calculatorReturning(null).calculatePosition(
+                CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void shortNativeResponseThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[6]).calculatePosition(
+                CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void errorFlaggedNativeResponseThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 0, 0, -1}).calculatePosition(
+                CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test
+    public void validNativeResponsePopulatesPosition() throws AstroException {
+        PositionResult result = calculatorReturning(
+                new double[] {180, 45, 12, -23, 1.5, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertEquals(180, result.getAzimuthDegrees(), 0);
+        assertEquals(45, result.getAltitudeDegrees(), 0);
+        assertEquals(180, result.getEquatorial().getRightAscensionDegrees(), 0);
+        assertEquals(-23, result.getEquatorial().getDeclinationDegrees(), 0);
+        assertEquals(1.5, result.getDistanceAu(), 0);
+    }
+
+    private static NativeAstroCalculator calculatorReturning(double[] response) {
+        return new NativeAstroCalculator((naifId, jd, lat, lon, alt) -> response);
+    }
+
+    private static Observer observer() {
+        return new Observer(0, 0, 0);
     }
 }
