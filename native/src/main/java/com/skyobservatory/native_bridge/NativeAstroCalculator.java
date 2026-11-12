@@ -22,11 +22,31 @@ import com.skyobservatory.api.NativeException;
 import com.skyobservatory.api.Observer;
 import com.skyobservatory.api.PositionResult;
 
+import java.util.Objects;
+
 public class NativeAstroCalculator {
 
     private static final double ERROR_FLAG = -1.0;
 
-    public NativeAstroCalculator() {}
+    private final NativeCall nativeCall;
+
+    public NativeAstroCalculator() {
+        this(NativeGateway::nativeCalculatePosition);
+    }
+
+    NativeAstroCalculator(NativeCall nativeCall) {
+        this.nativeCall = Objects.requireNonNull(nativeCall, "nativeCall");
+    }
+
+    @FunctionalInterface
+    interface NativeCall {
+        double[] calculate(
+                int naifId,
+                double julianDateTT,
+                double latitudeDeg,
+                double longitudeDeg,
+                double altitudeMeters);
+    }
 
     public String getNativeLibraryVersion() {
         return NativeGateway.nativeGetVersion();
@@ -37,14 +57,14 @@ public class NativeAstroCalculator {
             Observer observer,
             AstroTime time) throws NativeException {
 
-        double[] r = NativeGateway.nativeCalculatePosition(
+        double[] r = nativeCall.calculate(
                 target.getNaifId(),
                 time.getJulianDateTT(),
                 observer.getLatitudeDegrees(),
                 observer.getLongitudeDegrees(),
                 observer.getAltitudeMeters());
 
-        if (r.length < 7 || r[6] == ERROR_FLAG) {
+        if (r == null || r.length < 7 || r[6] == ERROR_FLAG) {
             throw new NativeException(
                     "Native calculation failed for " + target.getName());
         }
