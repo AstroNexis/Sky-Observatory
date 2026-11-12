@@ -46,6 +46,8 @@ Upcoming release, expected arounid 15 November 2026.
 - #106: Extended provider-result validation to ephemeris calculations, rejecting null or
   non-finite horizontal coordinates.
 
+- #108: Made the native calculation boundary reject null JNI results with `NativeException`.
+
 ### Added
 
 - #71: Added missing unit tests across the API and engine modules.
