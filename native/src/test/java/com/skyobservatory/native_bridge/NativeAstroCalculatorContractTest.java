@@ -85,6 +85,15 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test
+    public void zeroDistanceIsLeftAbsent() throws AstroException {
+        PositionResult result = calculatorReturning(
+                new double[] {180, 45, 12, -23, 0, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertFalse(result.hasDistance());
+    }
+
+    @Test
     public void nonFiniteEquatorialCoordinatesAreNotIncluded() throws AstroException {
         PositionResult invalidRightAscension = calculatorReturning(
                 new double[] {180, 45, Double.POSITIVE_INFINITY, -23, 1, 0, 0})
