@@ -66,7 +66,7 @@ public class NativeAstroCalculator {
 
         if (r == null || r.length < 7 || r[6] == ERROR_FLAG
                 || !Double.isFinite(r[0]) || !Double.isFinite(r[1])
-                || (r[4] > 0.0 && !Double.isFinite(r[4]))) {
+                || !Double.isFinite(r[4])) {
             throw new NativeException(
                     "Native calculation failed for " + target.getName());
         }
