@@ -73,6 +73,12 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test(expected = NativeException.class)
+    public void nonFiniteAltitudeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {180, Double.POSITIVE_INFINITY, 12, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
     public void infiniteDistanceThrowsNativeException() throws AstroException {
         calculatorReturning(new double[] {180, 45, 12, -23, Double.POSITIVE_INFINITY, 0, 0})
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
@@ -80,11 +86,15 @@ public class NativeAstroCalculatorContractTest {
 
     @Test
     public void nonFiniteEquatorialCoordinatesAreNotIncluded() throws AstroException {
-        PositionResult result = calculatorReturning(
+        PositionResult invalidRightAscension = calculatorReturning(
                 new double[] {180, 45, Double.POSITIVE_INFINITY, -23, 1, 0, 0})
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult invalidDeclination = calculatorReturning(
+                new double[] {180, 45, 12, Double.POSITIVE_INFINITY, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
 
-        assertFalse(result.hasEquatorial());
+        assertFalse(invalidRightAscension.hasEquatorial());
+        assertFalse(invalidDeclination.hasEquatorial());
     }
 
     @Test
