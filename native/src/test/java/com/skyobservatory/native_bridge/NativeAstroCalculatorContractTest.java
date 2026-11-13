@@ -66,6 +66,27 @@ public class NativeAstroCalculatorContractTest {
                 CelestialObject.sun(), observer(), AstroTime.j2000());
     }
 
+    @Test(expected = NativeException.class)
+    public void nonFiniteHorizontalCoordinatesThrowNativeException() throws AstroException {
+        calculatorReturning(new double[] {Double.NaN, 45, 12, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void infiniteDistanceThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {180, 45, 12, -23, Double.POSITIVE_INFINITY, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test
+    public void nonFiniteEquatorialCoordinatesAreNotIncluded() throws AstroException {
+        PositionResult result = calculatorReturning(
+                new double[] {180, 45, Double.POSITIVE_INFINITY, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertFalse(result.hasEquatorial());
+    }
+
     @Test
     public void validNativeResponsePopulatesPosition() throws AstroException {
         PositionResult result = calculatorReturning(
