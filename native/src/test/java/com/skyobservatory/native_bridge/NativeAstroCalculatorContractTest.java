@@ -66,6 +66,46 @@ public class NativeAstroCalculatorContractTest {
                 CelestialObject.sun(), observer(), AstroTime.j2000());
     }
 
+    @Test(expected = NativeException.class)
+    public void nonFiniteHorizontalCoordinatesThrowNativeException() throws AstroException {
+        calculatorReturning(new double[] {Double.NaN, 45, 12, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void nonFiniteAltitudeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {180, Double.POSITIVE_INFINITY, 12, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void infiniteDistanceThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {180, 45, 12, -23, Double.POSITIVE_INFINITY, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
+    @Test
+    public void zeroDistanceIsLeftAbsent() throws AstroException {
+        PositionResult result = calculatorReturning(
+                new double[] {180, 45, 12, -23, 0, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertFalse(result.hasDistance());
+    }
+
+    @Test
+    public void nonFiniteEquatorialCoordinatesAreNotIncluded() throws AstroException {
+        PositionResult invalidRightAscension = calculatorReturning(
+                new double[] {180, 45, Double.POSITIVE_INFINITY, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult invalidDeclination = calculatorReturning(
+                new double[] {180, 45, 12, Double.POSITIVE_INFINITY, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertFalse(invalidRightAscension.hasEquatorial());
+        assertFalse(invalidDeclination.hasEquatorial());
+    }
+
     @Test
     public void validNativeResponsePopulatesPosition() throws AstroException {
         PositionResult result = calculatorReturning(

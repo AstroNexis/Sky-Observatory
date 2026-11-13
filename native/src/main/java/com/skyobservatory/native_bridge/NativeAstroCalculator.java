@@ -64,7 +64,9 @@ public class NativeAstroCalculator {
                 observer.getLongitudeDegrees(),
                 observer.getAltitudeMeters());
 
-        if (r == null || r.length < 7 || r[6] == ERROR_FLAG) {
+        if (r == null || r.length < 7 || r[6] == ERROR_FLAG
+                || !Double.isFinite(r[0]) || !Double.isFinite(r[1])
+                || (r[4] > 0.0 && !Double.isFinite(r[4]))) {
             throw new NativeException(
                     "Native calculation failed for " + target.getName());
         }
@@ -78,7 +80,7 @@ public class NativeAstroCalculator {
         PositionResult.Builder builder = new PositionResult.Builder(
                 azimuth, altitude, target, observer, time);
 
-        if (!Double.isNaN(raHours) && !Double.isNaN(decDeg)) {
+        if (Double.isFinite(raHours) && Double.isFinite(decDeg)) {
             builder.equatorial(new EquatorialCoordinates(raHours * 15.0, decDeg));
         }
 
