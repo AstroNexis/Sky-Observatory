@@ -35,6 +35,15 @@ public class SensorControllerTest {
     }
 
     @Test
+    public void labelRollStaysHorizontalNearDownwardPoleRegardlessOfDeviceRoll() {
+        float roll = SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.98f, -0.198997f, 1f, 0f, 0f},
+                new float[3], new float[3]);
+
+        assertEquals(0f, roll, 1e-6f);
+    }
+
+    @Test
     public void labelRollStaysContinuousAcrossBothPoles() {
         float[] previousGravityUp = new float[3];
         float[] previousForward = new float[3];
