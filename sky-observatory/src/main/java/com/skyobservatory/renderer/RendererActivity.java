@@ -92,7 +92,9 @@ public class RendererActivity extends AppCompatActivity {
         Log.i(TAG, "SDK initialized");
 
         locationRepository = new LocationRepository(this);
-        sensorController   = new SensorController((SensorManager) getSystemService(SENSOR_SERVICE));
+        sensorController   = new SensorController(
+                (SensorManager) getSystemService(SENSOR_SERVICE),
+                getWindowManager().getDefaultDisplay());
 
         skyRenderer = new SkyRenderer(this);
         skyRenderer.setSensorController(sensorController);

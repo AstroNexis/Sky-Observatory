@@ -20,6 +20,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 
 public class SensorController implements SensorEventListener {
 
@@ -27,6 +29,7 @@ public class SensorController implements SensorEventListener {
     private static final float LOW_PASS = 0.55f;
 
     private final SensorManager sensorManager;
+    private final Display display;
     private Sensor rotationVectorSensor;
     private Sensor accelerometer;
     private Sensor magneticField;
@@ -44,8 +47,9 @@ public class SensorController implements SensorEventListener {
     private final float[] lastMag = new float[3];
     private boolean hasAccel, hasMag;
 
-    public SensorController(SensorManager sensorManager) {
+    public SensorController(SensorManager sensorManager, Display display) {
         this.sensorManager = sensorManager;
+        this.display = display;
     }
 
     public void start() {
@@ -156,11 +160,8 @@ public class SensorController implements SensorEventListener {
         if (usingRotationVector) {
             if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-                // Remap so that the device screen-face (+Z) becomes the camera forward axis.
-                // AXIS_X keeps device right as right; AXIS_Z maps device +Z (screen out) to +Y
-                // of the remapped frame, giving us the correct portrait-mode orientation.
                 SensorManager.remapCoordinateSystem(rotationMatrix,
-                        SensorManager.AXIS_X, SensorManager.AXIS_Z,
+                        getDisplayXAxis(display.getRotation()), SensorManager.AXIS_Z,
                         remappedMatrix);
                 updateFromMatrix(remappedMatrix);
             }
@@ -181,11 +182,25 @@ public class SensorController implements SensorEventListener {
         if (!hasAccel || !hasMag) return;
         float[] R = new float[9];
         if (SensorManager.getRotationMatrix(R, null, lastAccel, lastMag)) {
-            // Apply the same portrait remap for the accel/mag fallback path.
+            // Apply the same display-aware remap for the accel/mag fallback path.
             SensorManager.remapCoordinateSystem(R,
-                    SensorManager.AXIS_X, SensorManager.AXIS_Z,
+                    getDisplayXAxis(display.getRotation()), SensorManager.AXIS_Z,
                     remappedMatrix);
             updateFromMatrix(remappedMatrix);
+        }
+    }
+
+    static int getDisplayXAxis(int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                return SensorManager.AXIS_Y;
+            case Surface.ROTATION_180:
+                return SensorManager.AXIS_MINUS_X;
+            case Surface.ROTATION_270:
+                return SensorManager.AXIS_MINUS_Y;
+            case Surface.ROTATION_0:
+            default:
+                return SensorManager.AXIS_X;
         }
     }
 

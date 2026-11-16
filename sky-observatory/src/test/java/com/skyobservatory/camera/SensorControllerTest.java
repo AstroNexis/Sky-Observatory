@@ -1,5 +1,8 @@
 package com.skyobservatory.camera;
 
+import android.hardware.SensorManager;
+import android.view.Surface;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -92,5 +95,13 @@ public class SensorControllerTest {
         assertEquals(0f, SensorController.calculateLabelRollRadians(
                 new float[]{0f, 0f, -1f, 0f, -1f, 0f},
                 previousGravityUp, previousForward), 1e-6f);
+    }
+
+    @Test
+    public void displayXAxisFollowsBothLandscapeRotations() {
+        assertEquals(SensorManager.AXIS_Y,
+                SensorController.getDisplayXAxis(Surface.ROTATION_90));
+        assertEquals(SensorManager.AXIS_MINUS_Y,
+                SensorController.getDisplayXAxis(Surface.ROTATION_270));
     }
 }
