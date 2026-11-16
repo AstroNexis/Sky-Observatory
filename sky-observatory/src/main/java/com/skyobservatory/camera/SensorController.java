@@ -25,6 +25,7 @@ public class SensorController implements SensorEventListener {
 
     private static final String TAG = "SensorController";
     private static final float LOW_PASS = 0.55f;
+    private static final float LABEL_POLE_THRESHOLD = 0.5f;
 
     private final SensorManager sensorManager;
     private Sensor rotationVectorSensor;
@@ -102,7 +103,9 @@ public class SensorController implements SensorEventListener {
         float gy = 1f - fy * fy;
         float gz = -fz * fy;
         float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
-        if (gl < 0.05f) {
+        // Keep labels horizontal within 30 degrees of straight up or down,
+        // where the projected gravity reference is too unstable to define roll.
+        if (gl < LABEL_POLE_THRESHOLD) {
             previousForward[0] = fx;
             previousForward[1] = fy;
             previousForward[2] = fz;
