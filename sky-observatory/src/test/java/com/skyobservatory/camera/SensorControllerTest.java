@@ -73,4 +73,24 @@ public class SensorControllerTest {
 
         assertEquals(0f, roll, 1e-6f);
     }
+
+    @Test
+    public void labelRollStaysDownAfterPointingAtGroundAndTurningLevel() {
+        float[] previousGravityUp = new float[3];
+        float[] previousForward = new float[3];
+
+        SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.995f, -0.1f, 0f, 0.1f, -0.995f},
+                previousGravityUp, previousForward);
+        SensorController.calculateLabelRollRadians(
+                new float[]{0f, -0.995f, 0.1f, 0f, 0.1f, -0.995f},
+                previousGravityUp, previousForward);
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, -1f, 0f, 0f, 0f, -1f},
+                previousGravityUp, previousForward), 1e-6f);
+
+        assertEquals(0f, SensorController.calculateLabelRollRadians(
+                new float[]{0f, 0f, -1f, 0f, -1f, 0f},
+                previousGravityUp, previousForward), 1e-6f);
+    }
 }

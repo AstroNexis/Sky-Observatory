@@ -120,7 +120,7 @@ public class SensorController implements SensorEventListener {
         float forwardAlignment = fx * previousForward[0]
                 + fy * previousForward[1]
                 + fz * previousForward[2];
-        if (previousLength > 0f && alignment < 0f && forwardAlignment > 0.9f) {
+        if (previousLength > 0f && alignment < 0f && forwardAlignment >= 0f) {
             gx = -gx; gy = -gy; gz = -gz;
         }
         previousGravityUp[0] = gx;
