@@ -7,9 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [0.1.3-alpha] - 2026-11-17
 
-Upcoming release, expected arounid 15 November 2026.
+Camera orientation, astronomy calculation reliability, and renderer stability improvements.
 
 ### Fixed
 
@@ -69,7 +69,6 @@ Upcoming release, expected arounid 15 November 2026.
 - #100: Replaced the dark sky gradient with a uniform blue background.
 
 - #104: Refactored label orientation handling to publish smoothed forward/up vectors as a single coherent snapshot and reset gravity-reference sign on abrupt direction changes. 
-
 
 ## [0.1.2-alpha] - 2026-09-24
 
