@@ -48,8 +48,9 @@ Upcoming release, expected arounid 15 November 2026.
 
 - #108: Made the native calculation boundary reject null JNI results with `NativeException`.
 
-- #109: Validated numeric values returned by the native calculation boundary, rejecting invalid
-  horizontal coordinates and distance while omitting non-finite optional equatorial coordinates.
+- #109: Validated numeric values returned by the native calculation boundary, rejecting invalid horizontal coordinates and distance while omitting non-finite optional equatorial coordinates.
+
+- #113: Kept labels horizontal when pointing near the ground, where the gravity-based roll reference is unreliable.
 
 ### Added
 
