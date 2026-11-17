@@ -17,6 +17,7 @@ package com.skyobservatory.renderer;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.hardware.GeomagneticField;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -92,7 +93,9 @@ public class RendererActivity extends AppCompatActivity {
         Log.i(TAG, "SDK initialized");
 
         locationRepository = new LocationRepository(this);
-        sensorController   = new SensorController((SensorManager) getSystemService(SENSOR_SERVICE));
+        sensorController   = new SensorController(
+                (SensorManager) getSystemService(SENSOR_SERVICE),
+                getWindowManager().getDefaultDisplay());
 
         skyRenderer = new SkyRenderer(this);
         skyRenderer.setSensorController(sensorController);
@@ -134,6 +137,10 @@ public class RendererActivity extends AppCompatActivity {
                         location.getLatitude(),
                         location.getLongitude(),
                         location.hasAltitude() ? location.getAltitude() : 0.0);
+                updateSensorDeclination(
+                        location.getLatitude(),
+                        location.getLongitude(),
+                        location.hasAltitude() ? location.getAltitude() : 0.0);
                 Log.i(TAG, "Location: " + location.getLatitude() + ", " + location.getLongitude());
                 startSdkUpdates();
             }
@@ -152,8 +159,15 @@ public class RendererActivity extends AppCompatActivity {
 
     private void useFallbackLocation() {
         currentObserver = new Observer(FALLBACK_LATITUDE, FALLBACK_LONGITUDE, FALLBACK_ALTITUDE);
+        updateSensorDeclination(FALLBACK_LATITUDE, FALLBACK_LONGITUDE, FALLBACK_ALTITUDE);
         Log.w(TAG, "Using fallback location (Hanoi)");
         startSdkUpdates();
+    }
+
+    private void updateSensorDeclination(double latitude, double longitude, double altitude) {
+        GeomagneticField field = new GeomagneticField(
+                (float) latitude, (float) longitude, (float) altitude, System.currentTimeMillis());
+        sensorController.setDeclinationDegrees(field.getDeclination());
     }
 
     private final Object sdkLock = new Object();

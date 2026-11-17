@@ -20,6 +20,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 
 public class SensorController implements SensorEventListener {
 
@@ -28,6 +30,7 @@ public class SensorController implements SensorEventListener {
     private static final float LABEL_POLE_THRESHOLD = 0.5f;
 
     private final SensorManager sensorManager;
+    private final Display display;
     private Sensor rotationVectorSensor;
     private Sensor accelerometer;
     private Sensor magneticField;
@@ -35,6 +38,10 @@ public class SensorController implements SensorEventListener {
     private boolean usingRotationVector;
     private final float[] rotationMatrix = new float[9];
     private final float[] remappedMatrix = new float[9];
+    private int displayRotation = -1;
+    private int displayAxisX;
+    private int displayAxisY;
+    private volatile float declinationDegrees;
 
     private volatile float[] smoothedOrientation = new float[]{0, 0, -1, 0, 1, 0};
     private volatile boolean hasData;
@@ -45,14 +52,15 @@ public class SensorController implements SensorEventListener {
     private final float[] lastMag = new float[3];
     private boolean hasAccel, hasMag;
 
-    public SensorController(SensorManager sensorManager) {
+    public SensorController(SensorManager sensorManager, Display display) {
         this.sensorManager = sensorManager;
+        this.display = display;
     }
 
     public void start() {
         rotationVectorSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if (rotationVectorSensor != null) {
-            Log.d(TAG, "Using rotation vector sensor");
+            Log.d(TAG, "Using fused rotation-vector sensor");
             usingRotationVector = true;
             sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_GAME);
             return;
@@ -159,12 +167,7 @@ public class SensorController implements SensorEventListener {
         if (usingRotationVector) {
             if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
                 SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
-                // Remap so that the device screen-face (+Z) becomes the camera forward axis.
-                // AXIS_X keeps device right as right; AXIS_Z maps device +Z (screen out) to +Y
-                // of the remapped frame, giving us the correct portrait-mode orientation.
-                SensorManager.remapCoordinateSystem(rotationMatrix,
-                        SensorManager.AXIS_X, SensorManager.AXIS_Z,
-                        remappedMatrix);
+                remapToDisplay(rotationMatrix);
                 updateFromMatrix(remappedMatrix);
             }
         } else {
@@ -184,54 +187,112 @@ public class SensorController implements SensorEventListener {
         if (!hasAccel || !hasMag) return;
         float[] R = new float[9];
         if (SensorManager.getRotationMatrix(R, null, lastAccel, lastMag)) {
-            // Apply the same portrait remap for the accel/mag fallback path.
-            SensorManager.remapCoordinateSystem(R,
-                    SensorManager.AXIS_X, SensorManager.AXIS_Z,
-                    remappedMatrix);
+            remapToDisplay(R);
             updateFromMatrix(remappedMatrix);
         }
     }
 
+    public void setDeclinationDegrees(float declinationDegrees) {
+        this.declinationDegrees = declinationDegrees;
+    }
+
+    private void remapToDisplay(float[] matrix) {
+        int rotation = display.getRotation();
+        if (rotation != displayRotation) {
+            displayAxisX = displayAxisX(rotation);
+            displayAxisY = displayAxisY(rotation);
+            displayRotation = rotation;
+        }
+        SensorManager.remapCoordinateSystem(
+                matrix, displayAxisX, displayAxisY, remappedMatrix);
+    }
+
+    static int displayAxisX(int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                return SensorManager.AXIS_Y;
+            case Surface.ROTATION_180:
+                return SensorManager.AXIS_MINUS_X;
+            case Surface.ROTATION_270:
+                return SensorManager.AXIS_MINUS_Y;
+            case Surface.ROTATION_0:
+            default:
+                return SensorManager.AXIS_X;
+        }
+    }
+
+    static int displayAxisY(int rotation) {
+        switch (rotation) {
+            case Surface.ROTATION_90:
+                return SensorManager.AXIS_MINUS_X;
+            case Surface.ROTATION_180:
+                return SensorManager.AXIS_MINUS_Y;
+            case Surface.ROTATION_270:
+                return SensorManager.AXIS_X;
+            case Surface.ROTATION_0:
+            default:
+                return SensorManager.AXIS_Y;
+        }
+    }
+
+    static float[] extractCameraOrientation(float[] matrix, float declinationDegrees) {
+        float[] orientation = {
+                -matrix[2], -matrix[8], matrix[5],
+                matrix[1], matrix[7], -matrix[4]
+        };
+        double declination = Math.toRadians(declinationDegrees);
+        float cos = (float) Math.cos(declination);
+        float sin = (float) Math.sin(declination);
+        for (int offset = 0; offset < orientation.length; offset += 3) {
+            float east = orientation[offset];
+            float south = orientation[offset + 2];
+            orientation[offset] = east * cos - south * sin;
+            orientation[offset + 2] = east * sin + south * cos;
+        }
+        return orientation;
+    }
+
     private void updateFromMatrix(float[] R) {
-        float fxe =  R[3];
-        float fyu =  R[5];
-        float fzs = -R[4];
+        float[] measured = extractCameraOrientation(R, declinationDegrees);
+        float[] newOrientation = hasData ? measured.clone() : measured;
 
-        float uxe =  R[6];
-        float uyu =  R[8];
-        float uzs = -R[7];
-
-        float[] newOrientation = new float[6];
-
-        if (!hasData) {
-            newOrientation[0] = fxe; newOrientation[1] = fyu; newOrientation[2] = fzs;
-            newOrientation[3] = uxe; newOrientation[4] = uyu; newOrientation[5] = uzs;
-        } else {
+        if (hasData) {
             float[] orientation = smoothedOrientation;
-            newOrientation[0] = orientation[0] + (fxe - orientation[0]) * LOW_PASS;
-            newOrientation[1] = orientation[1] + (fyu - orientation[1]) * LOW_PASS;
-            newOrientation[2] = orientation[2] + (fzs - orientation[2]) * LOW_PASS;
-            newOrientation[3] = orientation[3] + (uxe - orientation[3]) * LOW_PASS;
-            newOrientation[4] = orientation[4] + (uyu - orientation[4]) * LOW_PASS;
-            newOrientation[5] = orientation[5] + (uzs - orientation[5]) * LOW_PASS;
-            renormalize(newOrientation, 0);
-            renormalize(newOrientation, 3);
+            for (int i = 0; i < newOrientation.length; i++) {
+                newOrientation[i] = orientation[i]
+                        + (measured[i] - orientation[i]) * LOW_PASS;
+            }
+            if (!orthogonalize(newOrientation)) {
+                newOrientation = measured;
+            }
         }
 
         smoothedOrientation = newOrientation;
         hasData         = true;
     }
 
-    private static void renormalize(float[] v, int offset) {
-        float l = (float) Math.sqrt(
+    private static boolean orthogonalize(float[] v) {
+        float forwardLength = normalize(v, 0);
+        if (forwardLength < 1e-5f) return false;
+
+        float dot = v[0] * v[3] + v[1] * v[4] + v[2] * v[5];
+        v[3] -= dot * v[0];
+        v[4] -= dot * v[1];
+        v[5] -= dot * v[2];
+        return normalize(v, 3) >= 1e-5f;
+    }
+
+    private static float normalize(float[] v, int offset) {
+        float length = (float) Math.sqrt(
                 v[offset] * v[offset]
                         + v[offset + 1] * v[offset + 1]
                         + v[offset + 2] * v[offset + 2]);
-        if (l > 1e-10f) {
-            v[offset] /= l;
-            v[offset + 1] /= l;
-            v[offset + 2] /= l;
+        if (length > 1e-10f) {
+            v[offset] /= length;
+            v[offset + 1] /= length;
+            v[offset + 2] /= length;
         }
+        return length;
     }
 
     @Override
