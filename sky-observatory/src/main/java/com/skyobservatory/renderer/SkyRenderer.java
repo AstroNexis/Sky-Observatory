@@ -82,6 +82,7 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 
     private final Context context;
     private final SkyCamera camera = new SkyCamera();
+    private final float[] sensorOrientation = new float[6];
     private final TouchController touchController = new TouchController();
     private SensorController sensorController;
 
@@ -526,9 +527,10 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     private void updateCamera() {
         camera.zoomBy(touchController.consumePinch());
         if (sensorController != null && sensorController.hasOrientation()) {
+            sensorController.copyOrientation(sensorOrientation);
             camera.buildViewFromVectors(
-                    sensorController.getForwardX(), sensorController.getForwardY(), sensorController.getForwardZ(),
-                    sensorController.getUpX(),      sensorController.getUpY(),      sensorController.getUpZ());
+                    sensorOrientation[0], sensorOrientation[1], sensorOrientation[2],
+                    sensorOrientation[3], sensorOrientation[4], sensorOrientation[5]);
         } else {
             // Negate both axes so the gesture feels like grabbing and moving the sky,
             // not rotating the camera in the drag direction (trackball / orbit model).

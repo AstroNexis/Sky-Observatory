@@ -62,17 +62,28 @@ public class SensorController implements SensorEventListener {
         if (rotationVectorSensor != null) {
             Log.d(TAG, "Using fused rotation-vector sensor");
             usingRotationVector = true;
-            sensorManager.registerListener(this, rotationVectorSensor, SensorManager.SENSOR_DELAY_GAME);
-            return;
+            if (sensorManager.registerListener(
+                    this, rotationVectorSensor, SensorManager.SENSOR_DELAY_GAME)) {
+                return;
+            }
+            Log.w(TAG, "Rotation-vector sensor registration failed; trying accelerometer and magnetometer");
+            sensorManager.unregisterListener(this);
+        } else {
+            Log.d(TAG, "Rotation-vector sensor unavailable; trying accelerometer and magnetometer");
         }
-        Log.d(TAG, "Rotation sensor not available, falling back to classic sensors");
         usingRotationVector = false;
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         magneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-        if (accelerometer != null)
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-        if (magneticField != null)
-            sensorManager.registerListener(this, magneticField, SensorManager.SENSOR_DELAY_GAME);
+        boolean accelRegistered = accelerometer != null
+                && sensorManager.registerListener(
+                        this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
+        boolean magneticRegistered = magneticField != null
+                && sensorManager.registerListener(
+                        this, magneticField, SensorManager.SENSOR_DELAY_GAME);
+        if (!accelRegistered || !magneticRegistered) {
+            sensorManager.unregisterListener(this);
+            Log.e(TAG, "Unable to register both accelerometer and magnetometer; orientation unavailable");
+        }
     }
 
     public void stop() {
@@ -81,12 +92,10 @@ public class SensorController implements SensorEventListener {
 
     public boolean hasOrientation() { return hasData; }
 
-    public float getForwardX() { return smoothedOrientation[0]; }
-    public float getForwardY() { return smoothedOrientation[1]; }
-    public float getForwardZ() { return smoothedOrientation[2]; }
-    public float getUpX() { return smoothedOrientation[3]; }
-    public float getUpY() { return smoothedOrientation[4]; }
-    public float getUpZ() { return smoothedOrientation[5]; }
+    /** Copies one coherent forward-then-up vector pair into the caller's six-element buffer. */
+    public void copyOrientation(float[] destination) {
+        System.arraycopy(smoothedOrientation, 0, destination, 0, 6);
+    }
 
     /**
      * Returns the rotation, in radians, to apply to screen-space labels so that
