@@ -113,6 +113,23 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test
+    public void outOfRangeEquatorialCoordinatesAreNotIncluded() throws AstroException {
+        PositionResult invalidRightAscension = calculatorReturning(
+                new double[] {180, 45, 24, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult invalidDeclination = calculatorReturning(
+                new double[] {180, 45, 12, -91, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult positiveInvalidDeclination = calculatorReturning(
+                new double[] {180, 45, 12, 91, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertFalse(invalidRightAscension.hasEquatorial());
+        assertFalse(invalidDeclination.hasEquatorial());
+        assertFalse(positiveInvalidDeclination.hasEquatorial());
+    }
+
+    @Test
     public void validNativeResponsePopulatesPosition() throws AstroException {
         PositionResult result = calculatorReturning(
                 new double[] {180, 45, 12, -23, 1.5, 0, 0})

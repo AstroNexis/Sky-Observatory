@@ -80,7 +80,10 @@ public class NativeAstroCalculator {
         PositionResult.Builder builder = new PositionResult.Builder(
                 azimuth, altitude, target, observer, time);
 
-        if (Double.isFinite(raHours) && Double.isFinite(decDeg)) {
+        if (Double.isFinite(raHours)
+                && raHours >= 0.0 && raHours < 24.0
+                && Double.isFinite(decDeg)
+                && decDeg >= -90.0 && decDeg <= 90.0) {
             builder.equatorial(new EquatorialCoordinates(raHours * 15.0, decDeg));
         }
 
