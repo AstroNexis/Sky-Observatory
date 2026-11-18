@@ -27,7 +27,6 @@ public class SensorController implements SensorEventListener {
 
     private static final String TAG = "SensorController";
     private static final float LOW_PASS = 0.55f;
-    private static final float LABEL_POLE_THRESHOLD = 0.5f;
 
     private final SensorManager sensorManager;
     private final Display display;
@@ -45,8 +44,6 @@ public class SensorController implements SensorEventListener {
 
     private volatile float[] smoothedOrientation = new float[]{0, 0, -1, 0, 1, 0};
     private volatile boolean hasData;
-    private final float[] lastLabelGravityUp = new float[3];
-    private final float[] lastLabelForward = new float[3];
 
     private final float[] lastAccel = new float[3];
     private final float[] lastMag = new float[3];
@@ -95,80 +92,6 @@ public class SensorController implements SensorEventListener {
     /** Copies one coherent forward-then-up vector pair into the caller's six-element buffer. */
     public void copyOrientation(float[] destination) {
         System.arraycopy(smoothedOrientation, 0, destination, 0, 6);
-    }
-
-    /**
-     * Returns the rotation, in radians, to apply to screen-space labels so that
-     * their text stays aligned with the device screen when the phone is rolled
-     * in its own plane. The result snaps to one of four orientations (0, 90,
-     * 180 or 270 degrees), so text is only ever horizontal or vertical. The
-     * default orientation is used when looking nearly straight up or down,
-     * where roll is undefined.
-     */
-    public float getLabelRollRadians() {
-        float[] orientation = smoothedOrientation;
-        return calculateLabelRollRadians(orientation, lastLabelGravityUp, lastLabelForward);
-    }
-
-    static float calculateLabelRollRadians(
-            float[] orientation, float[] previousGravityUp, float[] previousForward) {
-        float fx = orientation[0], fy = orientation[1], fz = orientation[2];
-        float ux = orientation[3], uy = orientation[4], uz = orientation[5];
-
-        // Gravity-up (world +Y) projected onto the plane perpendicular to forward.
-        float gx = -fx * fy;
-        float gy = 1f - fy * fy;
-        float gz = -fz * fy;
-        float gl = (float) Math.sqrt(gx * gx + gy * gy + gz * gz);
-        // Keep labels horizontal within 30 degrees of straight up or down,
-        // where the projected gravity reference is too unstable to define roll.
-        if (gl < LABEL_POLE_THRESHOLD) {
-            previousForward[0] = fx;
-            previousForward[1] = fy;
-            previousForward[2] = fz;
-            return 0f;
-        }
-        gx /= gl; gy /= gl; gz /= gl;
-
-        float previousLength = (float) Math.sqrt(
-                previousGravityUp[0] * previousGravityUp[0]
-                        + previousGravityUp[1] * previousGravityUp[1]
-                        + previousGravityUp[2] * previousGravityUp[2]);
-        float alignment = gx * previousGravityUp[0]
-                + gy * previousGravityUp[1]
-                + gz * previousGravityUp[2];
-        float forwardAlignment = fx * previousForward[0]
-                + fy * previousForward[1]
-                + fz * previousForward[2];
-        if (previousLength > 0f && alignment < 0f && forwardAlignment > 0.9f) {
-            gx = -gx; gy = -gy; gz = -gz;
-        }
-        previousGravityUp[0] = gx;
-        previousGravityUp[1] = gy;
-        previousGravityUp[2] = gz;
-        previousForward[0] = fx;
-        previousForward[1] = fy;
-        previousForward[2] = fz;
-
-        // Screen-right when upright: forward x gravity-up.
-        float rx = fy * gz - fz * gy;
-        float ry = fz * gx - fx * gz;
-        float rz = fx * gy - fy * gx;
-
-        float sinRoll = ux * rx + uy * ry + uz * rz;
-        float cosRoll = ux * gx + uy * gy + uz * gz;
-        float roll = (float) Math.atan2(sinRoll, cosRoll);
-
-        // Snap to the nearest quarter turn so labels only read horizontally or
-        // vertically. Text rotates opposite to the device's roll so it stays upright.
-        return snapLabelRoll(roll);
-    }
-
-    static float snapLabelRoll(float roll) {
-        final float quarterTurn = (float) (Math.PI / 2.0);
-        float snapped = Math.copySign(
-                Math.round(Math.abs(roll) / quarterTurn) * quarterTurn, roll);
-        return -snapped;
     }
 
     @Override
