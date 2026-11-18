@@ -117,6 +117,9 @@ public class NativeAstroCalculatorContractTest {
         PositionResult invalidRightAscension = calculatorReturning(
                 new double[] {180, 45, 24, -23, 1, 0, 0})
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult negativeRightAscension = calculatorReturning(
+                new double[] {180, 45, -1, -23, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
         PositionResult invalidDeclination = calculatorReturning(
                 new double[] {180, 45, 12, -91, 1, 0, 0})
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
@@ -125,8 +128,22 @@ public class NativeAstroCalculatorContractTest {
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
 
         assertFalse(invalidRightAscension.hasEquatorial());
+        assertFalse(negativeRightAscension.hasEquatorial());
         assertFalse(invalidDeclination.hasEquatorial());
         assertFalse(positiveInvalidDeclination.hasEquatorial());
+    }
+
+    @Test
+    public void equatorialRangeBoundariesAreIncluded() throws AstroException {
+        PositionResult minimum = calculatorReturning(
+                new double[] {180, 45, 0, -90, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+        PositionResult maximum = calculatorReturning(
+                new double[] {180, 45, 23.999, 90, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertTrue(minimum.hasEquatorial());
+        assertTrue(maximum.hasEquatorial());
     }
 
     @Test
