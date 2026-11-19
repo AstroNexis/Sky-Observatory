@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+### Fixed
+
+- #115: Omitted equatorial coordinates when native results contain out-of-range right ascension or declination.
+
+
 ## [0.1.3-alpha] - 2026-11-17
 
 Camera orientation, astronomy calculation reliability, and renderer stability improvements.
