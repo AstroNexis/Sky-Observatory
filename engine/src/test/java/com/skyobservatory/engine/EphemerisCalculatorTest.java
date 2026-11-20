@@ -232,6 +232,33 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseSetDetectsCrossingAtEndOfDay() throws AstroException {
+        PositionProvider risingAtEnd = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, hours - 24.0, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), risingAtEnd);
+
+        EphemerisResult riseResult = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(riseResult.hasRiseTime());
+        assertEquals(2451545.5, riseResult.getRiseTimeJd(), 1e-8);
+        assertFalse(riseResult.hasSetTime());
+
+        PositionProvider settingAtEnd = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, 24.0 - hours, target, obs, t).build();
+        };
+        calc = new EphemerisCalculator(new InputValidator(), settingAtEnd);
+
+        EphemerisResult setResult = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(setResult.hasSetTime());
+        assertEquals(2451545.5, setResult.getSetTimeJd(), 1e-8);
+        assertFalse(setResult.hasRiseTime());
+    }
+
+    @Test
     public void computeRiseAtStartOfDay() throws AstroException {
         PositionProvider rising = (target, obs, t) -> {
             double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
