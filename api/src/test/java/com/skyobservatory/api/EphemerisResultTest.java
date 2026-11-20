@@ -46,6 +46,20 @@ public class EphemerisResultTest {
     }
 
     @Test
+    public void nonFiniteNumericFieldsThrow() {
+        EphemerisResult.Builder builder = new EphemerisResult.Builder();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.riseTimeJd(Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.setTimeJd(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.visualMagnitude(Double.NEGATIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class,
+                () -> builder.apparentDiameterArcmin(Double.NaN));
+    }
+
+    @Test
     public void builderReturnsSelfForChaining() {
         EphemerisResult.Builder b = new EphemerisResult.Builder();
         assertSame(b, b.riseTimeJd(1.0));

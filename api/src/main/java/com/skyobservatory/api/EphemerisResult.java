@@ -126,6 +126,10 @@ public final class EphemerisResult {
          * @return this builder
          */
         public Builder riseTimeJd(double riseTimeJd) {
+            if (!Double.isFinite(riseTimeJd)) {
+                throw new IllegalArgumentException(
+                        "riseTimeJd must be finite, got: " + riseTimeJd);
+            }
             this.riseTimeJd = riseTimeJd;
             return this;
         }
@@ -137,6 +141,10 @@ public final class EphemerisResult {
          * @return this builder
          */
         public Builder setTimeJd(double setTimeJd) {
+            if (!Double.isFinite(setTimeJd)) {
+                throw new IllegalArgumentException(
+                        "setTimeJd must be finite, got: " + setTimeJd);
+            }
             this.setTimeJd = setTimeJd;
             return this;
         }
@@ -148,6 +156,10 @@ public final class EphemerisResult {
          * @return this builder
          */
         public Builder visualMagnitude(double visualMagnitude) {
+            if (!Double.isFinite(visualMagnitude)) {
+                throw new IllegalArgumentException(
+                        "visualMagnitude must be finite, got: " + visualMagnitude);
+            }
             this.visualMagnitude = visualMagnitude;
             return this;
         }
@@ -159,9 +171,10 @@ public final class EphemerisResult {
          * @return this builder
          */
         public Builder apparentDiameterArcmin(double apparentDiameterArcmin) {
-            if (apparentDiameterArcmin < 0.0) {
+            if (!Double.isFinite(apparentDiameterArcmin) || apparentDiameterArcmin < 0.0) {
                 throw new IllegalArgumentException(
-                        "apparentDiameterArcmin must be non-negative, got: " + apparentDiameterArcmin);
+                        "apparentDiameterArcmin must be finite and non-negative, got: "
+                                + apparentDiameterArcmin);
             }
             this.apparentDiameterArcmin = apparentDiameterArcmin;
             return this;
