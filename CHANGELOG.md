@@ -15,6 +15,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #116: Rejected NaN and infinite values in ephemeris result fields.
 
+- #117: Preserved the first rise and set crossings found during the daily scan.
+
 
 ## [0.1.3-alpha] - 2026-11-17
 
