@@ -178,6 +178,22 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseSetKeepsFirstCrossings() throws AstroException {
+        PositionProvider repeatingCrossings = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double altitude = Math.sin(hours * Math.PI / 6.0);
+            return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
+        };
+        EphemerisCalculator calc =
+                new EphemerisCalculator(new InputValidator(), repeatingCrossings);
+
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertEquals(2451544.5, result.getRiseTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 6.0 / 24.0, result.getSetTimeJd(), 1e-8);
+    }
+
+    @Test
     public void computeRiseAtStartOfDay() throws AstroException {
         PositionProvider rising = (target, obs, t) -> {
             double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
