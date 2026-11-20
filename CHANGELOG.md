@@ -13,6 +13,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #115: Omitted equatorial coordinates when native results contain out-of-range right ascension or declination.
 
+- #116: Rejected NaN and infinite values in ephemeris result fields.
+
 
 ## [0.1.3-alpha] - 2026-11-17
 
