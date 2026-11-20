@@ -178,19 +178,57 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
-    public void computeRiseSetKeepsFirstCrossings() throws AstroException {
-        PositionProvider repeatingCrossings = (target, obs, t) -> {
+    public void computeRiseSetPreservesFirstCrossingOfEachType() throws AstroException {
+        PositionProvider repeatedRises = (target, obs, t) -> {
             double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
-            double altitude = Math.sin(hours * Math.PI / 6.0);
+            double altitude;
+            if (hours < 0.25) {
+                altitude = -1.0;
+            } else if (hours < 1.75) {
+                altitude = 1.0;
+            } else if (hours < 2.75) {
+                altitude = 0.0;
+            } else if (hours < 3.25) {
+                altitude = -1.0;
+            } else if (hours < 4.25) {
+                altitude = 1.0;
+            } else {
+                altitude = -1.0;
+            }
             return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
         };
         EphemerisCalculator calc =
-                new EphemerisCalculator(new InputValidator(), repeatingCrossings);
+                new EphemerisCalculator(new InputValidator(), repeatedRises);
 
         EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
 
-        assertEquals(2451544.5, result.getRiseTimeJd(), 1e-8);
-        assertEquals(2451544.5 + 6.0 / 24.0, result.getSetTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 0.25 / 24.0, result.getRiseTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 4.25 / 24.0, result.getSetTimeJd(), 1e-8);
+
+        PositionProvider repeatedSets = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double altitude;
+            if (hours < 0.25) {
+                altitude = 1.0;
+            } else if (hours < 1.75) {
+                altitude = -1.0;
+            } else if (hours < 2.75) {
+                altitude = 0.0;
+            } else if (hours < 3.75) {
+                altitude = 1.0;
+            } else if (hours < 4.75) {
+                altitude = -1.0;
+            } else {
+                altitude = 1.0;
+            }
+            return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
+        };
+        calc = new EphemerisCalculator(new InputValidator(), repeatedSets);
+
+        result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertEquals(2451544.5 + 0.25 / 24.0, result.getSetTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 4.75 / 24.0, result.getRiseTimeJd(), 1e-8);
     }
 
     @Test
