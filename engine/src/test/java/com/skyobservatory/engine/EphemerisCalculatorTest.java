@@ -178,6 +178,87 @@ public class EphemerisCalculatorTest {
     }
 
     @Test
+    public void computeRiseSetPreservesFirstCrossingOfEachType() throws AstroException {
+        PositionProvider repeatedRises = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double altitude;
+            if (hours < 0.25) {
+                altitude = -1.0;
+            } else if (hours < 1.75) {
+                altitude = 1.0;
+            } else if (hours < 2.75) {
+                altitude = 0.0;
+            } else if (hours < 3.25) {
+                altitude = -1.0;
+            } else if (hours < 4.25) {
+                altitude = 1.0;
+            } else {
+                altitude = -1.0;
+            }
+            return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
+        };
+        EphemerisCalculator calc =
+                new EphemerisCalculator(new InputValidator(), repeatedRises);
+
+        EphemerisResult result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertEquals(2451544.5 + 0.25 / 24.0, result.getRiseTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 4.25 / 24.0, result.getSetTimeJd(), 1e-8);
+
+        PositionProvider repeatedSets = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            double altitude;
+            if (hours < 0.25) {
+                altitude = 1.0;
+            } else if (hours < 1.75) {
+                altitude = -1.0;
+            } else if (hours < 2.75) {
+                altitude = 0.0;
+            } else if (hours < 3.75) {
+                altitude = 1.0;
+            } else if (hours < 4.75) {
+                altitude = -1.0;
+            } else {
+                altitude = 1.0;
+            }
+            return new PositionResult.Builder(180.0, altitude, target, obs, t).build();
+        };
+        calc = new EphemerisCalculator(new InputValidator(), repeatedSets);
+
+        result = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertEquals(2451544.5 + 0.25 / 24.0, result.getSetTimeJd(), 1e-8);
+        assertEquals(2451544.5 + 4.75 / 24.0, result.getRiseTimeJd(), 1e-8);
+    }
+
+    @Test
+    public void computeRiseSetDetectsCrossingAtEndOfDay() throws AstroException {
+        PositionProvider risingAtEnd = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, hours - 24.0, target, obs, t).build();
+        };
+        EphemerisCalculator calc = new EphemerisCalculator(new InputValidator(), risingAtEnd);
+
+        EphemerisResult riseResult = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(riseResult.hasRiseTime());
+        assertEquals(2451545.5, riseResult.getRiseTimeJd(), 1e-8);
+        assertFalse(riseResult.hasSetTime());
+
+        PositionProvider settingAtEnd = (target, obs, t) -> {
+            double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
+            return new PositionResult.Builder(180.0, 24.0 - hours, target, obs, t).build();
+        };
+        calc = new EphemerisCalculator(new InputValidator(), settingAtEnd);
+
+        EphemerisResult setResult = calc.calculate(CelestialObject.sun(), observer, time);
+
+        assertTrue(setResult.hasSetTime());
+        assertEquals(2451545.5, setResult.getSetTimeJd(), 1e-8);
+        assertFalse(setResult.hasRiseTime());
+    }
+
+    @Test
     public void computeRiseAtStartOfDay() throws AstroException {
         PositionProvider rising = (target, obs, t) -> {
             double hours = (t.getJulianDateTT() - 2451544.5) * 24.0;
