@@ -195,6 +195,7 @@ Java_com_skyobservatory_native_1bridge_NativeGateway_nativeCalculatePosition(
     }
 
     jdoubleArray ary = env->NewDoubleArray(7);
+    if (ary == nullptr) return nullptr;
     env->SetDoubleArrayRegion(ary, 0, 7, results);
     return ary;
 }
