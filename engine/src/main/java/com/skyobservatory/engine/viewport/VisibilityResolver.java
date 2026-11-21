@@ -53,6 +53,9 @@ public final class VisibilityResolver {
      * @return a {@link VisibleSkyRegion} with visible and hidden object lists
      */
     public VisibleSkyRegion resolve(SkySnapshot snapshot, Viewport viewport) {
+        if (snapshot == null) throw new IllegalArgumentException("snapshot must not be null");
+        if (viewport == null) throw new IllegalArgumentException("viewport must not be null");
+
         List<ObservableObject> visible = new ArrayList<>();
         List<ObservableObject> hidden = new ArrayList<>();
 
