@@ -61,6 +61,13 @@ public class AstroSdkTest {
         assertSame("initialize() must be idempotent", first, second);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void initialize_withProviderReturningNull_throwsIllegalState() {
+        AstroSdk.registerProvider(() -> null);
+
+        AstroSdk.initialize();
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void registerProvider_withNull_throwsIllegalArgument() {
         AstroSdk.registerProvider(null);
