@@ -408,12 +408,7 @@ final class EphemerisCalculator {
             CelestialObject target,
             Observer observer,
             AstroTime time) throws AstroException {
-        PositionResult result = provider.calculatePosition(target, observer, time);
-        if (result == null
-                || !Double.isFinite(result.getAzimuthDegrees())
-                || !Double.isFinite(result.getAltitudeDegrees())) {
-            throw new AstroException("Position provider returned invalid horizontal coordinates");
-        }
-        return result;
+        return PositionCalculator.validateProviderResult(
+                provider.calculatePosition(target, observer, time));
     }
 }

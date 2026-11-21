@@ -67,12 +67,8 @@ final class PositionCalculator {
         validator.validateObserver(observer);
         validator.validateTime(time);
 
-        PositionResult raw = provider.calculatePosition(target, observer, time);
-        if (raw == null
-                || !Double.isFinite(raw.getAzimuthDegrees())
-                || !Double.isFinite(raw.getAltitudeDegrees())) {
-            throw new AstroException("Position provider returned invalid horizontal coordinates");
-        }
+        PositionResult raw = validateProviderResult(
+                provider.calculatePosition(target, observer, time));
 
         double azimuth = converter.normalizeAzimuth(raw.getAzimuthDegrees());
         double altitude = converter.clampAltitude(raw.getAltitudeDegrees());
@@ -92,5 +88,14 @@ final class PositionCalculator {
         }
 
         return builder.build();
+    }
+
+    static PositionResult validateProviderResult(PositionResult result) throws AstroException {
+        if (result == null
+                || !Double.isFinite(result.getAzimuthDegrees())
+                || !Double.isFinite(result.getAltitudeDegrees())) {
+            throw new AstroException("Position provider returned invalid horizontal coordinates");
+        }
+        return result;
     }
 }
