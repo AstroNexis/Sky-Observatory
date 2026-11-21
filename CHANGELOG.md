@@ -17,6 +17,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #117: Preserved the first rise and set crossings found during the daily scan.
 
+### Changed
+
+- #118: Shared provider-result validation between position and ephemeris calculations.
+
 
 ## [0.1.3-alpha] - 2026-11-17
 
