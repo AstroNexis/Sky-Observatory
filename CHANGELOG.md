@@ -9,6 +9,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+ The next release is scheduled for December 15, 2026
+
 ### Fixed
 
 - #115: Omitted equatorial coordinates when native results contain out-of-range right ascension or declination.
