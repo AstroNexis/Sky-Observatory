@@ -90,6 +90,12 @@ public class NativeAstroCalculatorContractTest {
                 .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
     }
 
+    @Test(expected = NativeException.class)
+    public void negativeDistanceThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {180, 45, 12, -23, -1.0, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+    }
+
     @Test
     public void zeroDistanceIsLeftAbsent() throws AstroException {
         PositionResult result = calculatorReturning(
