@@ -142,6 +142,11 @@ public final class SkySnapshot {
             if (time == null) throw new IllegalArgumentException("time must not be null");
             if (observer == null) throw new IllegalArgumentException("observer must not be null");
             if (objects == null) throw new IllegalArgumentException("objects must not be null");
+            for (ObservableObject object : objects) {
+                if (object == null) {
+                    throw new IllegalArgumentException("objects must not contain null elements");
+                }
+            }
             this.time = time;
             this.observer = observer;
             this.objects = new ArrayList<>(objects);
