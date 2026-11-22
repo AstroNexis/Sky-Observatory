@@ -142,6 +142,11 @@ public class CoordinateProjectorTest {
         projector.project(Double.NaN, 0.0);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void project_rejectsNonFiniteAltitude() {
+        projector.project(180.0, Double.POSITIVE_INFINITY);
+    }
+
     @Test
     public void toCartesian_normalizesAzimuthAndClampsAltitude() {
         CartesianCoordinate cartesian = projector.toCartesian(
