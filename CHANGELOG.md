@@ -19,6 +19,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #117: Preserved the first rise and set crossings found during the daily scan.
 
+- #119: Rejected negative distances returned by the native calculation boundary.
+
+- #120: Added upfront validation for null or invalid visibility resolver inputs.
+
+- #121: Rejected null astronomy engines returned by registered providers.
+
+- #122: Normalized azimuth and clamped altitude values at the projection boundary.
+
+- #123: Preserved JNI allocation failures instead of writing through a null result array.
+
+- #126: Rejected null object entries when constructing sky snapshots.
+
 ### Changed
 
 - #118: Shared provider-result validation between position and ephemeris calculations.
