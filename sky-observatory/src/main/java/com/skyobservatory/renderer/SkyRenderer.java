@@ -35,6 +35,7 @@ import com.skyobservatory.shaders.ShaderManager;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -100,8 +101,18 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
     // Viewport dimensions -- updated in onSurfaceChanged, used by the 2D label pass.
     private int viewportW = 1, viewportH = 1;
 
-    // Last snapshot; survives EGL context loss so positions are restored on resume.
-    private volatile SkySnapshot pendingSnapshot;
+    private static final class SnapshotUpdate {
+        final SkySnapshot snapshot;
+        final Runnable afterDraw;
+
+        SnapshotUpdate(SkySnapshot snapshot, Runnable afterDraw) {
+            this.snapshot = snapshot;
+            this.afterDraw = afterDraw;
+        }
+    }
+
+    private final AtomicReference<SnapshotUpdate> pendingSnapshot = new AtomicReference<>();
+    private volatile SkySnapshot lastSnapshot;
 
     private boolean ready;
 
@@ -121,7 +132,12 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
 // special-casing is required.
 // @param snapshot the latest sky snapshot from the engine
     public void updateSnapshot(SkySnapshot snapshot) {
-        pendingSnapshot = snapshot;
+        updateSnapshot(snapshot, null);
+    }
+
+    void updateSnapshot(SkySnapshot snapshot, Runnable afterDraw) {
+        lastSnapshot = snapshot;
+        pendingSnapshot.set(snapshot == null ? null : new SnapshotUpdate(snapshot, afterDraw));
     }
 
     // GLSurfaceView.Renderer
@@ -167,10 +183,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
             // This matches MapMover.onDrag: pixelsToRadians = fieldOfView / (height * r2d).
             touchController.setFovDegSupplier(camera::getFovDeg);
 
-            // Restore last known snapshot after context loss / resume.
-            SkySnapshot snap = pendingSnapshot;
-            if (snap != null) {
-                applySnapshot(snap);
+            // Restore the last rendered snapshot after context loss when no update is queued.
+            if (pendingSnapshot.get() == null && lastSnapshot != null) {
+                applySnapshot(lastSnapshot);
             }
 
             ready = true;
@@ -192,10 +207,9 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         if (!ready) return;
         GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT | GLES30.GL_DEPTH_BUFFER_BIT);
 
-        SkySnapshot snap = pendingSnapshot;
-        if (snap != null) {
-            applySnapshot(snap);
-            pendingSnapshot = null;
+        SnapshotUpdate update = pendingSnapshot.getAndSet(null);
+        if (update != null) {
+            applySnapshot(update.snapshot);
         }
 
         updateCamera();
@@ -207,6 +221,10 @@ public class SkyRenderer implements GLSurfaceView.Renderer {
         drawCardinals(vp);
         drawCelestialObjects(vp);
         drawHorizon(vp);
+
+        if (update != null && update.afterDraw != null) {
+            update.afterDraw.run();
+        }
     }
 
     // Snapshot application -- O(n)

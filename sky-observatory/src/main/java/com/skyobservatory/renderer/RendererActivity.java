@@ -16,11 +16,18 @@
 package com.skyobservatory.renderer;
 
 import android.Manifest;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.pm.PackageManager;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -47,6 +54,7 @@ import android.opengl.GLSurfaceView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Host activity for the sky renderer.
@@ -63,9 +71,12 @@ public class RendererActivity extends AppCompatActivity {
     private SkyRenderer skyRenderer;
     private SensorController sensorController;
     private LocationRepository locationRepository;
+    private ProgressBar loadingIndicator;
+    private ObjectAnimator loadingAnimation;
 
     private AstroEngine engine;
     private volatile Observer currentObserver;
+    private volatile boolean sdkInitializationFailed;
 
     private final ActivityResultLauncher<String[]> permissionLauncher =
             registerForActivityResult(
@@ -86,11 +97,6 @@ public class RendererActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         CrashHandler.init(RendererActivity.class);
 
-        EngineInitializer.register();
-        AstroSdk.initialize();
-        engine = AstroSdk.getEngine();
-        Log.i(TAG, "SDK initialized");
-
         locationRepository = new LocationRepository(this);
         sensorController   = new SensorController((SensorManager) getSystemService(SENSOR_SERVICE));
 
@@ -107,8 +113,76 @@ public class RendererActivity extends AppCompatActivity {
             return true;
         });
 
-        setContentView(glSurfaceView);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(glSurfaceView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
 
+        loadingIndicator = new ProgressBar(this);
+        loadingIndicator.setIndeterminate(true);
+        loadingIndicator.setVisibility(View.VISIBLE);
+        FrameLayout.LayoutParams loadingParams = new FrameLayout.LayoutParams(
+                dpToPixels(48), dpToPixels(48), Gravity.CENTER);
+        root.addView(loadingIndicator, loadingParams);
+
+        setContentView(root);
+        loadingAnimation = ObjectAnimator.ofFloat(loadingIndicator, View.ROTATION, 0f, 360f);
+        loadingAnimation.setDuration(900);
+        loadingAnimation.setInterpolator(new LinearInterpolator());
+        loadingAnimation.setRepeatCount(ValueAnimator.INFINITE);
+        initializeSdk();
+    }
+
+    private int dpToPixels(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
+    }
+
+    private void initializeSdk() {
+        Thread initializationThread = new Thread(() -> {
+            try {
+                EngineInitializer.register();
+                AstroSdk.initialize();
+                engine = AstroSdk.getEngine();
+                Log.i(TAG, "SDK initialized");
+                runOnUiThread(() -> {
+                    requestLocationAndStart();
+                });
+            } catch (RuntimeException e) {
+                sdkInitializationFailed = true;
+                Log.e(TAG, "SDK initialization failed", e);
+                runOnUiThread(this::hideLoadingIndicator);
+                throw e;
+            }
+        });
+        initializationThread.setName("sky-sdk-initialization");
+        initializationThread.setDaemon(true);
+        initializationThread.start();
+    }
+
+    private void hideLoadingIndicator() {
+        if (loadingHidden.compareAndSet(false, true)) {
+            runOnUiThread(() -> {
+                if (!loadingHidden.get()) {
+                    return;
+                }
+                if (loadingAnimation != null) {
+                    loadingAnimation.cancel();
+                }
+                if (loadingIndicator != null) {
+                    loadingIndicator.setVisibility(View.GONE);
+                }
+            });
+        }
+    }
+
+    private void showLoadingIndicator() {
+        loadingHidden.set(false);
+        loadingIndicator.setVisibility(View.VISIBLE);
+        loadingIndicator.setRotation(0f);
+        loadingAnimation.start();
+    }
+
+    private void requestLocationAndStart() {
         if (hasLocationPermission()) {
             fetchLocationAndStart();
         } else {
@@ -161,6 +235,7 @@ public class RendererActivity extends AppCompatActivity {
     private volatile boolean running;
     private volatile long sdkGeneration;
     private Thread sdkThread;
+    private final AtomicBoolean loadingHidden = new AtomicBoolean();
 
     private void startSdkUpdates() {
         synchronized (sdkLock) {
@@ -188,7 +263,11 @@ public class RendererActivity extends AppCompatActivity {
                             SkySnapshot snapshot = new SkySnapshot.Builder(time, obs, observed).build();
                             glSurfaceView.queueEvent(() -> {
                                 if (resumed && workerGeneration == sdkGeneration) {
-                                    skyRenderer.updateSnapshot(snapshot);
+                                    skyRenderer.updateSnapshot(snapshot, () -> {
+                                        if (resumed && workerGeneration == sdkGeneration) {
+                                            hideLoadingIndicator();
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -238,6 +317,9 @@ public class RendererActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         resumed = true;
+        if (!sdkInitializationFailed) {
+            showLoadingIndicator();
+        }
         glSurfaceView.onResume();
         sensorController.start();
         if (currentObserver != null) {
@@ -250,6 +332,9 @@ public class RendererActivity extends AppCompatActivity {
         super.onPause();
         resumed = false;
         sdkGeneration++;
+        if (loadingAnimation != null) {
+            loadingAnimation.cancel();
+        }
         glSurfaceView.onPause();
         sensorController.stop();
         stopSdkUpdates();
