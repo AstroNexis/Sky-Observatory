@@ -87,6 +87,7 @@ public final class AstroSdk {
      * has already been built.
      *
      * @throws IllegalStateException if no provider has been registered
+     *                               or the provider returns a null engine
      */
     public static synchronized void initialize() {
         if (engine != null) {
@@ -98,7 +99,11 @@ public final class AstroSdk {
                             + "and EngineInitializer.register() has been called, or register a "
                             + "custom AstronomyProvider via AstroSdk.registerProvider().");
         }
-        engine = provider.create();
+        AstroEngine created = provider.create();
+        if (created == null) {
+            throw new IllegalStateException("AstronomyProvider returned a null engine");
+        }
+        engine = created;
     }
 
     /**
