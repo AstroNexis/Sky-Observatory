@@ -140,6 +140,13 @@ public class SkySnapshotTest {
         new SkySnapshot.Builder(time, observer, null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void builder_nullObjectElement_throws() {
+        AstroTime time = AstroTime.j2000();
+        Observer observer = new Observer(0.0, 0.0, 0.0);
+        new SkySnapshot.Builder(time, observer, Arrays.asList((ObservableObject) null));
+    }
+
     private static List<ObservableObject> createSampleObjects() {
         return Arrays.asList(
                 makeObject(0.0, 45.0, VisibilityState.VISIBLE),
