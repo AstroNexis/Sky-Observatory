@@ -130,6 +130,39 @@ public class CoordinateProjectorTest {
     }
 
     @Test
+    public void project_normalizesAzimuthAndClampsAltitude() {
+        SkyCoordinate sky = projector.project(-10.0, 95.0);
+
+        assertEquals(350.0, sky.getAzimuthDegrees(), DELTA);
+        assertEquals(90.0, sky.getAltitudeDegrees(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void project_rejectsNonFiniteCoordinates() {
+        projector.project(Double.NaN, 0.0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void project_rejectsNonFiniteAltitude() {
+        projector.project(180.0, Double.POSITIVE_INFINITY);
+    }
+
+    @Test
+    public void toCartesian_normalizesAzimuthAndClampsAltitude() {
+        CartesianCoordinate cartesian = projector.toCartesian(
+                new HorizontalCoordinate(370.0, -95.0));
+
+        assertEquals(0.0, cartesian.getX(), DELTA);
+        assertEquals(-1.0, cartesian.getY(), DELTA);
+        assertEquals(0.0, cartesian.getZ(), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void toCartesian_rejectsNullCoordinate() {
+        projector.toCartesian(null);
+    }
+
+    @Test
     public void project_containBothRepresentations() {
         SkyCoordinate sky = projector.project(45.0, 30.0);
         assertNotNull(sky.getHorizontal());

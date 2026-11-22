@@ -18,6 +18,7 @@ package com.skyobservatory.engine.projector;
 import com.skyobservatory.api.CartesianCoordinate;
 import com.skyobservatory.api.HorizontalCoordinate;
 import com.skyobservatory.api.SkyCoordinate;
+import com.skyobservatory.engine.coordinates.CoordinateConverter;
 
 /**
  * Converts horizontal (alt-azimuth) sky positions into Cartesian coordinates
@@ -46,10 +47,12 @@ import com.skyobservatory.api.SkyCoordinate;
 public final class CoordinateProjector {
 
     private final HorizontalToCartesianConverter converter;
+    private final CoordinateConverter coordinateConverter;
     private final VisibilityCalculator visibility;
 
     public CoordinateProjector() {
         this.converter = new HorizontalToCartesianConverter();
+        this.coordinateConverter = new CoordinateConverter();
         this.visibility = new VisibilityCalculator();
     }
 
@@ -57,13 +60,14 @@ public final class CoordinateProjector {
      * Projects the horizontal coordinates to a Cartesian unit vector and
      * returns a {@link SkyCoordinate} containing both representations.
      *
-     * @param azimuthDegrees  topocentric azimuth in degrees [0, 360)
-     * @param altitudeDegrees topocentric altitude in degrees [-90, 90]
+     * @param azimuthDegrees  topocentric azimuth; normalized to [0, 360)
+     * @param altitudeDegrees topocentric altitude; clamped to [-90, 90]
      * @return a {@link SkyCoordinate} with both horizontal and Cartesian
      *         representations
+     * @throws IllegalArgumentException if either coordinate is not finite
      */
     public SkyCoordinate project(double azimuthDegrees, double altitudeDegrees) {
-        HorizontalCoordinate horizontal = new HorizontalCoordinate(azimuthDegrees, altitudeDegrees);
+        HorizontalCoordinate horizontal = normalize(azimuthDegrees, altitudeDegrees);
         CartesianCoordinate cartesian = converter.toCartesian(horizontal).normalize();
         return new SkyCoordinate(horizontal, cartesian);
     }
@@ -71,11 +75,17 @@ public final class CoordinateProjector {
     /**
      * Converts a {@link HorizontalCoordinate} to a Cartesian unit vector.
      *
-     * @param horizontal the input horizontal coordinate
+     * @param horizontal the input horizontal coordinate; must not be null
      * @return the unit-length Cartesian representation
+     * @throws IllegalArgumentException if the coordinate is null or has non-finite angles
      */
     public CartesianCoordinate toCartesian(HorizontalCoordinate horizontal) {
-        return converter.toCartesian(horizontal).normalize();
+        if (horizontal == null) {
+            throw new IllegalArgumentException("horizontal must not be null");
+        }
+        return converter.toCartesian(
+                normalize(horizontal.getAzimuthDegrees(), horizontal.getAltitudeDegrees()))
+                .normalize();
     }
 
     /**
@@ -117,5 +127,14 @@ public final class CoordinateProjector {
      */
     public String describeVisibility(double altitudeDegrees) {
         return visibility.describeVisibility(altitudeDegrees);
+    }
+
+    private HorizontalCoordinate normalize(double azimuthDegrees, double altitudeDegrees) {
+        if (!Double.isFinite(azimuthDegrees) || !Double.isFinite(altitudeDegrees)) {
+            throw new IllegalArgumentException("Horizontal coordinates must be finite");
+        }
+        return new HorizontalCoordinate(
+                coordinateConverter.normalizeAzimuth(azimuthDegrees),
+                coordinateConverter.clampAltitude(altitudeDegrees));
     }
 }
