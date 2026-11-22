@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class VisibilityResolverTest {
@@ -92,6 +93,21 @@ public class VisibilityResolverTest {
         Viewport viewport = new Viewport(90.0, 60.0, new CameraOrientation(0.0, 0.0, 0.0));
         var region = resolver.resolve(snapshot, viewport);
         assertEquals(2, region.getTotalObjectCount());
+    }
+
+    @Test
+    public void nullSnapshotThrowsIllegalArgumentException() {
+        Viewport viewport = new Viewport(90.0, 60.0, new CameraOrientation(0.0, 0.0, 0.0));
+
+        assertThrows(IllegalArgumentException.class, () -> resolver.resolve(null, viewport));
+    }
+
+    @Test
+    public void nullViewportThrowsIllegalArgumentException() {
+        SkySnapshot snapshot = createSnapshot(
+                makeObject(CelestialObject.sun(), 0.0, 15.0, VisibilityState.VISIBLE));
+
+        assertThrows(IllegalArgumentException.class, () -> resolver.resolve(snapshot, null));
     }
 
     private static SkySnapshot createSnapshot(ObservableObject... objects) {
