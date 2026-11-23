@@ -42,6 +42,16 @@ public class CoordinateConverterTest {
         assertEquals(350.0, converter.normalizeAzimuth(-10.0), DELTA);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void normalizeAzimuthRejectsNonFiniteValues() {
+        converter.normalizeAzimuth(Double.NaN);
+    }
+
+    @Test
+    public void normalizeAzimuthCanonicalizesNegativeZero() {
+        assertEquals(0.0, converter.normalizeAzimuth(-0.0), DELTA);
+    }
+
     @Test
     public void clampAltitudePreservesValueInRange() {
         assertEquals(45.0, converter.clampAltitude(45.0), DELTA);
@@ -58,5 +68,10 @@ public class CoordinateConverterTest {
     @Test
     public void clampAltitudeClampsBelow90() {
         assertEquals(-90.0, converter.clampAltitude(-95.0), DELTA);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void clampAltitudeRejectsNaN() {
+        converter.clampAltitude(Double.NaN);
     }
 }
