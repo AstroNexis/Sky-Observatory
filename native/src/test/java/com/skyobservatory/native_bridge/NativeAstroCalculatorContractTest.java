@@ -189,6 +189,23 @@ public class NativeAstroCalculatorContractTest {
         assertEquals(1.5, result.getDistanceAu(), 0);
     }
 
+    @Test
+    public void nativeResponseCoordinatesAreNormalized() throws AstroException {
+        PositionResult negativeAzimuth = calculatorReturning(
+                new double[] {-10, 95, 12, -23, 1.5, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertEquals(350.0, negativeAzimuth.getAzimuthDegrees(), 0);
+        assertEquals(90.0, negativeAzimuth.getAltitudeDegrees(), 0);
+
+        PositionResult largeAzimuth = calculatorReturning(
+                new double[] {720, -95, 12, -23, 1.5, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertEquals(0.0, largeAzimuth.getAzimuthDegrees(), 0);
+        assertEquals(-90.0, largeAzimuth.getAltitudeDegrees(), 0);
+    }
+
     private static NativeAstroCalculator calculatorReturning(double[] response) {
         return new NativeAstroCalculator((naifId, jd, lat, lon, alt) -> response);
     }

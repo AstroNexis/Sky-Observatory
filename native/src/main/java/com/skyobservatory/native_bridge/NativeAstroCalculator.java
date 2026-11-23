@@ -92,8 +92,8 @@ public class NativeAstroCalculator {
                     "Native calculation failed for " + target.getName());
         }
 
-        double azimuth     = r[0];
-        double altitude    = r[1];
+        double azimuth     = normalizeAzimuth(r[0]);
+        double altitude    = clampAltitude(r[1]);
         double raHours     = r[2];
         double decDeg      = r[3];
         double distanceAu  = r[4];
@@ -113,5 +113,17 @@ public class NativeAstroCalculator {
         }
 
         return builder.build();
+    }
+
+    private static double normalizeAzimuth(double degrees) {
+        double normalized = degrees % 360.0;
+        if (normalized < 0.0) {
+            normalized += 360.0;
+        }
+        return normalized == 0.0 || normalized >= 360.0 ? 0.0 : normalized;
+    }
+
+    private static double clampAltitude(double degrees) {
+        return Math.max(-90.0, Math.min(90.0, degrees));
     }
 }
