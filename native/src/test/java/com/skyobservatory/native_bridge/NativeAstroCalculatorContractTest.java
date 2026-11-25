@@ -49,6 +49,30 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test(expected = NativeException.class)
+    public void nullTargetThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(null, observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void nullObserverThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), null, AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void nullTimeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), null);
+    }
+
+    @Test(expected = NativeException.class)
+    public void nonFiniteTimeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), new AstroTime(Double.NaN));
+    }
+
+    @Test(expected = NativeException.class)
     public void nullNativeResponseThrowsNativeException() throws AstroException {
         calculatorReturning(null).calculatePosition(
                 CelestialObject.sun(), observer(), AstroTime.j2000());
