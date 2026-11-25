@@ -37,6 +37,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #131: Rejected non-finite engine azimuth values and NaN altitude values.
 
+- #133: Rejected infinite altitude values during coordinate normalization.
+
 ### Changed
 
 - #118: Shared provider-result validation between position and ephemeris calculations.
