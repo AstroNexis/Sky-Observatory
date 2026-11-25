@@ -43,6 +43,23 @@ public class CoordinateConverterTest {
     }
 
     @Test
+    public void normalizeAzimuthRejectsNonFiniteValues() {
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.normalizeAzimuth(Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.normalizeAzimuth(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.normalizeAzimuth(Double.NEGATIVE_INFINITY));
+    }
+
+    @Test
+    public void normalizeAzimuthCanonicalizesNegativeZero() {
+        double normalized = converter.normalizeAzimuth(-0.0);
+        assertEquals(Double.doubleToRawLongBits(0.0),
+                Double.doubleToRawLongBits(normalized));
+    }
+
+    @Test
     public void clampAltitudePreservesValueInRange() {
         assertEquals(45.0, converter.clampAltitude(45.0), DELTA);
         assertEquals(-45.0, converter.clampAltitude(-45.0), DELTA);
@@ -58,5 +75,15 @@ public class CoordinateConverterTest {
     @Test
     public void clampAltitudeClampsBelow90() {
         assertEquals(-90.0, converter.clampAltitude(-95.0), DELTA);
+    }
+
+    @Test
+    public void clampAltitudeRejectsNonFiniteValues() {
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.clampAltitude(Double.NaN));
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.clampAltitude(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.clampAltitude(Double.NEGATIVE_INFINITY));
     }
 }
