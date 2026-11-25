@@ -74,4 +74,12 @@ public class CoordinateConverterTest {
     public void clampAltitudeRejectsNaN() {
         converter.clampAltitude(Double.NaN);
     }
+
+    @Test
+    public void clampAltitudeRejectsInfiniteValues() {
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.clampAltitude(Double.POSITIVE_INFINITY));
+        assertThrows(IllegalArgumentException.class,
+                () -> converter.clampAltitude(Double.NEGATIVE_INFINITY));
+    }
 }

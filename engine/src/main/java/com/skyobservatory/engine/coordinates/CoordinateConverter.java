@@ -53,8 +53,8 @@ public final class CoordinateConverter implements CoordinateTransform {
      */
     @Override
     public double clampAltitude(double degrees) {
-        if (Double.isNaN(degrees)) {
-            throw new IllegalArgumentException("Altitude must not be NaN");
+        if (!Double.isFinite(degrees)) {
+            throw new IllegalArgumentException("Altitude must be finite");
         }
         return Math.max(-90.0, Math.min(90.0, degrees));
     }
