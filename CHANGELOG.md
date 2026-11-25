@@ -31,6 +31,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #126: Rejected null object entries when constructing sky snapshots.
 
+- #129: Rejected null and non-finite native calculation inputs before invoking the native bridge.
+
+- #130: Normalized native azimuth values and clamped native altitude values.
+
+- #131: Rejected non-finite engine azimuth values and NaN altitude values.
+
 ### Changed
 
 - #118: Shared provider-result validation between position and ephemeris calculations.

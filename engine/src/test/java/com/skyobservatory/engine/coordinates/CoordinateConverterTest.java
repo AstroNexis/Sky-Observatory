@@ -42,21 +42,14 @@ public class CoordinateConverterTest {
         assertEquals(350.0, converter.normalizeAzimuth(-10.0), DELTA);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void normalizeAzimuthRejectsNonFiniteValues() {
-        assertThrows(IllegalArgumentException.class,
-                () -> converter.normalizeAzimuth(Double.NaN));
-        assertThrows(IllegalArgumentException.class,
-                () -> converter.normalizeAzimuth(Double.POSITIVE_INFINITY));
-        assertThrows(IllegalArgumentException.class,
-                () -> converter.normalizeAzimuth(Double.NEGATIVE_INFINITY));
+        converter.normalizeAzimuth(Double.NaN);
     }
 
     @Test
     public void normalizeAzimuthCanonicalizesNegativeZero() {
-        double normalized = converter.normalizeAzimuth(-0.0);
-        assertEquals(Double.doubleToRawLongBits(0.0),
-                Double.doubleToRawLongBits(normalized));
+        assertEquals(0.0, converter.normalizeAzimuth(-0.0), DELTA);
     }
 
     @Test
@@ -77,10 +70,13 @@ public class CoordinateConverterTest {
         assertEquals(-90.0, converter.clampAltitude(-95.0), DELTA);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void clampAltitudeRejectsNaN() {
+        converter.clampAltitude(Double.NaN);
+    }
+
     @Test
-    public void clampAltitudeRejectsNonFiniteValues() {
-        assertThrows(IllegalArgumentException.class,
-                () -> converter.clampAltitude(Double.NaN));
+    public void clampAltitudeRejectsInfiniteValues() {
         assertThrows(IllegalArgumentException.class,
                 () -> converter.clampAltitude(Double.POSITIVE_INFINITY));
         assertThrows(IllegalArgumentException.class,

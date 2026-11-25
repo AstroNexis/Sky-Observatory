@@ -57,12 +57,33 @@ public class NativeAstroCalculator {
             Observer observer,
             AstroTime time) throws NativeException {
 
+        if (target == null) {
+            throw new NativeException("Target must not be null");
+        }
+        if (observer == null) {
+            throw new NativeException("Observer must not be null");
+        }
+        if (time == null) {
+            throw new NativeException("Time must not be null");
+        }
+
+        double julianDateTT = time.getJulianDateTT();
+        double latitudeDeg = observer.getLatitudeDegrees();
+        double longitudeDeg = observer.getLongitudeDegrees();
+        double altitudeMeters = observer.getAltitudeMeters();
+        if (!Double.isFinite(julianDateTT)
+                || !Double.isFinite(latitudeDeg)
+                || !Double.isFinite(longitudeDeg)
+                || !Double.isFinite(altitudeMeters)) {
+            throw new NativeException("Native calculation input contains a non-finite value");
+        }
+
         double[] r = nativeCall.calculate(
                 target.getNaifId(),
-                time.getJulianDateTT(),
-                observer.getLatitudeDegrees(),
-                observer.getLongitudeDegrees(),
-                observer.getAltitudeMeters());
+                julianDateTT,
+                latitudeDeg,
+                longitudeDeg,
+                altitudeMeters);
 
         if (r == null || r.length < 7 || r[6] == ERROR_FLAG
                 || !Double.isFinite(r[0]) || !Double.isFinite(r[1])
@@ -71,8 +92,8 @@ public class NativeAstroCalculator {
                     "Native calculation failed for " + target.getName());
         }
 
-        double azimuth     = r[0];
-        double altitude    = r[1];
+        double azimuth     = normalizeAzimuth(r[0]);
+        double altitude    = clampAltitude(r[1]);
         double raHours     = r[2];
         double decDeg      = r[3];
         double distanceAu  = r[4];
@@ -92,5 +113,17 @@ public class NativeAstroCalculator {
         }
 
         return builder.build();
+    }
+
+    private static double normalizeAzimuth(double degrees) {
+        double normalized = degrees % 360.0;
+        if (normalized < 0.0) {
+            normalized += 360.0;
+        }
+        return normalized == 0.0 || normalized >= 360.0 ? 0.0 : normalized;
+    }
+
+    private static double clampAltitude(double degrees) {
+        return Math.max(-90.0, Math.min(90.0, degrees));
     }
 }

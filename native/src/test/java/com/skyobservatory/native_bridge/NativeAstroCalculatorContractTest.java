@@ -49,6 +49,30 @@ public class NativeAstroCalculatorContractTest {
     }
 
     @Test(expected = NativeException.class)
+    public void nullTargetThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(null, observer(), AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void nullObserverThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), null, AstroTime.j2000());
+    }
+
+    @Test(expected = NativeException.class)
+    public void nullTimeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), null);
+    }
+
+    @Test(expected = NativeException.class)
+    public void nonFiniteTimeThrowsNativeException() throws AstroException {
+        calculatorReturning(new double[] {0, 0, 0, 0, 1, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), new AstroTime(Double.NaN));
+    }
+
+    @Test(expected = NativeException.class)
     public void nullNativeResponseThrowsNativeException() throws AstroException {
         calculatorReturning(null).calculatePosition(
                 CelestialObject.sun(), observer(), AstroTime.j2000());
@@ -163,6 +187,23 @@ public class NativeAstroCalculatorContractTest {
         assertEquals(180, result.getEquatorial().getRightAscensionDegrees(), 0);
         assertEquals(-23, result.getEquatorial().getDeclinationDegrees(), 0);
         assertEquals(1.5, result.getDistanceAu(), 0);
+    }
+
+    @Test
+    public void nativeResponseCoordinatesAreNormalized() throws AstroException {
+        PositionResult negativeAzimuth = calculatorReturning(
+                new double[] {-10, 95, 12, -23, 1.5, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertEquals(350.0, negativeAzimuth.getAzimuthDegrees(), 0);
+        assertEquals(90.0, negativeAzimuth.getAltitudeDegrees(), 0);
+
+        PositionResult largeAzimuth = calculatorReturning(
+                new double[] {720, -95, 12, -23, 1.5, 0, 0})
+                .calculatePosition(CelestialObject.sun(), observer(), AstroTime.j2000());
+
+        assertEquals(0.0, largeAzimuth.getAzimuthDegrees(), 0);
+        assertEquals(-90.0, largeAzimuth.getAltitudeDegrees(), 0);
     }
 
     private static NativeAstroCalculator calculatorReturning(double[] response) {

@@ -35,8 +35,7 @@ public final class CoordinateConverter implements CoordinateTransform {
     @Override
     public double normalizeAzimuth(double degrees) {
         if (!Double.isFinite(degrees)) {
-            throw new IllegalArgumentException(
-                    "Azimuth must be finite, got: " + degrees);
+            throw new IllegalArgumentException("Azimuth must be finite");
         }
         double normalized = degrees % 360.0;
         if (normalized < 0.0) {
@@ -55,8 +54,7 @@ public final class CoordinateConverter implements CoordinateTransform {
     @Override
     public double clampAltitude(double degrees) {
         if (!Double.isFinite(degrees)) {
-            throw new IllegalArgumentException(
-                    "Altitude must be finite, got: " + degrees);
+            throw new IllegalArgumentException("Altitude must be finite");
         }
         return Math.max(-90.0, Math.min(90.0, degrees));
     }
