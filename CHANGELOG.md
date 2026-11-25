@@ -33,6 +33,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #129: Rejected null and non-finite native calculation inputs before invoking the native bridge.
 
+- #130: Normalized native azimuth values and clamped native altitude values.
+
 ### Changed
 
 - #118: Shared provider-result validation between position and ephemeris calculations.
