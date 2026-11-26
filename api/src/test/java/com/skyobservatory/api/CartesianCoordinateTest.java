@@ -36,6 +36,22 @@ public class CartesianCoordinateTest {
         assertEquals(0.0, n.getZ(), DELTA);
     }
 
+    @Test
+    public void normalizeLargeFiniteVector() {
+        CartesianCoordinate normalized = new CartesianCoordinate(
+                Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE).normalize();
+        assertEquals(1.0, normalized.magnitude(), DELTA);
+    }
+
+    @Test
+    public void normalizeSmallNonzeroVector() {
+        CartesianCoordinate normalized = new CartesianCoordinate(
+                Double.MIN_VALUE, 0.0, 0.0).normalize();
+        assertEquals(1.0, normalized.getX(), DELTA);
+        assertEquals(0.0, normalized.getY(), DELTA);
+        assertEquals(0.0, normalized.getZ(), DELTA);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void normalizeZeroThrows() {
         CartesianCoordinate.ZERO.normalize();

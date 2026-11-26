@@ -116,9 +116,17 @@ public final class CartesianCoordinate {
      * @throws IllegalStateException if this coordinate has zero length
      */
     public CartesianCoordinate normalize() {
-        double m = magnitude();
-        if (m == 0.0) throw new IllegalStateException("Cannot normalize a zero-length coordinate");
-        return scale(1.0 / m);
+        double scale = Math.max(Math.abs(getX()),
+                Math.max(Math.abs(getY()), Math.abs(getZ())));
+        if (scale == 0.0) {
+            throw new IllegalStateException("Cannot normalize a zero-length coordinate");
+        }
+
+        double x = getX() / scale;
+        double y = getY() / scale;
+        double z = getZ() / scale;
+        double magnitude = Math.sqrt(x * x + y * y + z * z);
+        return new CartesianCoordinate(x / magnitude, y / magnitude, z / magnitude);
     }
 
     /**
