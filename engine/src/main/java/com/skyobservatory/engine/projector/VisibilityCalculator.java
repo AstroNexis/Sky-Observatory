@@ -16,6 +16,7 @@
 package com.skyobservatory.engine.projector;
 
 import com.skyobservatory.api.HorizontalCoordinate;
+import com.skyobservatory.api.VisibilityState;
 
 /**
  * Determines the visibility of a sky position relative to the observer's horizon.
@@ -48,7 +49,7 @@ final class VisibilityCalculator {
      * @return {@code true} if altitude > 0
      */
     boolean isVisible(double altitudeDegrees) {
-        return altitudeDegrees > 0.0;
+        return VisibilityState.fromAltitude(altitudeDegrees) == VisibilityState.VISIBLE;
     }
 
     /**
@@ -58,6 +59,6 @@ final class VisibilityCalculator {
      * @return "above horizon" if altitude > 0, "below horizon" otherwise
      */
     String describeVisibility(double altitudeDegrees) {
-        return altitudeDegrees > 0.0 ? "above horizon" : "below horizon";
+        return isVisible(altitudeDegrees) ? "above horizon" : "below horizon";
     }
 }
