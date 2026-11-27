@@ -35,7 +35,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #130: Normalized native azimuth values and clamped native altitude values.
 
-- #131: Rejected non-finite engine azimuth values and NaN altitude values.
+- #131: Rejected non-finite azimuth and altitude values in engine coordinate normalization.
 
 - #133: Rejected infinite altitude values during coordinate normalization.
 
