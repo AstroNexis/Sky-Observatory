@@ -50,7 +50,9 @@ public final class HorizontalCoordinate {
     public double getAltitudeDegrees() { return altitudeDegrees; }
 
     /** Returns {@code true} when this coordinate is above the astronomical horizon. */
-    public boolean isAboveHorizon() { return altitudeDegrees > 0.0; }
+    public boolean isAboveHorizon() {
+        return VisibilityState.fromAltitude(altitudeDegrees) == VisibilityState.VISIBLE;
+    }
 
     @Override
     public boolean equals(Object obj) {

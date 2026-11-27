@@ -141,7 +141,9 @@ public final class PositionResult {
     public boolean hasPositionVector() { return positionVector != null; }
 
     /** Returns {@code true} when the object is above the observer's horizon. */
-    public boolean isAboveHorizon() { return altitudeDegrees > 0.0; }
+    public boolean isAboveHorizon() {
+        return VisibilityState.fromAltitude(altitudeDegrees) == VisibilityState.VISIBLE;
+    }
 
     @Override
     public String toString() {
