@@ -154,11 +154,17 @@ public final class CelestialObject {
     /** Returns {@code true} when this body has a ring texture (e.g. Saturn). */
     public boolean hasRings()                            { return hasRings; }
 
-    // Legacy convenience factories kept for API compatibility.
+    // Convenience factories for catalog bodies.
 
     public static CelestialObject sun()  { return CATALOG.get(NAIF_SUN); }
     public static CelestialObject moon() { return CATALOG.get(NAIF_MOON); }
+    public static CelestialObject mercury() { return CATALOG.get(NAIF_MERCURY); }
+    public static CelestialObject venus() { return CATALOG.get(NAIF_VENUS); }
     public static CelestialObject mars() { return CATALOG.get(NAIF_MARS); }
+    public static CelestialObject jupiter() { return CATALOG.get(NAIF_JUPITER); }
+    public static CelestialObject saturn() { return CATALOG.get(NAIF_SATURN); }
+    public static CelestialObject uranus() { return CATALOG.get(NAIF_URANUS); }
+    public static CelestialObject neptune() { return CATALOG.get(NAIF_NEPTUNE); }
 
     @Override
     public String toString() {

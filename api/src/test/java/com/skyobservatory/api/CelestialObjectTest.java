@@ -87,6 +87,16 @@ public class CelestialObjectTest {
     }
 
     @Test
+    public void catalogConvenienceFactoriesReturnExpectedBodies() {
+        assertEquals(CelestialObject.NAIF_MERCURY, CelestialObject.mercury().getNaifId());
+        assertEquals(CelestialObject.NAIF_VENUS, CelestialObject.venus().getNaifId());
+        assertEquals(CelestialObject.NAIF_JUPITER, CelestialObject.jupiter().getNaifId());
+        assertEquals(CelestialObject.NAIF_SATURN, CelestialObject.saturn().getNaifId());
+        assertEquals(CelestialObject.NAIF_URANUS, CelestialObject.uranus().getNaifId());
+        assertEquals(CelestialObject.NAIF_NEPTUNE, CelestialObject.neptune().getNaifId());
+    }
+
+    @Test
     public void fromNaifIdReturnsKnownObject() {
         CelestialObject jupiter = CelestialObject.fromNaifId(CelestialObject.NAIF_JUPITER);
         assertNotNull(jupiter);
