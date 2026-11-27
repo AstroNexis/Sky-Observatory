@@ -39,10 +39,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - #133: Rejected infinite altitude values during coordinate normalization.
 
+- #134: Prevented overflow and underflow when normalizing extreme Cartesian vectors.
+
 ### Changed
 
 - #118: Shared provider-result validation between position and ephemeris calculations.
 
+- #135: Centralized horizon visibility classification across API and engine code.
 
 ## [0.1.3-alpha] - 2026-11-17
 
